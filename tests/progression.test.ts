@@ -71,4 +71,35 @@ describe('Level Progression & Gating Suite', () => {
     // Should successfully be round-2
     expect(useGameStore.getState().currentLevelId).toBe('round-2');
   });
+
+  it('GameStore supports toggling between light and dark mode', () => {
+    const store = useGameStore.getState();
+    store.setTheme('light');
+    expect(useGameStore.getState().theme).toBe('light');
+
+    store.toggleTheme();
+    expect(useGameStore.getState().theme).toBe('dark');
+
+    store.toggleTheme();
+    expect(useGameStore.getState().theme).toBe('light');
+  });
+
+  it('GameStore supports adding and removing edges on the canvas board', () => {
+    const store = useGameStore.getState();
+    store.loadLevel('round-1');
+
+    // Add a connection edge
+    store.addEdgeToBoard({
+      id: 'test-custom-edge',
+      source: 'web-server-ec2',
+      target: 'invoices-bucket',
+      label: 'Test Connection'
+    });
+
+    expect(useGameStore.getState().edges.some(e => e.id === 'test-custom-edge')).toBe(true);
+
+    // Remove the edge
+    store.removeEdge('test-custom-edge');
+    expect(useGameStore.getState().edges.some(e => e.id === 'test-custom-edge')).toBe(false);
+  });
 });

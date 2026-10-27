@@ -23,10 +23,11 @@ export const round8GuardrailClash: GameLevel = {
     headline: 'Stage 8: Enterprise Governance — Guardrails vs Identity',
     scenario: 'The security team deployed an SCP denying all API calls outside us-east-1. Suddenly, production Disaster Recovery replication to eu-central-1 breaks with AccessDenied outages. Meanwhile, ransomware actors probe ap-southeast-1 to launch unauthorized crypto miners.',
     tasks: [
-      { step: 1, title: 'Analyze Region Guardrail', instruction: 'Inspect the SCP policy attached to the DR Backup Role. Notice the broad Deny on non-US regions.' },
-      { step: 2, title: 'Craft Role Exemption', instruction: 'Add a StringNotEquals condition to the SCP Deny statement to exempt the DRBackupRole ARN.' },
-      { step: 3, title: 'Verify Mining Block', instruction: 'Ensure unauthorized EC2 instance creation in ap-southeast-1 remains blocked.' },
-      { step: 4, title: 'Simulate', instruction: 'Verify Frankfurt DR backup succeeds while the Singapore crypto exploit is denied.' }
+      { step: 1, title: 'Connect Replication Route', instruction: 'Wire a connection edge between the DR Backup Worker Role and the eu-central-1-backup-vault S3 bucket.' },
+      { step: 2, title: 'Analyze Region Guardrail', instruction: 'Select DR Backup Worker Role and open the "SCP Guardrail" tab in the Inspector Drawer. Notice the broad Deny on non-US regions.' },
+      { step: 3, title: 'Craft Role Exemption', instruction: 'Add a StringNotEquals condition to the SCP Deny statement to exempt the DRBackupRole ARN.' },
+      { step: 4, title: 'Verify Mining Block', instruction: 'Ensure unauthorized EC2 instance creation in ap-southeast-1 remains blocked.' },
+      { step: 5, title: 'Simulate', instruction: 'Verify Frankfurt DR backup succeeds while the Singapore crypto exploit is denied.' }
     ],
     securityIntel: 'Explicit Deny in an SCP overrides all Allow statements across identity policies, resource policies, and boundaries without exception.',
     budgetNotice: 'Target budget is $45/mo.'
@@ -193,8 +194,13 @@ export const round8GuardrailClash: GameLevel = {
     }
   ],
   initialEdges: [
-    { id: 'e-dr-s3', source: 'dr-backup-role', target: 'dr-eu-s3', label: 'Cross-Region Replication' },
-    { id: 'e-att-ec2', source: 'ransom-attacker', target: 'ap-ec2-target', label: 'Provision Miner' }
+    {
+      id: 'edge-ransom-probe',
+      source: 'ransom-attacker',
+      target: 'ap-ec2-target',
+      label: 'Unauthorized Provisioning',
+      data: { isThreat: true },
+    },
   ],
   packets: [
     {

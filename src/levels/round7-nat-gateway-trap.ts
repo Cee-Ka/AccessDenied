@@ -98,14 +98,14 @@ export const round7NatGatewayTrap: GameLevel = {
     {
       id: 'costly-nat-gw',
       type: 'nat_gw',
-      position: { x: 380, y: 140 },
+      position: { x: 400, y: 220 },
       data: {
         id: 'costly-nat-gw',
         type: 'nat_gw',
-        label: 'NAT Gateway ($32/mo)',
-        arn: 'arn:aws:ec2:us-east-1:111122223333:natgateway/nat-expensive',
+        label: 'Prod NAT Gateway',
+        arn: 'arn:aws:ec2:us-east-1:111122223333:natgateway/nat-08976a45b',
         accountId: '111122223333',
-        monthlyCost: 32, // BLOWS $15 BUDGET!
+        monthlyCost: 32,
         config: {},
         identityPolicies: []
       }
@@ -127,8 +127,18 @@ export const round7NatGatewayTrap: GameLevel = {
     }
   ],
   initialEdges: [
-    { id: 'e-lambda-nat', source: 'log-worker-lambda', target: 'costly-nat-gw', label: 'Egress' },
-    { id: 'e-nat-s3', source: 'costly-nat-gw', target: 's3-logs-bucket', label: 'Internet Route to S3' }
+    {
+      id: 'edge-lambda-to-nat',
+      source: 'log-worker-lambda',
+      target: 'costly-nat-gw',
+      label: 'Egress'
+    },
+    {
+      id: 'edge-nat-to-s3',
+      source: 'costly-nat-gw',
+      target: 's3-logs-bucket',
+      label: 'Public S3 API'
+    }
   ],
   packets: [
     {

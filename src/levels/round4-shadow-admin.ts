@@ -13,20 +13,21 @@ export const round4ShadowAdmin: GameLevel = {
   targetBudget: 20,
   unlockedServices: ['s3', 'iam_role', 'ec2', 'lambda'],
   newlyUnlockedService: {
-    type: 'lambda',
-    name: 'AWS Lambda (Serverless Execution)',
-    category: 'Compute',
-    primer: 'AWS Lambda lets you run backend code without provisioning servers. Lambda execution roles require iam:PassRole permissions. Always restrict iam:PassRole to specific role ARNs and attach Permission Boundaries to prevent privilege escalation.',
+    type: 'iam_role',
+    name: 'IAM Execution Roles & Boundaries',
+    category: 'Identity & Governance',
+    primer: 'Lambda execution roles require iam:PassRole permissions. To prevent privilege escalation, always restrict iam:PassRole to specific worker roles and attach Permission Boundaries.',
     keyConcepts: ['iam:PassRole', 'Execution Roles', 'Permission Boundaries']
   },
   reportCard: {
     headline: 'Stage 4: Serverless Delegation — iam:PassRole & Boundaries',
     scenario: 'A CI/CD deployment bot deploys serverless functions. A developer granted it broad iam:PassRole on * so it could pass any role. If the CI token leaks, an attacker can pass OrganizationAdminRole to a custom function and take over the AWS organization.',
     tasks: [
-      { step: 1, title: 'Inspect CI/CD Bot Policy', instruction: 'Examine the CI/CD bot identity policy. Notice "iam:PassRole" on "*".' },
-      { step: 2, title: 'Scope PassRole Resource', instruction: 'Restrict "iam:PassRole" resource strictly to "arn:aws:iam::111122223333:role/lambda-worker-*".' },
-      { step: 3, title: 'Attach Permission Boundary', instruction: 'Ensure the developer identity cannot escalate permissions beyond worker duties.' },
-      { step: 4, title: 'Simulate', instruction: 'Verify worker deployment succeeds while passing admin roles is blocked.' }
+      { step: 1, title: 'Deploy Execution Role', instruction: 'Drag an IAM Execution Role from the left dock onto the canvas and connect it to CI/CD Deployment Bot.' },
+      { step: 2, title: 'Inspect CI/CD Bot Policy', instruction: 'Examine the CI/CD bot identity policy. Notice "iam:PassRole" on "*".' },
+      { step: 3, title: 'Scope PassRole Resource', instruction: 'Restrict "iam:PassRole" resource strictly to "arn:aws:iam::111122223333:role/lambda-worker-*".' },
+      { step: 4, title: 'Attach Permission Boundary', instruction: 'Ensure the developer identity cannot escalate permissions beyond worker duties.' },
+      { step: 5, title: 'Simulate', instruction: 'Verify worker deployment succeeds while passing admin roles is blocked.' }
     ],
     securityIntel: 'The iam:PassRole privilege allows an identity to grant another role to an AWS service. Without resource scoping, it is one of the most common cloud privilege escalation vectors.',
     budgetNotice: 'Target budget is $20/mo. Lambda costs $5/mo base.'
@@ -99,33 +100,6 @@ export const round4ShadowAdmin: GameLevel = {
       }
     },
     {
-      id: 'worker-role',
-      type: 'iam_role',
-      position: { x: 500, y: 140 },
-      data: {
-        id: 'worker-role',
-        type: 'iam_role',
-        label: 'lambda-worker-exec',
-        arn: 'arn:aws:iam::111122223333:role/lambda-worker-exec',
-        accountId: '111122223333',
-        monthlyCost: 0,
-        config: {},
-        identityPolicies: [
-          {
-            Version: '2012-10-17',
-            Statement: [
-              {
-                Sid: 'WorkerLogAccess',
-                Effect: 'Allow',
-                Action: ['logs:CreateLogGroup', 'logs:PutLogEvents'],
-                Resource: '*'
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
       id: 'admin-role',
       type: 'iam_role',
       position: { x: 500, y: 320 },
@@ -146,10 +120,7 @@ export const round4ShadowAdmin: GameLevel = {
       }
     }
   ],
-  initialEdges: [
-    { id: 'e-cicd-worker', source: 'cicd-bot', target: 'worker-role', label: 'Pass Worker Role' },
-    { id: 'e-cicd-admin', source: 'cicd-bot', target: 'admin-role', label: 'Pass Admin Role' }
-  ],
+  initialEdges: [],
   packets: [
     {
       id: 'pkt-4-legit-deploy',

@@ -23,9 +23,9 @@ export const round3ConfusedDeputy: GameLevel = {
     headline: 'Stage 3: Vendor Trust & The Confused Deputy',
     scenario: 'You hire a third-party SaaS vendor to analyze sales metrics. The vendor asks for an IAM Role ARN in your account. Without an ExternalId condition in your trust policy, any other client on that SaaS can provide your Role ARN to hijack access to your data.',
     tasks: [
-      { step: 1, title: 'Inspect Role Trust Policy', instruction: 'Select the VendorAnalyticsRole and open the Trust Policy tab.' },
-      { step: 2, title: 'Require ExternalId', instruction: 'Add an sts:ExternalId condition requiring the secret key "ac-9841-sec".' },
-      { step: 3, title: 'Verify Least Privilege', instruction: 'Ensure the identity policy only grants read access to sales-metrics/*.' },
+      { step: 1, title: 'Provision Vendor Role', instruction: 'Drag an IAM Role from the left dock onto the canvas and connect it between Analytics SaaS Vendor and sales-metrics.' },
+      { step: 2, title: 'Inspect Trust Relationship', instruction: 'Select VendorAnalyticsRole, open the Trust Policy tab, and observe that it allows the vendor account without an ExternalId.' },
+      { step: 3, title: 'Require ExternalId', instruction: 'Add an sts:ExternalId condition requiring the secret key "ac-9841-sec" (or configure it in Config).' },
       { step: 4, title: 'Simulate', instruction: 'Verify authorized vendor sync succeeds while the rival tenant probe is rejected.' }
     ],
     securityIntel: 'The Confused Deputy vulnerability occurs when a service with legitimate permissions is manipulated by an unauthorized party into performing actions on their behalf.',
@@ -109,46 +109,6 @@ export const round3ConfusedDeputy: GameLevel = {
       }
     },
     {
-      id: 'vendor-role',
-      type: 'iam_role',
-      position: { x: 420, y: 220 },
-      data: {
-        id: 'vendor-role',
-        type: 'iam_role',
-        label: 'VendorAnalyticsRole',
-        arn: 'arn:aws:iam::111122223333:role/VendorAnalyticsRole',
-        accountId: '111122223333',
-        monthlyCost: 0,
-        config: {
-          requireExternalId: '' // VULNERABLE: No ExternalId required!
-        },
-        trustPolicy: {
-          Version: '2012-10-17',
-          Statement: [
-            {
-              Sid: 'VulnerableVendorTrust',
-              Effect: 'Allow',
-              Principal: { "AWS": "arn:aws:iam::222233334444:root" },
-              Action: "sts:AssumeRole"
-            }
-          ]
-        },
-        identityPolicies: [
-          {
-            Version: '2012-10-17',
-            Statement: [
-              {
-                Sid: 'ReadSalesData',
-                Effect: 'Allow',
-                Action: 's3:GetObject',
-                Resource: 'arn:aws:s3:::sales-metrics/*'
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
       id: 'sales-metrics-s3',
       type: 's3',
       position: { x: 740, y: 220 },
@@ -164,20 +124,7 @@ export const round3ConfusedDeputy: GameLevel = {
       }
     }
   ],
-  initialEdges: [
-    {
-      id: 'e-vendor-assume',
-      source: 'vendor-saas',
-      target: 'vendor-role',
-      label: 'sts:AssumeRole'
-    },
-    {
-      id: 'e-role-metrics',
-      source: 'vendor-role',
-      target: 'sales-metrics-s3',
-      label: 'Read Metrics'
-    }
-  ],
+  initialEdges: [],
   packets: [
     {
       id: 'pkt-3-legit-assume',

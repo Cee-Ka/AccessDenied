@@ -158,20 +158,31 @@ export function evaluateRequest(
 
   // Phase C - Step 3: Organizations SCP Check
   if (scpPolicies.length > 0) {
-    let scpAllowed = false;
+    let scpAllowed = true;
     for (const scp of scpPolicies) {
+      const hasAllowStatements = scp.Statement.some(stmt => stmt.Effect === 'Allow');
+      if (!hasAllowStatements) {
+        // If an SCP has only Deny statements (standard guardrail pattern), it inherits FullAWSAccess.
+        // Its Deny statements were already evaluated in Phase C - Step 2 (Explicit Deny Sweep).
+        continue;
+      }
+
+      let thisScpAllowed = false;
       for (const stmt of scp.Statement) {
         if (stmt.Effect === 'Allow') {
           if (matchAction(stmt.Action, packet.action) && matchResource(stmt.Resource, packet.resourceArn)) {
             const cond = evaluateConditionBlock(stmt.Condition, packet.context);
             if (cond.passed) {
-              scpAllowed = true;
+              thisScpAllowed = true;
               break;
             }
           }
         }
       }
-      if (!scpAllowed) break; // All SCPs in hierarchy must allow
+      if (!thisScpAllowed) {
+        scpAllowed = false;
+        break; // All SCPs in hierarchy must allow
+      }
     }
 
     if (!scpAllowed) {

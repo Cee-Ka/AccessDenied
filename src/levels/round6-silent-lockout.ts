@@ -23,10 +23,10 @@ export const round6SilentLockout: GameLevel = {
     headline: 'Stage 6: Enterprise Encryption — KMS CMK Root Delegation',
     scenario: 'A backend service encrypts sensitive payment tokens with a custom KMS Customer Managed Key. The developer granted "kms:Decrypt" in the Lambda role, but every request fails with a mysterious 403 AccessDenied error because the KMS Key Policy lacks root delegation.',
     tasks: [
-      { step: 1, title: 'Inspect KMS Key Policy', instruction: 'Select the Payments CMK Key and inspect its Resource Policy.' },
-      { step: 2, title: 'Add Root Delegation Statement', instruction: 'Add an Allow statement granting kms:* to "Principal": { "AWS": "arn:aws:iam::111122223333:root" }.' },
-      { step: 3, title: 'Verify Caller Identity Policy', instruction: 'Ensure the Payment Processor Lambda has an identity statement allowing kms:Decrypt.' },
-      { step: 4, title: 'Simulate', instruction: 'Verify authorized payment token decryption succeeds while unauthorized workers are blocked.' }
+      { step: 1, title: 'Deploy KMS CMK Key', instruction: 'Drag a KMS Key from the left dock onto the canvas and connect it with Payment Processor Lambda.' },
+      { step: 2, title: 'Inspect KMS Key Policy', instruction: 'Select the Payments CMK Key and inspect its Resource Policy.' },
+      { step: 3, title: 'Add Root Delegation Statement', instruction: 'Add an Allow statement granting kms:* to "Principal": { "AWS": "arn:aws:iam::111122223333:root" }.' },
+      { step: 4, title: 'Simulate', instruction: 'Verify authorized payment token decryption succeeds (200 OK) while unauthorized workers are blocked.' }
     ],
     securityIntel: 'KMS is unique in AWS: unlike S3, an IAM identity policy alone cannot access a Customer Managed Key unless the Key Policy enables root account delegation.',
     budgetNotice: 'Target budget is $15/mo. KMS CMK costs $1/mo.'
@@ -113,33 +113,9 @@ export const round6SilentLockout: GameLevel = {
         config: {},
         identityPolicies: []
       }
-    },
-    {
-      id: 'payment-cmk',
-      type: 'kms',
-      position: { x: 580, y: 240 },
-      data: {
-        id: 'payment-cmk',
-        type: 'kms',
-        label: 'Payments CMK Key',
-        arn: 'arn:aws:kms:us-east-1:111122223333:key/cmk-payments',
-        accountId: '111122223333',
-        monthlyCost: 1,
-        config: {},
-        identityPolicies: [],
-        resourcePolicy: {
-          Version: '2012-10-17',
-          Statement: [
-            // EMPTY Statement array: missing root delegation!
-          ]
-        }
-      }
     }
   ],
-  initialEdges: [
-    { id: 'e-pay-cmk', source: 'payment-lambda', target: 'payment-cmk', label: 'kms:Decrypt' },
-    { id: 'e-rogue-cmk', source: 'rogue-worker', target: 'payment-cmk', label: 'kms:Decrypt Probe' }
-  ],
+  initialEdges: [],
   packets: [
     {
       id: 'pkt-6-legit-decrypt',

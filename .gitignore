@@ -2,4 +2,6 @@ node_modules
 dist
 .DS_Store
 *.local
-node_modules
+.agents
+AGENTS.md
+plan.md

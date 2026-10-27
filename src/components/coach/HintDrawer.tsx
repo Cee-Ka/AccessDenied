@@ -16,16 +16,16 @@ export function HintDrawer({ isOpen, onClose }: HintDrawerProps) {
   const hints = currentLevel.hints || [];
 
   return (
-    <div className="fixed inset-y-0 right-0 w-96 bg-slate-900/95 backdrop-blur-xl border-l border-slate-800 shadow-2xl z-50 flex flex-col animate-in slide-in-from-right duration-200">
+    <div className="fixed inset-y-0 right-0 w-96 bg-obsidian-900/95 backdrop-blur-xl border-l border-obsidian-border shadow-2xl z-50 flex flex-col animate-in slide-in-from-right duration-200">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3.5 border-b border-slate-800">
+      <div className="flex items-center justify-between px-4 py-3.5 border-b border-obsidian-border">
         <div className="flex items-center gap-2">
-          <BookOpen className="w-4 h-4 text-amber-400" />
-          <span className="text-xs font-semibold text-slate-100">Round Intel & Hints</span>
+          <BookOpen className="w-4 h-4 text-brand-orange" />
+          <span className="text-xs font-bold text-obsidian-text">Round Intel & Hints</span>
         </div>
         <button
           onClick={onClose}
-          className="p-1 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors"
+          className="p-1 rounded-lg text-obsidian-muted hover:text-obsidian-text hover:bg-obsidian-850 transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
@@ -33,24 +33,24 @@ export function HintDrawer({ isOpen, onClose }: HintDrawerProps) {
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
         {/* Mission Brief */}
-        <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5 space-y-2">
-          <div className="flex items-center gap-1.5 text-slate-300 font-semibold">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+        <div className="bg-obsidian-box border border-obsidian-border rounded-xl p-3.5 space-y-2">
+          <div className="flex items-center gap-1.5 text-obsidian-text font-bold">
+            <Sparkles className="w-3.5 h-3.5 text-brand-orange" />
             <span>Scenario Brief</span>
           </div>
-          <p className="text-slate-300 leading-relaxed text-[11px]">
+          <p className="text-obsidian-muted leading-relaxed text-[11px]">
             {currentLevel.storyBrief}
           </p>
         </div>
 
         {/* Threat Intel */}
         {currentLevel.threatIntel && (
-          <div className="bg-rose-950/20 border border-rose-900/40 rounded-xl p-3.5 space-y-2">
-            <div className="flex items-center gap-1.5 text-rose-300 font-semibold">
-              <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+          <div className="bg-rose-500/5 border border-rose-500/20 dark:border-rose-900/40 rounded-xl p-3.5 space-y-2">
+            <div className="flex items-center gap-1.5 text-rose-500 font-bold">
+              <ShieldAlert className="w-3.5 h-3.5 text-rose-500" />
               <span>Threat Intelligence</span>
             </div>
-            <p className="text-rose-200/90 leading-relaxed text-[11px]">
+            <p className="text-obsidian-muted leading-relaxed text-[11px]">
               {currentLevel.threatIntel}
             </p>
           </div>
@@ -59,7 +59,7 @@ export function HintDrawer({ isOpen, onClose }: HintDrawerProps) {
         {/* Progressive 3-Tier Hints */}
         {hints.length > 0 && (
           <div className="space-y-2 pt-2">
-            <div className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+            <div className="text-xs font-bold text-obsidian-text uppercase tracking-wider">
               IAM Coach Clues
             </div>
 
@@ -68,7 +68,7 @@ export function HintDrawer({ isOpen, onClose }: HintDrawerProps) {
               return (
                 <div
                   key={idx}
-                  className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden transition-all"
+                  className="bg-obsidian-box border border-obsidian-border rounded-xl overflow-hidden transition-all"
                 >
                   <button
                     onClick={() => {
@@ -76,25 +76,25 @@ export function HintDrawer({ isOpen, onClose }: HintDrawerProps) {
                         setUnlockedTier(idx);
                       }
                     }}
-                    className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-900/60 transition-colors"
+                    className="w-full flex items-center justify-between p-3 text-left hover:bg-obsidian-850 transition-colors"
                   >
                     <div className="flex items-center gap-2">
-                      <Key className={`w-3.5 h-3.5 ${isUnlocked ? 'text-amber-400' : 'text-slate-600'}`} />
-                      <span className={`font-semibold capitalize text-xs ${isUnlocked ? 'text-slate-200' : 'text-slate-500'}`}>
+                      <Key className={`w-3.5 h-3.5 ${isUnlocked ? 'text-brand-orange' : 'text-obsidian-muted'}`} />
+                      <span className={`font-semibold capitalize text-xs ${isUnlocked ? 'text-obsidian-text' : 'text-obsidian-muted'}`}>
                         Hint {idx + 1}: {hint.title}
                       </span>
                     </div>
                     {isUnlocked ? (
-                      <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                      <ChevronDown className="w-3.5 h-3.5 text-obsidian-muted" />
                     ) : (
-                      <span className="text-[10px] text-amber-400 font-mono flex items-center gap-1">
+                      <span className="text-[10px] text-brand-orange font-mono flex items-center gap-1">
                         Unlock <ChevronRight className="w-3 h-3" />
                       </span>
                     )}
                   </button>
 
                   {isUnlocked && (
-                    <div className="px-3.5 pb-3 text-[11px] text-slate-300 leading-relaxed border-t border-slate-900 pt-2 font-mono whitespace-pre-wrap bg-slate-900/30">
+                    <div className="px-3.5 pb-3 text-[11px] text-obsidian-muted leading-relaxed border-t border-obsidian-border pt-2 font-mono whitespace-pre-wrap bg-obsidian-950">
                       {hint.content}
                     </div>
                   )}

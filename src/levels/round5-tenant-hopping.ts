@@ -23,9 +23,10 @@ export const round5TenantHopping: GameLevel = {
     headline: 'Stage 5: Multi-Tenant Database — Fine-Grained DynamoDB',
     scenario: 'A multi-tenant SaaS application shares a single CustomerRecords DynamoDB table. Tenant Alpha can read and write their own documents. However, an attacker crafts an API query to retrieve documents belonging to Tenant Bravo (partition key TENANT#bravo).',
     tasks: [
-      { step: 1, title: 'Inspect DynamoDB Policy', instruction: 'Examine the SaaS API Handler Lambda identity policy.' },
-      { step: 2, title: 'Add LeadingKeys Condition', instruction: 'Add a condition block: "ForAllValues:StringEquals": { "dynamodb:LeadingKeys": ["TENANT#alpha"] }.' },
-      { step: 3, title: 'Simulate', instruction: 'Verify Tenant Alpha queries succeed while cross-tenant queries to Tenant Bravo are rejected (403 AccessDenied).' }
+      { step: 1, title: 'Provision DynamoDB Storage', instruction: 'Drag a DynamoDB Table from the left dock onto the canvas and connect it with SaaS API Handler.' },
+      { step: 2, title: 'Inspect DynamoDB Policy', instruction: 'Select SaaS API Handler Lambda and examine its identity policy.' },
+      { step: 3, title: 'Enforce Tenant Isolation', instruction: 'Add a condition block: "ForAllValues:StringEquals": { "dynamodb:LeadingKeys": ["TENANT#alpha"] }.' },
+      { step: 4, title: 'Simulate', instruction: 'Verify Tenant Alpha queries succeed (200 OK) while cross-tenant queries to Tenant Bravo are rejected (403 AccessDenied).' }
     ],
     securityIntel: 'Without partition-level condition keys, any client with dynamodb:GetItem or dynamodb:Query can read across tenant boundaries in shared tables.',
     budgetNotice: 'Target budget is $20/mo. DynamoDB table costs $10/mo base.'
@@ -102,26 +103,9 @@ export const round5TenantHopping: GameLevel = {
           }
         ]
       }
-    },
-    {
-      id: 'records-dynamodb',
-      type: 'dynamodb',
-      position: { x: 560, y: 200 },
-      data: {
-        id: 'records-dynamodb',
-        type: 'dynamodb',
-        label: 'CustomerRecords',
-        arn: 'arn:aws:dynamodb:us-east-1:111122223333:table/CustomerRecords',
-        accountId: '111122223333',
-        monthlyCost: 10,
-        config: {},
-        identityPolicies: []
-      }
     }
   ],
-  initialEdges: [
-    { id: 'e-lambda-dynamo', source: 'tenant-app-lambda', target: 'records-dynamodb', label: 'Query Records' }
-  ],
+  initialEdges: [],
   packets: [
     {
       id: 'pkt-5-legit-alpha',

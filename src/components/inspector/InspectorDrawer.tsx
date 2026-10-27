@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { ConfigToggles } from './ConfigToggles';
 import { PolicyEditor } from './PolicyEditor';
@@ -14,9 +14,27 @@ export function InspectorDrawer() {
     removeNodeFromBoard,
   } = useGameStore();
 
-  const [activeTab, setActiveTab] = useState<'config' | 'identity' | 'resource' | 'trust' | 'boundary'>('config');
+  const [activeTab, setActiveTab] = useState<'config' | 'identity' | 'resource' | 'trust' | 'boundary' | 'scp'>('config');
 
   const selectedNode = nodes.find(n => n.id === selectedNodeId);
+
+  useEffect(() => {
+    if (!selectedNode) return;
+    const isPrincipal = ['iam_user', 'iam_role', 'ec2', 'lambda', 'cognito'].includes(selectedNode.data.type);
+    const isResource = ['s3', 'dynamodb', 'kms', 'secrets_manager'].includes(selectedNode.data.type);
+    const isRole = selectedNode.data.type === 'iam_role';
+    const hasScp = Boolean(selectedNode.data.scpPolicies && selectedNode.data.scpPolicies.length > 0);
+
+    const validTabs: string[] = ['config'];
+    if (isPrincipal) validTabs.push('identity', 'boundary');
+    if (isRole) validTabs.push('trust');
+    if (isResource) validTabs.push('resource');
+    if (isPrincipal || hasScp) validTabs.push('scp');
+
+    if (!validTabs.includes(activeTab)) {
+      setActiveTab('config');
+    }
+  }, [selectedNode?.id, selectedNode?.data.type]);
 
   if (!selectedNode) return null;
 
@@ -24,30 +42,31 @@ export function InspectorDrawer() {
   const isPrincipal = ['iam_user', 'iam_role', 'ec2', 'lambda', 'cognito'].includes(data.type);
   const isResource = ['s3', 'dynamodb', 'kms', 'secrets_manager'].includes(data.type);
   const isRole = data.type === 'iam_role';
+  const hasScp = Boolean(data.scpPolicies && data.scpPolicies.length > 0);
 
   return (
-    <div className="absolute right-0 top-14 bottom-0 w-96 bg-slate-900/95 backdrop-blur-xl border-l border-slate-800 shadow-2xl flex flex-col z-30 animate-in slide-in-from-right duration-200">
+    <div className="absolute right-0 top-14 bottom-0 w-96 bg-obsidian-900/95 backdrop-blur-xl border-l border-obsidian-border shadow-2xl flex flex-col z-30 animate-in slide-in-from-right duration-200">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-obsidian-border">
         <div>
-          <div className="text-xs font-semibold text-slate-100 flex items-center gap-1.5">
+          <div className="text-xs font-bold text-obsidian-text flex items-center gap-1.5">
             <span>{data.label}</span>
           </div>
-          <div className="text-[10px] text-slate-400 font-mono capitalize">
+          <div className="text-[10px] text-obsidian-muted font-mono capitalize">
             {data.type.replace('_', ' ')} Inspector
           </div>
         </div>
         <div className="flex items-center gap-1">
           <button
             onClick={() => removeNodeFromBoard(selectedNode.id)}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 transition-colors"
+            className="p-1.5 rounded-lg text-obsidian-muted hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
             title="Delete Node"
           >
             <Trash2 className="w-4 h-4" />
           </button>
           <button
             onClick={() => selectNode(null)}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-obsidian-muted hover:text-obsidian-text hover:bg-obsidian-850 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -55,13 +74,13 @@ export function InspectorDrawer() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center px-2 py-1.5 border-b border-slate-800 bg-slate-950/60 overflow-x-auto text-xs gap-1">
+      <div className="flex items-center px-2 py-1.5 border-b border-obsidian-border bg-obsidian-950/80 overflow-x-auto text-xs gap-1">
         <button
           onClick={() => setActiveTab('config')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-colors shrink-0 ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 ${
             activeTab === 'config'
-              ? 'bg-slate-800 text-amber-400 shadow-sm'
-              : 'text-slate-400 hover:text-slate-200'
+              ? 'bg-obsidian-850 text-brand-orange border border-brand-orange/30 shadow-sm'
+              : 'text-obsidian-muted hover:text-obsidian-text'
           }`}
         >
           <Sliders className="w-3.5 h-3.5" />
@@ -71,10 +90,10 @@ export function InspectorDrawer() {
         {isPrincipal && (
           <button
             onClick={() => setActiveTab('identity')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-colors shrink-0 ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 ${
               activeTab === 'identity'
-                ? 'bg-slate-800 text-amber-400 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-obsidian-850 text-brand-orange border border-brand-orange/30 shadow-sm'
+                : 'text-obsidian-muted hover:text-obsidian-text'
             }`}
           >
             <FileJson className="w-3.5 h-3.5" />
@@ -85,10 +104,10 @@ export function InspectorDrawer() {
         {isRole && (
           <button
             onClick={() => setActiveTab('trust')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-colors shrink-0 ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 ${
               activeTab === 'trust'
-                ? 'bg-slate-800 text-amber-400 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-obsidian-850 text-brand-orange border border-brand-orange/30 shadow-sm'
+                : 'text-obsidian-muted hover:text-obsidian-text'
             }`}
           >
             <FileJson className="w-3.5 h-3.5" />
@@ -99,10 +118,10 @@ export function InspectorDrawer() {
         {isResource && (
           <button
             onClick={() => setActiveTab('resource')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-colors shrink-0 ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 ${
               activeTab === 'resource'
-                ? 'bg-slate-800 text-amber-400 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-obsidian-850 text-brand-orange border border-brand-orange/30 shadow-sm'
+                : 'text-obsidian-muted hover:text-obsidian-text'
             }`}
           >
             <FileJson className="w-3.5 h-3.5" />
@@ -113,14 +132,28 @@ export function InspectorDrawer() {
         {isPrincipal && (
           <button
             onClick={() => setActiveTab('boundary')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-colors shrink-0 ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 ${
               activeTab === 'boundary'
-                ? 'bg-slate-800 text-amber-400 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-obsidian-850 text-brand-orange border border-brand-orange/30 shadow-sm'
+                : 'text-obsidian-muted hover:text-obsidian-text'
             }`}
           >
             <FileJson className="w-3.5 h-3.5" />
             Boundary
+          </button>
+        )}
+
+        {(isPrincipal || hasScp) && (
+          <button
+            onClick={() => setActiveTab('scp')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 ${
+              activeTab === 'scp'
+                ? 'bg-obsidian-850 text-brand-orange border border-brand-orange/30 shadow-sm'
+                : 'text-obsidian-muted hover:text-obsidian-text'
+            }`}
+          >
+            <FileJson className="w-3.5 h-3.5" />
+            SCP Guardrail
           </button>
         )}
       </div>
@@ -170,6 +203,16 @@ export function InspectorDrawer() {
               title="Permission Boundary Document"
               initialPolicy={data.permissionBoundary}
               onChange={doc => updateNodePolicy(selectedNode.id, 'boundary', 0, doc)}
+            />
+          </div>
+        )}
+
+        {activeTab === 'scp' && (
+          <div className="h-full p-3">
+            <PolicyEditor
+              title="Organizations Service Control Policy (SCP)"
+              initialPolicy={data.scpPolicies?.[0]}
+              onChange={doc => updateNodePolicy(selectedNode.id, 'scp', 0, doc)}
             />
           </div>
         )}

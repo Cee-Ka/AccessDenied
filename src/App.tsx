@@ -7,11 +7,29 @@ import { HintDrawer } from './components/coach/HintDrawer';
 import { IAMCoachModal } from './components/coach/IAMCoachModal';
 import { MissionReportCardModal } from './components/coach/MissionReportCardModal';
 import { VictoryModal } from './components/modals/VictoryModal';
-import { useGameStore } from './store/useGameStore';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { useGameStore, applyThemeToDocument } from './store/useGameStore';
 
 export function App() {
   const [hintsOpen, setHintsOpen] = useState(false);
-  const { runSimulation, selectNode, closeCoachModal, isCoachModalOpen } = useGameStore();
+  const { theme, runSimulation, selectNode, closeCoachModal, isCoachModalOpen } = useGameStore();
+
+  useEffect(() => {
+    applyThemeToDocument(theme);
+  }, [theme]);
+
+  // Prevent default window drop navigation (e.g. browser opening dropped text/file)
+  useEffect(() => {
+    const preventDragNav = (e: DragEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener('dragover', preventDragNav);
+    window.addEventListener('drop', preventDragNav);
+    return () => {
+      window.removeEventListener('dragover', preventDragNav);
+      window.removeEventListener('drop', preventDragNav);
+    };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -36,23 +54,25 @@ export function App() {
   }, [runSimulation, selectNode, closeCoachModal, isCoachModalOpen]);
 
   return (
-    <div className="flex flex-col w-screen h-screen bg-slate-950 text-slate-100 font-sans overflow-hidden">
-      {/* HUD Navigation */}
-      <TopNav onToggleHints={() => setHintsOpen(!hintsOpen)} />
+    <ErrorBoundary>
+      <div className={`flex flex-col w-screen h-screen bg-obsidian-950 text-obsidian-text font-sans overflow-hidden ${theme === 'dark' ? 'dark' : ''}`}>
+        {/* HUD Navigation */}
+        <TopNav onToggleHints={() => setHintsOpen(!hintsOpen)} />
 
-      {/* Main Canvas Workspace */}
-      <div className="flex-1 relative flex overflow-hidden">
-        <ComponentDock />
-        <FlowCanvas />
-        <InspectorDrawer />
-        <HintDrawer isOpen={hintsOpen} onClose={() => setHintsOpen(false)} />
+        {/* Main Canvas Workspace */}
+        <div className="flex-1 relative flex overflow-hidden">
+          <ComponentDock />
+          <FlowCanvas />
+          <InspectorDrawer />
+          <HintDrawer isOpen={hintsOpen} onClose={() => setHintsOpen(false)} />
+        </div>
+
+        {/* Popups & Modals */}
+        <MissionReportCardModal />
+        <IAMCoachModal />
+        <VictoryModal />
       </div>
-
-      {/* Popups & Modals */}
-      <MissionReportCardModal />
-      <IAMCoachModal />
-      <VictoryModal />
-    </div>
+    </ErrorBoundary>
   );
 }
 

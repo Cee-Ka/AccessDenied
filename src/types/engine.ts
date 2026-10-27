@@ -175,6 +175,7 @@ export interface GameLevel {
     target: string;
     animated?: boolean;
     label?: string;
+    data?: Record<string, any>;
   }>;
   packets: SimulationPacket[];
   criteria: LevelStarCriteria;

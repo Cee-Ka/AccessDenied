@@ -30,7 +30,7 @@ export function evaluateNetworkPath(
   const sourceIsExternal = sourceNode.type === 'external_vendor' || sourceNode.type === 'iam_user';
 
   // Rule 0: Canvas Edge Connectivity Check (for non-external actors)
-  if (edges && edges.length > 0) {
+  if (edges !== undefined) {
     const hasDirectEdge = edges.some(
       e => (e.source === sourceNode.id && e.target === targetNode.id) ||
            (e.target === sourceNode.id && e.source === targetNode.id)

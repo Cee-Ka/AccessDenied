@@ -114,49 +114,9 @@ export const round1LeakyBucket: GameLevel = {
         config: {},
         identityPolicies: []
       }
-    },
-    {
-      id: 'invoices-bucket',
-      type: 's3',
-      position: { x: 560, y: 260 },
-      data: {
-        id: 'invoices-bucket',
-        type: 's3',
-        label: 'customer-invoices',
-        arn: 'arn:aws:s3:::customer-invoices',
-        accountId: '111122223333',
-        monthlyCost: 5,
-        config: { blockPublicAccess: false },
-        identityPolicies: [],
-        resourcePolicy: {
-          Version: '2012-10-17',
-          Statement: [
-            {
-              Sid: 'DangerousPublicRead',
-              Effect: 'Allow',
-              Principal: '*',
-              Action: 's3:GetObject',
-              Resource: 'arn:aws:s3:::customer-invoices/*'
-            }
-          ]
-        }
-      }
     }
   ],
-  initialEdges: [
-    {
-      id: 'e-web-s3',
-      source: 'web-server-ec2',
-      target: 'invoices-bucket',
-      label: 'Get/Put Invoices'
-    },
-    {
-      id: 'e-bot-s3',
-      source: 'botnet-scraper',
-      target: 'invoices-bucket',
-      label: 'Scrape Invoices'
-    }
-  ],
+  initialEdges: [],
   packets: [
     {
       id: 'pkt-1-web-get',

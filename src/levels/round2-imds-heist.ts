@@ -23,9 +23,9 @@ export const round2ImdsHeist: GameLevel = {
     headline: 'Stage 2: Compute & Metadata Security — EC2 & IMDSv2',
     scenario: 'Your application needs a URL preview generator. You deploy an EC2 instance to fetch webpages and save thumbnails into app-storage. However, an attacker attempts an SSRF exploit targeting the metadata IP (169.254.169.254) to steal temporary instance role credentials and exfiltrate your confidential-vault bucket.',
     tasks: [
-      { step: 1, title: 'Inspect Compute Security', instruction: 'Select the EC2 instance and switch Metadata Service from IMDSv1 to IMDSv2.' },
-      { step: 2, title: 'Set Hop Limit', instruction: 'Set the IMDS response hop limit to 1 to block proxy-forwarded metadata queries.' },
-      { step: 3, title: 'Enforce Least-Privilege Policy', instruction: 'Replace over-permissive s3:* on * with a scoped policy allowing only app-storage/*.' },
+      { step: 1, title: 'Deploy Preview Compute', instruction: 'Drag an EC2 Instance from the left dock onto the canvas and wire connection lines to app-storage.' },
+      { step: 2, title: 'Upgrade to IMDSv2', instruction: 'Select the EC2 instance, switch Metadata Service from IMDSv1 to IMDSv2, and set Hop Limit to 1.' },
+      { step: 3, title: 'Enforce Least Privilege', instruction: 'In the EC2 Identity Policy tab, replace over-permissive s3:* on * with a scoped policy allowing only app-storage/*.' },
       { step: 4, title: 'Simulate', instruction: 'Verify legitimate thumbnail saves succeed while the SSRF token extraction probe is blocked.' }
     ],
     securityIntel: 'IMDSv1 is vulnerable to simple HTTP GET SSRF. IMDSv2 mandates a PUT session token header that SSRF proxies cannot forge.',
@@ -88,36 +88,6 @@ export const round2ImdsHeist: GameLevel = {
       }
     },
     {
-      id: 'preview-ec2',
-      type: 'ec2',
-      position: { x: 380, y: 220 },
-      data: {
-        id: 'preview-ec2',
-        type: 'ec2',
-        label: 'URL Preview EC2',
-        arn: 'arn:aws:iam::111122223333:role/PreviewerRole',
-        accountId: '111122223333',
-        monthlyCost: 15,
-        config: {
-          imdsVersion: 'v1', // VULNERABLE!
-          imdsHopLimit: 2
-        },
-        identityPolicies: [
-          {
-            Version: '2012-10-17',
-            Statement: [
-              {
-                Sid: 'OverPermissiveS3',
-                Effect: 'Allow',
-                Action: 's3:*',
-                Resource: '*'
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
       id: 'app-storage-s3',
       type: 's3',
       position: { x: 680, y: 140 },
@@ -148,26 +118,7 @@ export const round2ImdsHeist: GameLevel = {
       }
     }
   ],
-  initialEdges: [
-    {
-      id: 'e-att-ec2',
-      source: 'ssrf-attacker',
-      target: 'preview-ec2',
-      label: 'SSRF Exploit Payload'
-    },
-    {
-      id: 'e-ec2-storage',
-      source: 'preview-ec2',
-      target: 'app-storage-s3',
-      label: 'Store Thumbnails'
-    },
-    {
-      id: 'e-ec2-vault',
-      source: 'preview-ec2',
-      target: 'confidential-vault-s3',
-      label: 'Unauthorized Dump'
-    }
-  ],
+  initialEdges: [],
   packets: [
     {
       id: 'pkt-2-thumb-save',

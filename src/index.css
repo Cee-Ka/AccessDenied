@@ -2,32 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* LIGHT MODE (Clean White, Slate & AWS Orange) */
+  --color-obsidian-950: #f8fafc; /* Crisp light canvas (slate-50) */
+  --color-obsidian-900: #ffffff; /* Pure white cards, navbars & sidebars */
+  --color-obsidian-850: #f1f5f9; /* Slate-100 secondary surfaces */
+  --color-obsidian-800: #e2e8f0; /* Slate-200 hover states */
+  --color-obsidian-border: #e2e8f0; /* Crisp slate-200 border */
+  --color-obsidian-subtle: #f8fafc;
+  --color-obsidian-text: #0f172a; /* Slate-900 high-contrast black typography */
+  --color-obsidian-muted: #64748b; /* Slate-500 secondary text */
+  --color-obsidian-box: #f1f5f9; /* Slate-100 badges and code boxes */
+  --scrollbar-track: #f8fafc;
+  --scrollbar-thumb: #cbd5e1;
+}
+
+.dark {
+  /* DARK MODE (Obsidian Black, Crisp White & AWS Orange) */
+  --color-obsidian-950: #09090b;
+  --color-obsidian-900: #121215;
+  --color-obsidian-850: #18181b;
+  --color-obsidian-800: #222227;
+  --color-obsidian-border: #27272a;
+  --color-obsidian-subtle: #1f1f23;
+  --color-obsidian-text: #ffffff;
+  --color-obsidian-muted: #a1a1aa;
+  --color-obsidian-box: #000000;
+  --scrollbar-track: #09090b;
+  --scrollbar-thumb: #27272a;
+}
+
 @layer base {
   body {
-    @apply bg-slate-950 text-slate-100 antialiased;
+    @apply bg-obsidian-950 text-obsidian-text antialiased selection:bg-orange-500 selection:text-white;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 }
 
 /* React Flow custom edge and handle overrides */
 .react-flow__handle {
-  width: 10px !important;
-  height: 10px !important;
+  width: 11px !important;
+  height: 11px !important;
   border-radius: 9999px !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* Dark mode smooth scrollbar */
+.react-flow__handle:hover {
+  transform: scale(1.3);
+  box-shadow: 0 0 8px rgba(249, 115, 22, 0.8);
+}
+
+/* Smooth adaptive scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: var(--scrollbar-track);
 }
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: var(--scrollbar-thumb);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #f97316;
 }
