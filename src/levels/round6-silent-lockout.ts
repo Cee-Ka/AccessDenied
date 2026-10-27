@@ -11,6 +11,26 @@ export const round6SilentLockout: GameLevel = {
   threatIntel:
     'AWS KMS Customer Managed Keys do NOT allow IAM policies to delegate access unless the Key Policy itself explicitly grants permissions to the account root ("arn:aws:iam::ACCOUNT:root"). You must establish proper key delegation while preventing cross-service unauthorized decryption.',
   targetBudget: 15,
+  unlockedServices: ['s3', 'iam_role', 'ec2', 'lambda', 'dynamodb', 'kms'],
+  newlyUnlockedService: {
+    type: 'kms',
+    name: 'AWS KMS (Key Management Service)',
+    category: 'Security & Encryption',
+    primer: 'AWS KMS Customer Managed Keys (CMKs) encrypt sensitive cloud data. By default, KMS keys have a strict Key Policy. The Key Policy MUST explicitly delegate access to the account root ("arn:aws:iam::ACCOUNT:root") for IAM identity policies to have effect.',
+    keyConcepts: ['Key Policies', 'Root Delegation', 'kms:Decrypt']
+  },
+  reportCard: {
+    headline: 'Stage 6: Enterprise Encryption — KMS CMK Root Delegation',
+    scenario: 'A backend service encrypts sensitive payment tokens with a custom KMS Customer Managed Key. The developer granted "kms:Decrypt" in the Lambda role, but every request fails with a mysterious 403 AccessDenied error because the KMS Key Policy lacks root delegation.',
+    tasks: [
+      { step: 1, title: 'Inspect KMS Key Policy', instruction: 'Select the Payments CMK Key and inspect its Resource Policy.' },
+      { step: 2, title: 'Add Root Delegation Statement', instruction: 'Add an Allow statement granting kms:* to "Principal": { "AWS": "arn:aws:iam::111122223333:root" }.' },
+      { step: 3, title: 'Verify Caller Identity Policy', instruction: 'Ensure the Payment Processor Lambda has an identity statement allowing kms:Decrypt.' },
+      { step: 4, title: 'Simulate', instruction: 'Verify authorized payment token decryption succeeds while unauthorized workers are blocked.' }
+    ],
+    securityIntel: 'KMS is unique in AWS: unlike S3, an IAM identity policy alone cannot access a Customer Managed Key unless the Key Policy enables root account delegation.',
+    budgetNotice: 'Target budget is $15/mo. KMS CMK costs $1/mo.'
+  },
   criteria: {
     star1Functional: {
       workloadPassRateTarget: 1.0,

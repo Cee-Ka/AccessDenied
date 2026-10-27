@@ -5,6 +5,7 @@ import { FlowCanvas } from './components/canvas/FlowCanvas';
 import { InspectorDrawer } from './components/inspector/InspectorDrawer';
 import { HintDrawer } from './components/coach/HintDrawer';
 import { IAMCoachModal } from './components/coach/IAMCoachModal';
+import { MissionReportCardModal } from './components/coach/MissionReportCardModal';
 import { VictoryModal } from './components/modals/VictoryModal';
 import { useGameStore } from './store/useGameStore';
 
@@ -48,6 +49,7 @@ export function App() {
       </div>
 
       {/* Popups & Modals */}
+      <MissionReportCardModal />
       <IAMCoachModal />
       <VictoryModal />
     </div>

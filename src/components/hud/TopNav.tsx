@@ -1,6 +1,6 @@
 import { useGameStore, GameMode, isLevelUnlocked } from '../../store/useGameStore';
 import { ALL_LEVELS } from '../../levels';
-import { Shield, Star, Volume2, VolumeX, RotateCcw, Play, FastForward, HelpCircle } from 'lucide-react';
+import { Shield, Star, Volume2, VolumeX, RotateCcw, Play, FastForward, HelpCircle, FileText } from 'lucide-react';
 
 interface TopNavProps {
   onToggleHints: () => void;
@@ -23,6 +23,7 @@ export function TopNav({ onToggleHints }: TopNavProps) {
     setSimSpeed,
     nodes,
     results,
+    openReportCard,
   } = useGameStore();
 
   const totalCost = nodes.reduce((acc, n) => acc + (n.data.monthlyCost || 0), 0);
@@ -154,6 +155,17 @@ export function TopNav({ onToggleHints }: TopNavProps) {
         >
           <HelpCircle className="w-4 h-4" />
         </button>
+
+        {currentLevel.reportCard && (
+          <button
+            onClick={openReportCard}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-semibold transition-all hover:scale-[1.02] shadow-sm shadow-amber-500/10"
+            title="Open Stage Mission Brief & Architecture Tasks"
+          >
+            <FileText className="w-3.5 h-3.5 text-amber-400" />
+            <span>Mission Brief</span>
+          </button>
+        )}
 
         <button
           onClick={resetCurrentLevel}

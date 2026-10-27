@@ -11,6 +11,27 @@ export const round7NatGatewayTrap: GameLevel = {
   threatIntel:
     'VPC Gateway Endpoints for Amazon S3 and DynamoDB are 100% free with zero data processing fees. By replacing the NAT Gateway with an S3 Gateway Endpoint and attaching a least-privilege endpoint policy, you drop monthly cost below budget while locking down network reachability.',
   targetBudget: 15,
+  unlockedServices: ['s3', 'iam_role', 'ec2', 'lambda', 'dynamodb', 'kms', 'vpc_endpoint', 'nat_gw'],
+  newlyUnlockedService: {
+    type: 'vpc_endpoint',
+    name: 'VPC Gateway Endpoint (Amazon S3)',
+    category: 'Networking',
+    primer: 'VPC Gateway Endpoints allow compute nodes inside private subnets to reach S3 and DynamoDB privately across the AWS network backbone with $0 data processing fees, replacing expensive NAT Gateways.',
+    keyConcepts: ['Gateway Endpoints', 'Private Subnet Routing', 'Cost Optimization']
+  },
+  reportCard: {
+    headline: 'Stage 7: VPC Networking & Cost — Gateway Endpoints vs NAT',
+    scenario: 'A high-throughput Lambda function runs in a Private Subnet to analyze server logs stored in S3. The architecture connects through a NAT Gateway costing $32/mo base plus massive data transfer fees, blowing through the startup\'s monthly cloud budget.',
+    tasks: [
+      { step: 1, title: 'Analyze Architecture Cost', instruction: 'Notice the NAT Gateway has a monthly cost of $32/mo, exceeding the $15 budget cap.' },
+      { step: 2, title: 'Delete NAT Gateway', instruction: 'Select the NAT Gateway node and delete it.' },
+      { step: 3, title: 'Attach S3 Gateway Endpoint', instruction: 'Drag a VPC S3 Endpoint ($0/mo) from the left dock onto the board.' },
+      { step: 4, title: 'Wire Private Route', instruction: 'Wire a connection line from Log Ingest Worker to the S3 Gateway Endpoint, and from the Endpoint to application-logs.' },
+      { step: 5, title: 'Simulate', instruction: 'Verify log writes succeed (200 OK) while total infrastructure cost drops under budget ($10/mo).' }
+    ],
+    securityIntel: 'Traffic routed through VPC Endpoints never crosses the public internet, reducing exposure while cutting cloud egress charges to zero.',
+    budgetNotice: 'Target budget is $15/mo. Replacing the $32/mo NAT Gateway with a free S3 Gateway Endpoint achieves optimal 3-star rating.'
+  },
   criteria: {
     star1Functional: {
       workloadPassRateTarget: 1.0,

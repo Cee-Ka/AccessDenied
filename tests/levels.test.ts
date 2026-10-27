@@ -8,7 +8,7 @@ import { round3ConfusedDeputy } from '../src/levels/round3-confused-deputy';
 import { CloudNodeData } from '../src/types/engine';
 
 describe('Level Verification Suite', () => {
-  it('loads all 8 learn levels + incident levels', () => {
+  it('loads all 8 learn levels + incident levels with report cards and progressive service unlocks', () => {
     expect(ALL_LEVELS.length).toBeGreaterThanOrEqual(9);
     for (const lvl of ALL_LEVELS) {
       expect(lvl.id).toBeDefined();
@@ -16,7 +16,40 @@ describe('Level Verification Suite', () => {
       expect(lvl.targetBudget).toBeGreaterThan(0);
       expect(lvl.initialNodes.length).toBeGreaterThan(0);
       expect(lvl.packets.length).toBeGreaterThan(0);
+
+      if (lvl.category === 'Learn') {
+        expect(lvl.reportCard).toBeDefined();
+        expect(lvl.reportCard?.tasks.length).toBeGreaterThanOrEqual(3);
+        expect(lvl.unlockedServices).toBeDefined();
+        expect(lvl.unlockedServices!.length).toBeGreaterThan(0);
+      }
     }
+  });
+
+  it('enforces progressive service unlocking across rounds', () => {
+    const r1 = ALL_LEVELS.find(l => l.id === 'round-1')!;
+    const r2 = ALL_LEVELS.find(l => l.id === 'round-2')!;
+    const r4 = ALL_LEVELS.find(l => l.id === 'round-4')!;
+    const r5 = ALL_LEVELS.find(l => l.id === 'round-5')!;
+    const r6 = ALL_LEVELS.find(l => l.id === 'round-6')!;
+    const r7 = ALL_LEVELS.find(l => l.id === 'round-7')!;
+
+    expect(r1.unlockedServices).toContain('s3');
+    expect(r1.unlockedServices).not.toContain('ec2');
+
+    expect(r2.unlockedServices).toContain('ec2');
+    expect(r2.unlockedServices).not.toContain('lambda');
+
+    expect(r4.unlockedServices).toContain('lambda');
+    expect(r4.unlockedServices).not.toContain('dynamodb');
+
+    expect(r5.unlockedServices).toContain('dynamodb');
+    expect(r5.unlockedServices).not.toContain('kms');
+
+    expect(r6.unlockedServices).toContain('kms');
+    expect(r6.unlockedServices).not.toContain('vpc_endpoint');
+
+    expect(r7.unlockedServices).toContain('vpc_endpoint');
   });
 
   describe('Round 1: The Leaky Bucket', () => {

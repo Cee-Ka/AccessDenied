@@ -11,6 +11,18 @@ export const incidentCapitalOne: GameLevel = {
   threatIntel:
     'Adversary uses SSRF to dump temporary credentials from IMDSv1, then invokes S3 ListBuckets and Sync to dump 100M+ customer records. You must upgrade to IMDSv2, scope the WAF role strictly, and place S3 behind PrivateLink or endpoint policies.',
   targetBudget: 35,
+  unlockedServices: ['s3', 'iam_role', 'ec2'],
+  reportCard: {
+    headline: 'Incident 2019: The Capital SSRF Cloud Breach',
+    scenario: 'Modeled after the landmark 2019 breach: An open-source WAF proxy running on EC2 has IMDSv1 enabled and AmazonS3FullAccess. An adversary sends an SSRF payload to steal credentials and dump 100M+ customer credit card records.',
+    tasks: [
+      { step: 1, title: 'Upgrade Metadata Service', instruction: 'Configure WAF EC2 instance to enforce IMDSv2 with response hop limit 1.' },
+      { step: 2, title: 'Lock Down WAF Role', instruction: 'Scope WAF IAM policy strictly to security-waf-logs bucket for PutObject; revoke customer vault access.' },
+      { step: 3, title: 'Simulate', instruction: 'Verify WAF ingress logging continues to work while the metadata extraction probe fails.' }
+    ],
+    securityIntel: 'IMDSv1 does not require request headers for metadata access, allowing attackers with SSRF to retrieve temporary IAM session tokens.',
+    budgetNotice: 'Target budget is $35/mo.'
+  },
   criteria: {
     star1Functional: {
       workloadPassRateTarget: 1.0,

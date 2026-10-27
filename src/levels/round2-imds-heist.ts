@@ -11,6 +11,26 @@ export const round2ImdsHeist: GameLevel = {
   threatIntel:
     'Attacker sends a crafted HTTP request pointing to 169.254.169.254/latest/meta-data/iam/security-credentials/. If IMDSv1 is active, they will dump temporary credentials and exfiltrate private financial data from S3.',
   targetBudget: 25,
+  unlockedServices: ['s3', 'iam_role', 'ec2'],
+  newlyUnlockedService: {
+    type: 'ec2',
+    name: 'Amazon EC2 (Elastic Compute Cloud)',
+    category: 'Compute',
+    primer: 'Amazon EC2 provides virtual servers in the cloud. Instances use the Instance Metadata Service (IMDS). Always mandate IMDSv2 to prevent SSRF credential theft.',
+    keyConcepts: ['IMDSv1 vs IMDSv2', 'Instance Profiles', 'Hop Limit']
+  },
+  reportCard: {
+    headline: 'Stage 2: Compute & Metadata Security — EC2 & IMDSv2',
+    scenario: 'Your application needs a URL preview generator. You deploy an EC2 instance to fetch webpages and save thumbnails into app-storage. However, an attacker attempts an SSRF exploit targeting the metadata IP (169.254.169.254) to steal temporary instance role credentials and exfiltrate your confidential-vault bucket.',
+    tasks: [
+      { step: 1, title: 'Inspect Compute Security', instruction: 'Select the EC2 instance and switch Metadata Service from IMDSv1 to IMDSv2.' },
+      { step: 2, title: 'Set Hop Limit', instruction: 'Set the IMDS response hop limit to 1 to block proxy-forwarded metadata queries.' },
+      { step: 3, title: 'Enforce Least-Privilege Policy', instruction: 'Replace over-permissive s3:* on * with a scoped policy allowing only app-storage/*.' },
+      { step: 4, title: 'Simulate', instruction: 'Verify legitimate thumbnail saves succeed while the SSRF token extraction probe is blocked.' }
+    ],
+    securityIntel: 'IMDSv1 is vulnerable to simple HTTP GET SSRF. IMDSv2 mandates a PUT session token header that SSRF proxies cannot forge.',
+    budgetNotice: 'Target budget is $25/mo. EC2 instance costs $15/mo base + $10/mo for two storage buckets.'
+  },
   criteria: {
     star1Functional: {
       workloadPassRateTarget: 1.0,

@@ -11,6 +11,26 @@ export const round3ConfusedDeputy: GameLevel = {
   threatIntel:
     'In a Confused Deputy attack, a third party with legitimate trust is tricked by a malicious customer into accessing another customer\'s resources. You must require a unique, unguessable sts:ExternalId.',
   targetBudget: 20,
+  unlockedServices: ['s3', 'iam_role', 'ec2'],
+  newlyUnlockedService: {
+    type: 'iam_role',
+    name: 'Cross-Account IAM Roles & ExternalId',
+    category: 'Identity',
+    primer: 'Cross-account IAM roles allow third-party SaaS vendors to access your resources without sharing API keys. To prevent confused deputy attacks, you must mandate a secret sts:ExternalId condition.',
+    keyConcepts: ['AssumeRolePolicyDocument', 'sts:ExternalId', 'Confused Deputy']
+  },
+  reportCard: {
+    headline: 'Stage 3: Vendor Trust & The Confused Deputy',
+    scenario: 'You hire a third-party SaaS vendor to analyze sales metrics. The vendor asks for an IAM Role ARN in your account. Without an ExternalId condition in your trust policy, any other client on that SaaS can provide your Role ARN to hijack access to your data.',
+    tasks: [
+      { step: 1, title: 'Inspect Role Trust Policy', instruction: 'Select the VendorAnalyticsRole and open the Trust Policy tab.' },
+      { step: 2, title: 'Require ExternalId', instruction: 'Add an sts:ExternalId condition requiring the secret key "ac-9841-sec".' },
+      { step: 3, title: 'Verify Least Privilege', instruction: 'Ensure the identity policy only grants read access to sales-metrics/*.' },
+      { step: 4, title: 'Simulate', instruction: 'Verify authorized vendor sync succeeds while the rival tenant probe is rejected.' }
+    ],
+    securityIntel: 'The Confused Deputy vulnerability occurs when a service with legitimate permissions is manipulated by an unauthorized party into performing actions on their behalf.',
+    budgetNotice: 'Target budget is $20/mo. IAM roles incur $0/mo.'
+  },
   criteria: {
     star1Functional: {
       workloadPassRateTarget: 1.0,

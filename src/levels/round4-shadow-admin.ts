@@ -11,6 +11,26 @@ export const round4ShadowAdmin: GameLevel = {
   threatIntel:
     'Attacker attempts to call iam:PassRole with arn:aws:iam::111122223333:role/OrganizationAdminRole. You must restrict iam:PassRole to specific worker roles and attach a Permission Boundary.',
   targetBudget: 20,
+  unlockedServices: ['s3', 'iam_role', 'ec2', 'lambda'],
+  newlyUnlockedService: {
+    type: 'lambda',
+    name: 'AWS Lambda (Serverless Execution)',
+    category: 'Compute',
+    primer: 'AWS Lambda lets you run backend code without provisioning servers. Lambda execution roles require iam:PassRole permissions. Always restrict iam:PassRole to specific role ARNs and attach Permission Boundaries to prevent privilege escalation.',
+    keyConcepts: ['iam:PassRole', 'Execution Roles', 'Permission Boundaries']
+  },
+  reportCard: {
+    headline: 'Stage 4: Serverless Delegation — iam:PassRole & Boundaries',
+    scenario: 'A CI/CD deployment bot deploys serverless functions. A developer granted it broad iam:PassRole on * so it could pass any role. If the CI token leaks, an attacker can pass OrganizationAdminRole to a custom function and take over the AWS organization.',
+    tasks: [
+      { step: 1, title: 'Inspect CI/CD Bot Policy', instruction: 'Examine the CI/CD bot identity policy. Notice "iam:PassRole" on "*".' },
+      { step: 2, title: 'Scope PassRole Resource', instruction: 'Restrict "iam:PassRole" resource strictly to "arn:aws:iam::111122223333:role/lambda-worker-*".' },
+      { step: 3, title: 'Attach Permission Boundary', instruction: 'Ensure the developer identity cannot escalate permissions beyond worker duties.' },
+      { step: 4, title: 'Simulate', instruction: 'Verify worker deployment succeeds while passing admin roles is blocked.' }
+    ],
+    securityIntel: 'The iam:PassRole privilege allows an identity to grant another role to an AWS service. Without resource scoping, it is one of the most common cloud privilege escalation vectors.',
+    budgetNotice: 'Target budget is $20/mo. Lambda costs $5/mo base.'
+  },
   criteria: {
     star1Functional: {
       workloadPassRateTarget: 1.0,

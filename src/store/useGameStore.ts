@@ -47,6 +47,7 @@ interface GameState {
   inspectedResult: SimulationResult | null;
   isVictoryModalOpen: boolean;
   earnedStars: number;
+  isReportCardOpen: boolean;
 
   // Actions
   setGameMode: (mode: GameMode) => void;
@@ -74,6 +75,8 @@ interface GameState {
   openCoachModal: (result?: SimulationResult) => void;
   closeCoachModal: () => void;
   closeVictoryModal: () => void;
+  openReportCard: () => void;
+  closeReportCard: () => void;
   resetCampaignProgress: () => void;
 }
 
@@ -164,6 +167,7 @@ export const useGameStore = create<GameState>((set, get) => {
     inspectedResult: null,
     isVictoryModalOpen: false,
     earnedStars: 0,
+    isReportCardOpen: true,
 
     setGameMode: (mode: GameMode) => {
       if (mode === 'Sandbox') {
@@ -219,6 +223,7 @@ export const useGameStore = create<GameState>((set, get) => {
         activePacketIndex: -1,
         isCoachModalOpen: false,
         isVictoryModalOpen: false,
+        isReportCardOpen: lvl.category !== 'Sandbox',
       });
       sounds.playClick();
     },
@@ -240,6 +245,7 @@ export const useGameStore = create<GameState>((set, get) => {
         activePacketIndex: -1,
         isCoachModalOpen: false,
         isVictoryModalOpen: false,
+        isReportCardOpen: firstLevel.category !== 'Sandbox',
       });
       sounds.playClick();
     },
@@ -256,6 +262,7 @@ export const useGameStore = create<GameState>((set, get) => {
         activePacketIndex: -1,
         isCoachModalOpen: false,
         isVictoryModalOpen: false,
+        isReportCardOpen: lvl.category !== 'Sandbox',
       });
       sounds.playClick();
     },
@@ -396,8 +403,12 @@ export const useGameStore = create<GameState>((set, get) => {
 
         await new Promise(r => setTimeout(r, delayMs));
 
-        // Evaluate packet
-        const res = evaluateExploitChain(pkt, allNodeData);
+        // Evaluate packet with live graph edges
+        const res = evaluateExploitChain(
+          pkt,
+          allNodeData,
+          state.edges.map(e => ({ source: e.source, target: e.target }))
+        );
         const primaryResult = res.hopResults[res.hopResults.length - 1] || {
           packetId: pkt.id,
           success: !res.breached,
@@ -494,6 +505,16 @@ export const useGameStore = create<GameState>((set, get) => {
 
     closeVictoryModal: () => {
       set({ isVictoryModalOpen: false });
+      sounds.playClick();
+    },
+
+    openReportCard: () => {
+      set({ isReportCardOpen: true });
+      sounds.playClick();
+    },
+
+    closeReportCard: () => {
+      set({ isReportCardOpen: false });
       sounds.playClick();
     },
   };

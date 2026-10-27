@@ -11,6 +11,26 @@ export const round8GuardrailClash: GameLevel = {
   threatIntel:
     'An adversary simultaneously attempts to create rogue EC2 instances in ap-southeast-1. You must craft an SCP Region Deny guardrail that exempts the DR Backup Role while blocking all unauthorized regions.',
   targetBudget: 45,
+  unlockedServices: ['s3', 'iam_role', 'ec2', 'lambda', 'dynamodb', 'kms', 'vpc_endpoint', 'nat_gw'],
+  newlyUnlockedService: {
+    type: 'iam_role',
+    name: 'Organizations Service Control Policies (SCPs)',
+    category: 'Governance',
+    primer: 'SCPs are organization-level guardrails that centrally control permissions across all member accounts. An SCP explicit deny overrides ALL identity and resource policies, making condition exemptions critical.',
+    keyConcepts: ['Service Control Policies', 'aws:RequestedRegion', 'Condition Exemptions']
+  },
+  reportCard: {
+    headline: 'Stage 8: Enterprise Governance — Guardrails vs Identity',
+    scenario: 'The security team deployed an SCP denying all API calls outside us-east-1. Suddenly, production Disaster Recovery replication to eu-central-1 breaks with AccessDenied outages. Meanwhile, ransomware actors probe ap-southeast-1 to launch unauthorized crypto miners.',
+    tasks: [
+      { step: 1, title: 'Analyze Region Guardrail', instruction: 'Inspect the SCP policy attached to the DR Backup Role. Notice the broad Deny on non-US regions.' },
+      { step: 2, title: 'Craft Role Exemption', instruction: 'Add a StringNotEquals condition to the SCP Deny statement to exempt the DRBackupRole ARN.' },
+      { step: 3, title: 'Verify Mining Block', instruction: 'Ensure unauthorized EC2 instance creation in ap-southeast-1 remains blocked.' },
+      { step: 4, title: 'Simulate', instruction: 'Verify Frankfurt DR backup succeeds while the Singapore crypto exploit is denied.' }
+    ],
+    securityIntel: 'Explicit Deny in an SCP overrides all Allow statements across identity policies, resource policies, and boundaries without exception.',
+    budgetNotice: 'Target budget is $45/mo.'
+  },
   criteria: {
     star1Functional: {
       workloadPassRateTarget: 1.0,

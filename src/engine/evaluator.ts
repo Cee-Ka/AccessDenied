@@ -17,12 +17,37 @@ import { evaluateNetworkPath } from './network';
 
 export function evaluateRequest(
   packet: SimulationPacket,
-  allNodes: CloudNodeData[]
+  allNodes: CloudNodeData[],
+  edges?: Array<{ source: string; target: string }>
 ): SimulationResult {
   const traces: EvaluationTraceStep[] = [];
 
-  const sourceNode = allNodes.find(n => n.id === packet.sourceNodeId);
-  const targetNode = allNodes.find(n => n.id === packet.targetNodeId);
+  // Dynamic source resolution
+  let sourceNode = allNodes.find(n => n.id === packet.sourceNodeId);
+  if (!sourceNode) {
+    if (packet.sourceNodeType) {
+      sourceNode = allNodes.find(n => n.type === packet.sourceNodeType);
+    } else if (packet.context['aws:PrincipalArn']) {
+      sourceNode = allNodes.find(n => n.arn === packet.context['aws:PrincipalArn']);
+    }
+  }
+
+  // Dynamic target resolution
+  let targetNode = allNodes.find(n => n.id === packet.targetNodeId);
+  if (!targetNode) {
+    if (packet.targetNodeType) {
+      targetNode = allNodes.find(n => n.type === packet.targetNodeType);
+    }
+    if (!targetNode && packet.resourceArn) {
+      targetNode = allNodes.find(n => n.arn && (packet.resourceArn === n.arn || packet.resourceArn.startsWith(n.arn + '/') || packet.resourceArn.startsWith(n.arn + ':')));
+    }
+    if (!targetNode && edges && sourceNode) {
+      const connected = edges.filter(e => e.source === sourceNode!.id).map(e => allNodes.find(n => n.id === e.target)).filter(Boolean);
+      if (connected.length > 0) {
+        targetNode = connected[0] as CloudNodeData;
+      }
+    }
+  }
 
   if (!sourceNode || !targetNode) {
     return {
@@ -33,7 +58,7 @@ export function evaluateRequest(
       traces: [{
         stage: 'NETWORK',
         status: 'FAIL',
-        summary: `Invalid node reference: source=${packet.sourceNodeId}, target=${packet.targetNodeId}`
+        summary: `Invalid node reference: source=${sourceNode?.label || packet.sourceNodeId}, target=${targetNode?.label || packet.targetNodeId}. Ensure nodes are placed on the canvas!`
       }]
     };
   }
@@ -44,7 +69,8 @@ export function evaluateRequest(
     targetNode,
     allNodes,
     packet.action,
-    packet.resourceArn
+    packet.resourceArn,
+    edges
   );
   traces.push(networkCheck.trace);
 

@@ -67,6 +67,8 @@ export interface SimulationPacket {
   kind: 'legitimate' | 'exploit';
   sourceNodeId: string;
   targetNodeId: string;
+  sourceNodeType?: NodeType;
+  targetNodeType?: NodeType;
   action: string;
   resourceArn: string;
   context: Record<string, string | boolean | number | string[]>;
@@ -98,6 +100,30 @@ export interface SimulationResult {
   outcome: 'ALLOW' | 'DENY' | 'NETWORK_UNREACHABLE' | 'BREACHED';
   traces: EvaluationTraceStep[];
   failureReason?: string;
+}
+
+export interface ServiceUnlockInfo {
+  type: NodeType;
+  name: string;
+  category: string;
+  primer: string;
+  keyConcepts: string[];
+}
+
+export interface ArchitectureTask {
+  step: number;
+  title: string;
+  instruction: string;
+  serviceType?: NodeType;
+}
+
+export interface MissionReportCard {
+  headline: string;
+  scenario: string;
+  newService?: ServiceUnlockInfo;
+  tasks: ArchitectureTask[];
+  securityIntel: string;
+  budgetNotice: string;
 }
 
 export interface LevelStarCriteria {
@@ -132,6 +158,9 @@ export interface GameLevel {
   storyBrief: string;
   threatIntel: string;
   targetBudget: number;
+  unlockedServices?: NodeType[];
+  newlyUnlockedService?: ServiceUnlockInfo;
+  reportCard?: MissionReportCard;
   initialNodes: Array<{
     id: string;
     type: NodeType;

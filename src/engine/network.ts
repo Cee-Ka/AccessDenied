@@ -22,11 +22,35 @@ export function evaluateNetworkPath(
   targetNode: CloudNodeData,
   allNodes: CloudNodeData[],
   action: string,
-  resourceArn: string
+  resourceArn: string,
+  edges?: Array<{ source: string; target: string }>
 ): NetworkPathResult {
   // If target is in a private subnet, check if source is external or public
   const targetInPrivate = targetNode.config?.inPrivateSubnet ?? false;
   const sourceIsExternal = sourceNode.type === 'external_vendor' || sourceNode.type === 'iam_user';
+
+  // Rule 0: Canvas Edge Connectivity Check (for non-external actors)
+  if (edges && edges.length > 0) {
+    const hasDirectEdge = edges.some(
+      e => (e.source === sourceNode.id && e.target === targetNode.id) ||
+           (e.target === sourceNode.id && e.source === targetNode.id)
+    );
+    const hasIntermediate = edges.some(
+      e => e.source === sourceNode.id && allNodes.some(m => m.id === e.target && ['nat_gw', 'vpc_endpoint', 'iam_role'].includes(m.type))
+    );
+
+    if (!hasDirectEdge && !hasIntermediate && sourceNode.type !== 'external_vendor') {
+      return {
+        reachable: false,
+        reason: 'NO_EDGE_CONNECTED',
+        trace: {
+          stage: 'NETWORK',
+          status: 'DENIED',
+          summary: `Network Disconnected: '${sourceNode.label}' is not connected to '${targetNode.label}'. Wire an edge between their ports on the canvas!`
+        }
+      };
+    }
+  }
 
   // Rule 1: Ingress Check
   if (targetInPrivate && sourceIsExternal) {
