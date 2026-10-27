@@ -74,9 +74,29 @@ interface GameState {
   openCoachModal: (result?: SimulationResult) => void;
   closeCoachModal: () => void;
   closeVictoryModal: () => void;
+  resetCampaignProgress: () => void;
 }
 
 const STORAGE_KEY = 'access_denied_stars_v1';
+
+export function isLevelUnlocked(levelId: string, starRecords: Record<string, number>): boolean {
+  if (levelId === 'sandbox-default') return true;
+
+  const targetLevel = ALL_LEVELS.find(l => l.id === levelId);
+  if (!targetLevel) return true;
+
+  if (targetLevel.category === 'Sandbox') return true;
+
+  const trackLevels = ALL_LEVELS.filter(l => l.category === targetLevel.category);
+  const index = trackLevels.findIndex(l => l.id === levelId);
+
+  // The first level in any track is always unlocked
+  if (index <= 0) return true;
+
+  // The immediately preceding level must have earned at least 1 star
+  const prevLevel = trackLevels[index - 1];
+  return (starRecords[prevLevel.id] || 0) >= 1;
+}
 
 function getInitialStars(): Record<string, number> {
   if (typeof window === 'undefined') return {};
@@ -161,6 +181,7 @@ export const useGameStore = create<GameState>((set, get) => {
         });
       } else {
         const targetList = ALL_LEVELS.filter(l => l.category === mode);
+        // Default to the first level in that track
         const lvl = targetList[0] || ALL_LEVELS[0];
         const flow = mapLevelToFlow(lvl);
         set({
@@ -178,6 +199,12 @@ export const useGameStore = create<GameState>((set, get) => {
     },
 
     loadLevel: (levelId: string) => {
+      const state = get();
+      if (!isLevelUnlocked(levelId, state.starRecords)) {
+        sounds.playPacketBlocked();
+        return;
+      }
+
       const lvl = ALL_LEVELS.find(l => l.id === levelId) || (levelId === 'sandbox-default' ? SANDBOX_DEFAULT_LEVEL : ALL_LEVELS[0]);
       const flow = mapLevelToFlow(lvl);
       set({
@@ -193,6 +220,28 @@ export const useGameStore = create<GameState>((set, get) => {
         isCoachModalOpen: false,
         isVictoryModalOpen: false,
       });
+      sounds.playClick();
+    },
+
+    resetCampaignProgress: () => {
+      saveStars({});
+      const firstLevel = ALL_LEVELS[0];
+      const flow = mapLevelToFlow(firstLevel);
+      set({
+        starRecords: {},
+        currentLevelId: firstLevel.id,
+        currentLevel: firstLevel,
+        gameMode: 'Learn',
+        nodes: flow.nodes,
+        edges: flow.edges,
+        selectedNodeId: null,
+        simStatus: 'idle',
+        results: [],
+        activePacketIndex: -1,
+        isCoachModalOpen: false,
+        isVictoryModalOpen: false,
+      });
+      sounds.playClick();
     },
 
     resetCurrentLevel: () => {

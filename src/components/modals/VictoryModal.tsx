@@ -40,6 +40,12 @@ export function VictoryModal() {
           <p className="text-xs text-slate-400 mt-1">
             {currentLevel.title} — Round {currentLevel.roundNumber} Complete
           </p>
+          {nextLevel && nextLevel.category === currentLevel.category && (
+            <div className="mt-2 text-[11px] font-mono text-emerald-300 bg-emerald-950/70 border border-emerald-800/80 rounded-full px-3 py-1 inline-flex items-center gap-1.5 shadow-sm">
+              <span>🔓</span>
+              <span>Next Round Unlocked: <strong>{nextLevel.title}</strong></span>
+            </div>
+          )}
         </div>
 
         {/* Stars */}

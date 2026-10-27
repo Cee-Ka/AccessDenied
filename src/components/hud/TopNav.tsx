@@ -1,4 +1,4 @@
-import { useGameStore, GameMode } from '../../store/useGameStore';
+import { useGameStore, GameMode, isLevelUnlocked } from '../../store/useGameStore';
 import { ALL_LEVELS } from '../../levels';
 import { Shield, Star, Volume2, VolumeX, RotateCcw, Play, FastForward, HelpCircle } from 'lucide-react';
 
@@ -76,11 +76,20 @@ export function TopNav({ onToggleHints }: TopNavProps) {
               className="bg-slate-950 border border-slate-800 text-slate-200 rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-amber-400 max-w-xs truncate"
             >
               {ALL_LEVELS.filter(l => l.category === gameMode).map(lvl => {
+                const unlocked = isLevelUnlocked(lvl.id, starRecords);
                 const stars = starRecords[lvl.id] || 0;
                 const starStr = stars > 0 ? ` (${'★'.repeat(stars)})` : '';
                 return (
-                  <option key={lvl.id} value={lvl.id}>
-                    {lvl.roundNumber > 0 ? `Round ${lvl.roundNumber}: ` : ''}{lvl.title}{starStr}
+                  <option
+                    key={lvl.id}
+                    value={lvl.id}
+                    disabled={!unlocked}
+                    className={unlocked ? 'bg-slate-950 text-slate-100' : 'bg-slate-900 text-slate-500 font-sans'}
+                  >
+                    {unlocked ? '' : '🔒 '}
+                    {lvl.roundNumber > 0 ? `Round ${lvl.roundNumber}: ` : ''}
+                    {lvl.title}
+                    {unlocked ? starStr : ' (Locked)'}
                   </option>
                 );
               })}
