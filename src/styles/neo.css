@@ -1,0 +1,145 @@
+/*
+ * Neobrutalism primitives. Components state their role with these classes;
+ * the look (ink borders, hard shadows, flat fills, tight corners) lives here.
+ */
+
+@layer components {
+  /* ── Surfaces ─────────────────────────────────────────────── */
+  .neo-card {
+    @apply bg-neo-surface text-neo-ink border-3 border-neo-ink rounded-neo shadow-neo;
+  }
+  .neo-panel {
+    @apply bg-neo-surface text-neo-ink border-neo-ink;
+  }
+  .neo-modal {
+    @apply bg-neo-surface text-neo-ink border-3 border-neo-ink rounded-neo shadow-neo-lg;
+  }
+  .neo-inset {
+    @apply bg-neo-raised text-neo-ink border-2 border-neo-ink rounded;
+  }
+  .neo-heading {
+    @apply font-display font-extrabold tracking-tight;
+  }
+
+  /* ── Buttons: press into their shadow ─────────────────────── */
+  .neo-btn {
+    @apply inline-flex items-center justify-center gap-1.5 whitespace-nowrap px-3.5 py-1.5 text-xs font-display font-extrabold
+      border-2 border-neo-ink rounded shadow-neo bg-neo-surface text-neo-ink select-none;
+    transition: transform 80ms ease, box-shadow 80ms ease, filter 80ms ease;
+  }
+  .neo-btn:hover:not(:disabled) {
+    filter: brightness(1.06);
+  }
+  .neo-btn:active:not(:disabled) {
+    transform: translate(3px, 3px);
+    @apply shadow-neo-press;
+  }
+  .neo-btn:disabled {
+    @apply border-dashed shadow-none bg-neo-raised text-neo-muted cursor-not-allowed;
+  }
+  .neo-btn-primary {
+    @apply bg-neo-orange text-neo-on-accent;
+  }
+  .neo-btn-secondary {
+    @apply bg-neo-surface text-neo-ink;
+  }
+  .neo-btn-danger {
+    @apply bg-neo-coral text-neo-on-accent;
+  }
+  .neo-btn-ghost {
+    @apply shadow-none border-transparent bg-transparent;
+  }
+  .neo-btn-ghost:hover:not(:disabled) {
+    @apply border-neo-ink bg-neo-raised;
+  }
+  .neo-btn-ghost:active:not(:disabled) {
+    transform: none;
+    @apply shadow-none;
+  }
+  .neo-icon-btn {
+    @apply inline-flex items-center justify-center w-7 h-7 rounded border-2 border-transparent text-neo-ink;
+  }
+  .neo-icon-btn:hover:not(:disabled) {
+    @apply border-neo-ink bg-neo-raised;
+  }
+  .neo-icon-btn:disabled {
+    @apply opacity-35 cursor-not-allowed;
+  }
+
+  /* ── Chips, tabs, inputs, badges ──────────────────────────── */
+  .neo-chip {
+    @apply inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-mono font-semibold leading-tight
+      border-2 border-neo-ink rounded-sm bg-neo-surface text-neo-ink;
+  }
+  .neo-tab {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-xs font-semibold border-2 border-transparent text-neo-muted;
+  }
+  .neo-tab:hover {
+    @apply text-neo-ink border-neo-ink;
+  }
+  .neo-tab-active {
+    @apply bg-neo-lilac text-neo-on-accent border-neo-ink shadow-neo-sm;
+  }
+  .neo-input {
+    @apply bg-neo-surface text-neo-ink border-2 border-neo-ink rounded-sm px-2.5 py-1.5 placeholder-neo-muted;
+  }
+  .neo-input:focus {
+    @apply outline-none shadow-neo-sm;
+  }
+  .neo-badge-pass {
+    @apply neo-chip bg-neo-lime text-neo-on-accent;
+  }
+  .neo-badge-deny {
+    @apply neo-chip bg-neo-coral text-neo-on-accent;
+  }
+  .neo-badge-info {
+    @apply neo-chip bg-neo-sky text-neo-on-accent;
+  }
+  .neo-badge-new {
+    @apply neo-chip bg-neo-yellow text-neo-on-accent;
+  }
+}
+
+/* Inside an accent fill, ink and muted text switch to dark on-accent ink in
+   both themes, so descendants using text-neo-ink stay readable. */
+.neo-on-accent,
+.neo-btn-primary,
+.neo-btn-danger,
+.neo-tab-active,
+.neo-badge-pass,
+.neo-badge-deny,
+.neo-badge-info,
+.neo-badge-new {
+  --neo-ink: var(--neo-on-accent);
+  --neo-ink-rgb: var(--neo-on-accent-rgb);
+  --neo-muted: var(--neo-on-accent);
+  --neo-muted-rgb: var(--neo-on-accent-rgb);
+  /* Nested chips and insets use light surfaces so dark ink stays readable. */
+  --neo-surface: #ffffff;
+  --neo-surface-rgb: 255 255 255;
+  --neo-raised: #f1f4f7;
+  --neo-raised-rgb: 241 244 247;
+  color: rgb(var(--neo-on-accent-rgb));
+}
+
+/* ── Shared focus ring: yellow with an ink outline, visible on any fill ── */
+:focus-visible {
+  outline: 3px solid var(--neo-yellow);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--neo-ink);
+}
+/* CodeMirror manages its own focus styling inside the editor. */
+.cm-editor :focus-visible,
+.cm-content:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neo-btn {
+    transition: box-shadow 80ms ease;
+  }
+  .neo-btn:active:not(:disabled) {
+    transform: none;
+  }
+}

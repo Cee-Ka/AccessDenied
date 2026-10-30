@@ -11,6 +11,8 @@ export const round4ShadowAdmin: GameLevel = {
   threatIntel:
     'Attacker attempts to call iam:PassRole with arn:aws:iam::111122223333:role/OrganizationAdminRole. You must restrict iam:PassRole to specific worker roles and attach a Permission Boundary.',
   targetBudget: 20,
+  conceptTags: ['pass_role', 'permission_boundary', 'least_privilege'],
+  twistPager: 'Pager: A new Lambda function appeared overnight. Nobody on the team deployed it.',
   unlockedServices: ['s3', 'iam_role', 'ec2', 'lambda'],
   newlyUnlockedService: {
     type: 'iam_role',

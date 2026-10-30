@@ -32,6 +32,16 @@ export type NodeType =
   | 'nat_gw'
   | 'vpc_endpoint';
 
+export const NODE_TYPES: readonly NodeType[] = [
+  'iam_user', 'iam_role', 'ec2', 'lambda', 'cognito', 'external_vendor',
+  's3', 'dynamodb', 'rds', 'kms', 'secrets_manager',
+  'aws_account', 'vpc', 'subnet', 'nat_gw', 'vpc_endpoint',
+];
+
+export const EVALUATION_STAGES: readonly EvaluationStage[] = [
+  'NETWORK', 'EXPLICIT_DENY', 'SCP', 'RESOURCE_POLICY', 'TRUST_POLICY', 'IDENTITY_POLICY', 'PERMISSION_BOUNDARY', 'CONDITION',
+];
+
 export interface CloudNodeData {
   [key: string]: unknown;
   id: string;
@@ -41,6 +51,7 @@ export interface CloudNodeData {
   accountId: string;
   monthlyCost: number;
   parentId?: string; // Subnet, VPC, or Account container
+  essential?: boolean; // Starting node required by the level; cannot be deleted
   config: {
     imdsVersion?: 'v1' | 'v2';
     imdsHopLimit?: number;
@@ -149,6 +160,28 @@ export interface LevelHint {
   content: string;
 }
 
+export type OnboardingPredicateId =
+  | 'nodeSelected'
+  | 'edgeExists'
+  | 'identityPolicyHasAllow'
+  | 'resourcePolicyHasAllow'
+  | 'policyHasDeny'
+  | 'boundaryAttached'
+  | 'scpAttached'
+  | 'simulationPassed';
+
+export interface OnboardingStep {
+  id: string;
+  title: string;
+  body: string;
+  /** Glossary concept introduced by this step */
+  conceptId?: string;
+  /** Node id or `[data-tour="..."]` selector to highlight */
+  target?: string;
+  /** Omit for read-only steps that advance with "Next" */
+  completeWhen?: { predicate: OnboardingPredicateId; args?: string[] };
+}
+
 export interface GameLevel {
   id: string;
   roundNumber: number;
@@ -159,6 +192,11 @@ export interface GameLevel {
   threatIntel: string;
   targetBudget: number;
   unlockedServices?: NodeType[];
+  /** Glossary concept ids shown as tags on level cards and report cards */
+  conceptTags: string[];
+  /** Pager-style twist copy: describes the symptom, never the cause */
+  twistPager?: string;
+  onboardingSteps?: OnboardingStep[];
   newlyUnlockedService?: ServiceUnlockInfo;
   reportCard?: MissionReportCard;
   initialNodes: Array<{
@@ -168,6 +206,8 @@ export interface GameLevel {
     data: CloudNodeData;
     parentId?: string;
     extent?: 'parent';
+    /** Defaults to true. Set false for nodes the player is meant to remove. */
+    essential?: boolean;
   }>;
   initialEdges: Array<{
     id: string;

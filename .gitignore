@@ -1,7 +1,14 @@
 node_modules
 dist
 .DS_Store
+**/.DS_Store
 *.local
 .agents
-AGENTS.md
 plan.md
+
+# Personal Claude Code settings
+.claude/settings.local.json
+
+# agents folders
+.claude/
+.agents/

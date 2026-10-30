@@ -11,6 +11,8 @@ export const round2ImdsHeist: GameLevel = {
   threatIntel:
     'Attacker sends a crafted HTTP request pointing to 169.254.169.254/latest/meta-data/iam/security-credentials/. If IMDSv1 is active, they will dump temporary credentials and exfiltrate private financial data from S3.',
   targetBudget: 25,
+  conceptTags: ['imdsv2', 'ssrf', 'least_privilege'],
+  twistPager: "Pager: Unusual S3 reads from the preview service, from an IP we don't own.",
   unlockedServices: ['s3', 'iam_role', 'ec2'],
   newlyUnlockedService: {
     type: 'ec2',

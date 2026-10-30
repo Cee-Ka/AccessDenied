@@ -11,6 +11,8 @@ export const round7NatGatewayTrap: GameLevel = {
   threatIntel:
     'VPC Gateway Endpoints for Amazon S3 and DynamoDB are 100% free with zero data processing fees. By replacing the NAT Gateway with an S3 Gateway Endpoint and attaching a least-privilege endpoint policy, you drop monthly cost below budget while locking down network reachability.',
   targetBudget: 15,
+  conceptTags: ['vpc_endpoint', 'nat_gw', 'budget'],
+  twistPager: 'Pager: Finance flagged the cloud bill. Networking costs doubled this month.',
   unlockedServices: ['s3', 'iam_role', 'ec2', 'lambda', 'dynamodb', 'kms', 'vpc_endpoint', 'nat_gw'],
   newlyUnlockedService: {
     type: 'vpc_endpoint',
@@ -99,6 +101,7 @@ export const round7NatGatewayTrap: GameLevel = {
       id: 'costly-nat-gw',
       type: 'nat_gw',
       position: { x: 400, y: 220 },
+      essential: false,
       data: {
         id: 'costly-nat-gw',
         type: 'nat_gw',

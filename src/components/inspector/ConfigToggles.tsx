@@ -20,56 +20,56 @@ export function ConfigToggles({ nodeData, onUpdateConfig }: ConfigTogglesProps) 
   return (
     <div className="space-y-4 p-4 text-xs">
       {/* Node Info Header */}
-      <div className="bg-obsidian-900 border border-obsidian-border rounded-xl p-3 space-y-2 shadow-sm">
+      <div className="bg-neo-surface border-2 border-neo-ink rounded-neo p-3 space-y-2 ">
         <div className="flex items-center justify-between">
-          <span className="text-zinc-400 font-medium">Resource ARN</span>
+          <span className="text-neo-muted font-medium">Resource ARN</span>
           <button
             onClick={handleCopyArn}
-            className="flex items-center gap-1 text-[10px] text-brand-orange hover:text-amber-300 font-mono"
+            className="flex items-center gap-1 text-[10px] text-neo-ink hover:text-neo-ink font-mono"
           >
-            {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+            {copied ? <Check className="w-3 h-3 text-neo-ink" /> : <Copy className="w-3 h-3" />}
             {copied ? 'Copied' : 'Copy'}
           </button>
         </div>
-        <div className="font-mono text-[11px] text-obsidian-text break-all bg-obsidian-box p-2 rounded border border-obsidian-border">
+        <div className="font-mono text-[11px] text-neo-ink break-all bg-neo-raised p-2 rounded border-2 border-neo-ink">
           {nodeData.arn}
         </div>
         <div className="flex items-center justify-between pt-1 text-[11px]">
-          <span className="text-obsidian-muted">Account ID</span>
-          <span className="font-mono text-obsidian-text">{nodeData.accountId}</span>
+          <span className="text-neo-muted">Account ID</span>
+          <span className="font-mono text-neo-ink">{nodeData.accountId}</span>
         </div>
         <div className="flex items-center justify-between text-[11px]">
-          <span className="text-obsidian-muted">Base Monthly Cost</span>
-          <span className="font-mono text-brand-orange font-bold">${nodeData.monthlyCost}/mo</span>
+          <span className="text-neo-muted">Base Monthly Cost</span>
+          <span className="font-mono text-neo-ink font-bold">${nodeData.monthlyCost}/mo</span>
         </div>
       </div>
 
       {/* S3 Controls */}
       {type === 's3' && (
-        <div className="bg-obsidian-900 border border-obsidian-border rounded-xl p-3 space-y-3 shadow-sm">
+        <div className="bg-neo-surface border-2 border-neo-ink rounded-neo p-3 space-y-3 ">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               {config?.blockPublicAccess ? (
-                <ShieldCheck className="w-4 h-4 text-brand-orange" />
+                <ShieldCheck className="w-4 h-4 text-neo-ink" />
               ) : (
-                <ShieldAlert className="w-4 h-4 text-rose-500" />
+                <ShieldAlert className="w-4 h-4 text-neo-ink" />
               )}
-              <span className="font-semibold text-obsidian-text">Block Public Access</span>
+              <span className="font-semibold text-neo-ink">Block Public Access</span>
             </div>
             <button
               onClick={() => onUpdateConfig({ blockPublicAccess: !config?.blockPublicAccess })}
-              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                config?.blockPublicAccess ? 'bg-brand-orange' : 'bg-obsidian-800'
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-sm border-2 border-neo-ink transition-colors duration-150 ${
+                config?.blockPublicAccess ? 'bg-neo-lime neo-on-accent' : 'bg-neo-raised'
               }`}
             >
               <span
-                className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-obsidian-900 shadow-lg ring-0 transition duration-200 ease-in-out ${
-                  config?.blockPublicAccess ? 'translate-x-4' : 'translate-x-0'
+                className={`pointer-events-none inline-block h-4 w-4 mt-px ml-px transform rounded-sm bg-neo-surface border-2 border-neo-ink transition duration-150 ${
+                  config?.blockPublicAccess ? 'translate-x-5' : 'translate-x-0'
                 }`}
               />
             </button>
           </div>
-          <p className="text-[11px] text-obsidian-muted leading-relaxed">
+          <p className="text-[11px] text-neo-muted leading-relaxed">
             When enabled, Amazon S3 blocks public bucket policies and ACLs, preventing anonymous internet scraping.
           </p>
         </div>
@@ -77,26 +77,26 @@ export function ConfigToggles({ nodeData, onUpdateConfig }: ConfigTogglesProps) 
 
       {/* EC2 Controls */}
       {type === 'ec2' && (
-        <div className="bg-obsidian-900 border border-obsidian-border rounded-xl p-3 space-y-3 shadow-sm">
+        <div className="bg-neo-surface border-2 border-neo-ink rounded-neo p-3 space-y-3 ">
           <div className="flex items-center justify-between">
-            <span className="font-semibold text-obsidian-text">Metadata Service (IMDS)</span>
-            <div className="flex rounded-lg bg-obsidian-box p-0.5 border border-obsidian-border">
+            <span className="font-semibold text-neo-ink">Metadata Service (IMDS)</span>
+            <div className="flex rounded bg-neo-raised p-0.5 border-2 border-neo-ink">
               <button
                 onClick={() => onUpdateConfig({ imdsVersion: 'v1' })}
-                className={`px-2.5 py-1 rounded text-[10px] font-mono transition-colors ${
+                className={`px-2.5 py-1 rounded-sm text-[10px] font-mono font-bold border-2 ${
                   config?.imdsVersion !== 'v2'
-                    ? 'bg-rose-500/20 text-rose-600 dark:text-rose-300 font-bold border border-rose-500/30'
-                    : 'text-obsidian-muted hover:text-obsidian-text'
+                    ? 'bg-neo-coral neo-on-accent border-neo-ink'
+                    : 'border-transparent text-neo-muted hover:text-neo-ink'
                 }`}
               >
                 IMDSv1
               </button>
               <button
                 onClick={() => onUpdateConfig({ imdsVersion: 'v2', imdsHopLimit: 1 })}
-                className={`px-2.5 py-1 rounded text-[10px] font-mono transition-colors ${
+                className={`px-2.5 py-1 rounded-sm text-[10px] font-mono font-bold border-2 ${
                   config?.imdsVersion === 'v2'
-                    ? 'bg-brand-orange text-black font-extrabold shadow-sm'
-                    : 'text-obsidian-muted hover:text-obsidian-text'
+                    ? 'bg-neo-lime neo-on-accent border-neo-ink'
+                    : 'border-transparent text-neo-muted hover:text-neo-ink'
                 }`}
               >
                 IMDSv2
@@ -106,18 +106,18 @@ export function ConfigToggles({ nodeData, onUpdateConfig }: ConfigTogglesProps) 
 
           {config?.imdsVersion === 'v2' && (
             <div className="flex items-center justify-between pt-1">
-              <span className="text-obsidian-muted">Response Hop Limit</span>
+              <span className="text-neo-muted">Response Hop Limit</span>
               <select
                 value={config?.imdsHopLimit ?? 1}
                 onChange={e => onUpdateConfig({ imdsHopLimit: parseInt(e.target.value, 10) })}
-                className="bg-obsidian-box border border-obsidian-border text-obsidian-text rounded px-2 py-0.5 text-xs font-mono focus:border-brand-orange"
+                className="bg-neo-raised border-2 border-neo-ink text-neo-ink rounded px-2 py-0.5 text-xs font-mono focus:border-neo-ink"
               >
                 <option value={1}>1 (Strict container/host isolation)</option>
                 <option value={2}>2 (Permit container bridge hops)</option>
               </select>
             </div>
           )}
-          <p className="text-[11px] text-obsidian-muted leading-relaxed">
+          <p className="text-[11px] text-neo-muted leading-relaxed">
             IMDSv2 requires session-oriented requests with PUT headers, neutralizing SSRF credential theft.
           </p>
         </div>
@@ -125,19 +125,19 @@ export function ConfigToggles({ nodeData, onUpdateConfig }: ConfigTogglesProps) 
 
       {/* IAM Role ExternalId Controls */}
       {type === 'iam_role' && (
-        <div className="bg-obsidian-900 border border-obsidian-border rounded-xl p-3 space-y-2 shadow-sm">
+        <div className="bg-neo-surface border-2 border-neo-ink rounded-neo p-3 space-y-2 ">
           <div className="flex items-center gap-2">
-            <KeyRound className="w-4 h-4 text-brand-orange" />
-            <span className="font-semibold text-obsidian-text">Required sts:ExternalId</span>
+            <KeyRound className="w-4 h-4 text-neo-ink" />
+            <span className="font-semibold text-neo-ink">Required sts:ExternalId</span>
           </div>
           <input
             type="text"
             value={config?.requireExternalId || ''}
             onChange={e => onUpdateConfig({ requireExternalId: e.target.value })}
             placeholder="e.g. ac-9841-sec (empty = vulnerable)"
-            className="w-full bg-obsidian-box border border-obsidian-border rounded px-2.5 py-1.5 text-xs font-mono text-obsidian-text placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-brand-orange"
+            className="w-full bg-neo-raised border-2 border-neo-ink rounded px-2.5 py-1.5 text-xs font-mono text-neo-ink placeholder-neo-muted focus:outline-none focus:border-neo-ink"
           />
-          <p className="text-[11px] text-obsidian-muted leading-relaxed">
+          <p className="text-[11px] text-neo-muted leading-relaxed">
             Protects against Confused Deputy attacks when third-party vendors assume this role.
           </p>
         </div>
@@ -145,26 +145,26 @@ export function ConfigToggles({ nodeData, onUpdateConfig }: ConfigTogglesProps) 
 
       {/* Network Placement */}
       {['ec2', 'lambda'].includes(type) && (
-        <div className="bg-obsidian-900 border border-obsidian-border rounded-xl p-3 space-y-2 shadow-sm">
+        <div className="bg-neo-surface border-2 border-neo-ink rounded-neo p-3 space-y-2 ">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Network className="w-4 h-4 text-brand-orange" />
-              <span className="font-semibold text-obsidian-text">Private Subnet Attachment</span>
+              <Network className="w-4 h-4 text-neo-ink" />
+              <span className="font-semibold text-neo-ink">Private Subnet Attachment</span>
             </div>
             <button
               onClick={() => onUpdateConfig({ inPrivateSubnet: !config?.inPrivateSubnet })}
-              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                config?.inPrivateSubnet ? 'bg-brand-orange' : 'bg-obsidian-800'
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-sm border-2 border-neo-ink transition-colors duration-150 ${
+                config?.inPrivateSubnet ? 'bg-neo-lime neo-on-accent' : 'bg-neo-raised'
               }`}
             >
               <span
-                className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-black shadow-lg ring-0 transition duration-200 ease-in-out ${
-                  config?.inPrivateSubnet ? 'translate-x-4' : 'translate-x-0'
+                className={`pointer-events-none inline-block h-4 w-4 mt-px ml-px transform rounded-sm bg-neo-surface border-2 border-neo-ink transition duration-150 ${
+                  config?.inPrivateSubnet ? 'translate-x-5' : 'translate-x-0'
                 }`}
               />
             </button>
           </div>
-          <p className="text-[11px] text-zinc-400 leading-relaxed">
+          <p className="text-[11px] text-neo-muted leading-relaxed">
             Placing compute in a private subnet blocks direct internet ingress, but requires a NAT Gateway or VPC Endpoint for AWS API egress.
           </p>
         </div>

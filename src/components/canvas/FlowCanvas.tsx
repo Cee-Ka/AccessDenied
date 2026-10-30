@@ -19,7 +19,6 @@ import { ErrorBoundary } from '../common/ErrorBoundary';
 
 function FlowCanvasInner() {
   const {
-    theme,
     nodes,
     edges,
     onNodesChange,
@@ -27,6 +26,8 @@ function FlowCanvasInner() {
     onConnect,
     selectNode,
     addServiceToBoard,
+    onNodeDragStart,
+    onNodeDragStop,
   } = useGameStore();
 
   const { screenToFlowPosition } = useReactFlow();
@@ -73,7 +74,7 @@ function FlowCanvasInner() {
 
   return (
     <div
-      className="w-full h-full relative bg-obsidian-950"
+      className="w-full h-full relative bg-neo-bg"
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
@@ -84,6 +85,9 @@ function FlowCanvasInner() {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onPaneClick={() => selectNode(null)}
+        onNodeDragStart={onNodeDragStart}
+        onNodeDragStop={onNodeDragStop}
+        connectionLineStyle={{ stroke: 'var(--neo-ink)', strokeWidth: 2.5, strokeDasharray: '6 4' }}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitView
@@ -94,15 +98,16 @@ function FlowCanvasInner() {
         edgesFocusable={true}
         edgesReconnectable={true}
         className="touch-none"
+        aria-label="Architecture canvas. Arrows point from the caller to the part it calls."
       >
         <Background
-          variant={BackgroundVariant.Dots}
-          gap={20}
-          size={1.5}
-          color={theme === 'dark' ? '#27272a' : '#cbd5e1'}
+          variant={BackgroundVariant.Lines}
+          gap={24}
+          lineWidth={1}
+          color="var(--neo-grid)"
         />
         <Controls
-          className="bg-obsidian-900 border border-obsidian-border text-obsidian-text rounded-lg overflow-hidden fill-current shadow-xl"
+          className="bg-neo-surface border-2 border-neo-ink text-neo-ink rounded overflow-hidden fill-current shadow-neo"
         />
       </ReactFlow>
     </div>

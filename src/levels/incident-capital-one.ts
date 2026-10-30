@@ -11,6 +11,8 @@ export const incidentCapitalOne: GameLevel = {
   threatIntel:
     'Adversary uses SSRF to dump temporary credentials from IMDSv1, then invokes S3 ListBuckets and Sync to dump 100M+ customer records. You must upgrade to IMDSv2, scope the WAF role strictly, and place S3 behind PrivateLink or endpoint policies.',
   targetBudget: 35,
+  conceptTags: ['ssrf', 'imdsv2', 'least_privilege'],
+  twistPager: 'Pager: The WAF host is calling the metadata service, and S3 list calls are spiking.',
   unlockedServices: ['s3', 'iam_role', 'ec2'],
   reportCard: {
     headline: 'Incident 2019: The Capital SSRF Cloud Breach',
