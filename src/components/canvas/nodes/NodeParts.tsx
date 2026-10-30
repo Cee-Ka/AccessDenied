@@ -7,7 +7,7 @@ import { ESSENTIAL_NODE_LABEL } from '../../../store/essential';
 export function ServiceIconTile({ data, size = 32 }: { data: CloudNodeData; size?: number }) {
   return (
     <div
-      className="rounded-lg bg-white border border-obsidian-border flex items-center justify-center shrink-0 p-1 shadow-sm"
+      className="rounded-sm bg-white border-2 border-neo-ink flex items-center justify-center shrink-0 p-1"
       style={{ width: size, height: size }}
     >
       <AwsIcon type={data.type} privateSubnet={data.config?.inPrivateSubnet} size={size - 8} />
@@ -22,9 +22,9 @@ export function EssentialLockBadge({ data }: { data: CloudNodeData }) {
       role="img"
       aria-label={ESSENTIAL_NODE_LABEL}
       title={ESSENTIAL_NODE_LABEL}
-      className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-obsidian-900 border border-obsidian-border text-obsidian-muted flex items-center justify-center shadow-md"
+      className="absolute -top-2.5 -right-2.5 w-6 h-6 rounded-sm bg-neo-yellow neo-on-accent border-2 border-neo-ink flex items-center justify-center shadow-neo-sm"
     >
-      <Lock className="w-2.5 h-2.5" />
+      <Lock className="w-3 h-3" />
     </span>
   );
 }

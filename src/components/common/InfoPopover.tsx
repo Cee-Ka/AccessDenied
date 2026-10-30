@@ -83,8 +83,8 @@ export function InfoPopover({ conceptId, variant = 'icon', className = '' }: Inf
         onPointerDown={e => e.stopPropagation()}
         className={
           variant === 'icon'
-            ? `nodrag inline-flex items-center justify-center w-4 h-4 rounded-full text-obsidian-muted hover:text-brand-orange focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange shrink-0 ${className}`
-            : `nodrag inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-md bg-obsidian-850 border border-obsidian-border text-obsidian-muted hover:text-brand-orange hover:border-brand-orange/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange ${className}`
+            ? `nodrag inline-flex items-center justify-center w-4 h-4 rounded-full text-neo-muted hover:text-neo-ink hover:bg-neo-sky shrink-0 ${className}`
+            : `nodrag neo-chip bg-neo-sky neo-on-accent shadow-neo-sm hover:-translate-y-px transition-transform ${className}`
         }
       >
         {variant === 'icon' ? <Info className="w-3.5 h-3.5" /> : concept.title}
@@ -100,23 +100,23 @@ export function InfoPopover({ conceptId, variant = 'icon', className = '' }: Inf
             tabIndex={-1}
             onClick={e => e.stopPropagation()}
             style={{ position: 'fixed', top: pos?.top ?? -9999, left: pos?.left ?? -9999, width: WIDTH, zIndex: 80 }}
-            className="rounded-xl border border-obsidian-border bg-obsidian-900 text-obsidian-text shadow-2xl p-4 text-xs space-y-2 focus:outline-none"
+            className="neo-modal p-4 text-xs space-y-2 focus:outline-none"
           >
             <div className="flex items-start justify-between gap-2">
-              <div className="font-bold text-sm">{concept.title}</div>
+              <div className="neo-heading text-sm">{concept.title}</div>
               <button
                 type="button"
                 onClick={() => close()}
-                className="p-0.5 rounded text-obsidian-muted hover:text-obsidian-text"
+                className="neo-icon-btn w-6 h-6"
                 aria-label="Close"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
-            <p className="font-semibold text-obsidian-text leading-relaxed">{concept.summary}</p>
-            <p className="text-obsidian-muted leading-relaxed">{concept.body}</p>
+            <p className="font-semibold text-neo-ink leading-relaxed">{concept.summary}</p>
+            <p className="text-neo-muted leading-relaxed">{concept.body}</p>
             {concept.example && (
-              <pre className="bg-obsidian-950 border border-obsidian-border rounded-lg p-2 font-mono text-[10px] whitespace-pre-wrap break-all">
+              <pre className="neo-inset p-2 font-mono text-[10px] whitespace-pre-wrap break-all">
                 {concept.example}
               </pre>
             )}
@@ -125,7 +125,7 @@ export function InfoPopover({ conceptId, variant = 'icon', className = '' }: Inf
                 href={concept.docsUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 text-brand-orange hover:underline font-semibold"
+                className="inline-flex items-center gap-1 text-neo-ink underline decoration-2 decoration-neo-orange underline-offset-2 font-semibold"
               >
                 AWS docs <ExternalLink className="w-3 h-3" />
               </a>

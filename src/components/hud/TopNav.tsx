@@ -71,31 +71,31 @@ export function TopNav({ onToggleHints }: TopNavProps) {
   const currentLevelStars = starRecords[currentLevelId] || 0;
 
   return (
-    <header className="h-14 bg-obsidian-900 border-b border-obsidian-border px-2 sm:px-3 lg:px-4 flex items-center justify-between z-40 select-none shadow-md shadow-black/5 dark:shadow-black/50 w-full max-w-full overflow-hidden">
+    <header className="h-14 bg-neo-surface border-b-3 border-neo-ink px-2 sm:px-3 lg:px-4 flex items-center justify-between z-40 select-none w-full max-w-full overflow-hidden">
       {/* Zone 1: Brand & Stage Context (Left) */}
       <div className="flex items-center gap-1.5 sm:gap-2.5 shrink min-w-0">
         {/* Brand */}
         <div className="flex items-center gap-1.5 shrink-0">
-          <div className="w-7 h-7 rounded-lg bg-obsidian-box border border-brand-orange/40 flex items-center justify-center shadow-md shadow-orange-500/10">
-            <Shield className="w-3.5 h-3.5 text-brand-orange stroke-[2.5]" />
+          <div className="w-7 h-7 rounded bg-neo-orange text-neo-on-accent border-2 border-neo-ink flex items-center justify-center shadow-neo-sm neo-on-accent">
+            <Shield className="w-3.5 h-3.5 stroke-[2.5]" />
           </div>
-          <span className="font-extrabold text-xs sm:text-sm tracking-tight text-obsidian-text hidden sm:flex items-center gap-0.5">
-            Access<span className="text-brand-orange">Denied</span>
+          <span className="font-display font-black text-xs sm:text-sm tracking-tight text-neo-ink hidden sm:flex items-center gap-0.5">
+            Access<span className="bg-neo-orange text-neo-on-accent px-1 rounded-sm neo-on-accent">Denied</span>
           </span>
         </div>
 
-        <div className="h-4 w-[1px] bg-obsidian-border hidden md:block shrink-0" />
+        <div className="h-5 w-[2px] bg-neo-ink hidden md:block shrink-0" />
 
         {/* Mode Selector */}
-        <div className="flex items-center bg-obsidian-950 p-0.5 rounded-lg border border-obsidian-border text-xs shrink-0">
+        <div className="flex items-center bg-neo-bg p-0.5 rounded border-2 border-neo-ink text-xs shrink-0">
           {(['Learn', 'Incidents', 'Sandbox'] as GameMode[]).map(mode => (
             <button
               key={mode}
               onClick={() => setGameMode(mode)}
-              className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition-all ${
+              className={`px-2 py-0.5 rounded-sm text-[11px] font-display font-bold transition-colors ${
                 gameMode === mode
-                  ? 'bg-obsidian-850 text-brand-orange shadow-sm border border-brand-orange/30'
-                  : 'text-obsidian-muted hover:text-obsidian-text'
+                  ? 'bg-neo-orange text-neo-on-accent border-2 border-neo-ink neo-on-accent'
+                  : 'border-2 border-transparent text-neo-muted hover:text-neo-ink'
               }`}
             >
               {mode}
@@ -108,14 +108,14 @@ export function TopNav({ onToggleHints }: TopNavProps) {
           <div className="flex items-center gap-1 shrink min-w-0">
 <LevelPicker />
 
-            <div className="hidden xl:flex items-center gap-0.5 shrink-0">
+            <div className="hidden 2xl:flex items-center gap-0.5 shrink-0">
               {[1, 2, 3].map(starNum => (
                 <Star
                   key={starNum}
                   className={`w-3 h-3 ${
                     starNum <= currentLevelStars
-                      ? 'fill-brand-orange text-brand-orange'
-                      : 'text-obsidian-border'
+                      ? 'fill-neo-yellow text-neo-ink'
+                      : 'text-neo-muted'
                   }`}
                 />
               ))}
@@ -125,38 +125,38 @@ export function TopNav({ onToggleHints }: TopNavProps) {
       </div>
 
       {/* Zone 2: Telemetry HUD (Center) - Styled so budget never spills out */}
-      <div className="hidden lg:flex items-center bg-obsidian-950 border border-obsidian-border px-3 py-1 rounded-full font-mono text-xs shadow-inner gap-2.5 shrink-0 whitespace-nowrap mx-2">
+      <div className="hidden lg:flex items-center bg-neo-bg border-2 border-neo-ink px-3 py-1 rounded-full font-mono text-xs gap-2.5 shrink-0 whitespace-nowrap mx-2">
         <div className="flex items-center gap-1 shrink-0 whitespace-nowrap" title="Workloads verified">
-          <CheckCircle2 className="w-3.5 h-3.5 text-obsidian-muted shrink-0" />
-          <span className="text-obsidian-muted text-[11px]">Work:</span>
-          <span className={legitPassed === legitPackets.length && legitPackets.length > 0 ? 'text-obsidian-text font-bold' : 'text-obsidian-muted'}>
+          <CheckCircle2 className="w-3.5 h-3.5 text-neo-muted shrink-0" />
+          <span className="text-neo-muted text-[11px] hidden 2xl:inline">Work:</span>
+          <span className={legitPassed === legitPackets.length && legitPackets.length > 0 ? 'text-neo-ink font-bold' : 'text-neo-muted'}>
             {legitPassed}/{legitPackets.length}
           </span>
         </div>
 
         {exploitPackets.length > 0 && (
           <>
-            <span className="w-1 h-3 bg-obsidian-border rounded-full shrink-0" />
+            <span className="w-1 h-3 bg-neo-ink rounded-full shrink-0" />
             <div className="flex items-center gap-1 shrink-0 whitespace-nowrap" title="Adversary exploit probes blocked">
-              <Shield className="w-3.5 h-3.5 text-brand-orange shrink-0" />
-              <span className="text-obsidian-muted text-[11px]">Threats:</span>
-              <span className={exploitBlocked === exploitPackets.length ? 'text-brand-orange font-bold' : 'text-rose-500 font-bold'}>
+              <Shield className="w-3.5 h-3.5 text-neo-ink shrink-0" />
+              <span className="text-neo-muted text-[11px] hidden 2xl:inline">Threats:</span>
+              <span className={exploitBlocked === exploitPackets.length ? 'text-neo-ink font-bold' : 'neo-badge-deny'}>
                 {exploitBlocked}/{exploitPackets.length}
               </span>
             </div>
           </>
         )}
 
-        <span className="w-1 h-3 bg-obsidian-border rounded-full shrink-0" />
+        <span className="w-1 h-3 bg-neo-ink rounded-full shrink-0" />
         {/* Generous comfortable budget container with dedicated pill so amounts never spill */}
         <div className="flex items-center gap-1.5 shrink-0 whitespace-nowrap" title="Monthly AWS architectural cost vs budget limit">
-          <Zap className="w-3.5 h-3.5 text-brand-orange shrink-0" />
-          <span className="text-obsidian-muted text-[11px]">Budget:</span>
+          <Zap className="w-3.5 h-3.5 text-neo-ink shrink-0" />
+          <span className="text-neo-muted text-[11px] hidden 2xl:inline">Budget:</span>
           <span
             className={`px-2 py-0.5 rounded font-mono font-bold text-xs whitespace-nowrap inline-block ${
               isOverBudget
-                ? 'text-rose-600 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/80 border border-rose-300 dark:border-rose-900 shadow-sm'
-                : 'text-obsidian-text bg-obsidian-box border border-obsidian-border shadow-inner'
+                ? 'text-neo-on-accent bg-neo-coral border-2 border-neo-ink neo-on-accent '
+                : 'text-neo-ink bg-neo-raised border-2 border-neo-ink '
             }`}
           >
             ${totalCost} / ${targetBudget}/mo
@@ -170,7 +170,7 @@ export function TopNav({ onToggleHints }: TopNavProps) {
         {currentLevel.reportCard && (
           <button
             onClick={openReportCard}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 border border-brand-orange/40 text-brand-orange text-xs font-bold transition-all hover:scale-[1.02] shadow-sm shadow-orange-500/10 shrink-0"
+            className="neo-btn bg-neo-yellow text-neo-on-accent shadow-neo-sm px-2.5 shrink-0 neo-on-accent"
             title="Open Stage Mission Dossier & Blueprint Checklist"
           >
             <FileText className="w-3.5 h-3.5" />
@@ -181,7 +181,7 @@ export function TopNav({ onToggleHints }: TopNavProps) {
         {hasGuide && !isGuideOpen && (
           <button
             onClick={openGuide}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-obsidian-950 hover:bg-obsidian-850 border border-brand-orange/40 text-brand-orange text-xs font-bold shrink-0"
+            className="neo-btn neo-btn-secondary shadow-neo-sm px-2.5 shrink-0"
             title="Resume the guide"
           >
             <GraduationCap className="w-3.5 h-3.5" />
@@ -191,26 +191,26 @@ export function TopNav({ onToggleHints }: TopNavProps) {
 
         <button
           onClick={onToggleHints}
-          className="p-1.5 rounded-lg bg-obsidian-950 hover:bg-obsidian-850 border border-obsidian-border text-obsidian-muted hover:text-brand-orange transition-colors shrink-0"
+          className="neo-btn neo-btn-secondary shadow-neo-sm w-8 h-8 p-0 shrink-0"
           title="Hints & Debrief"
         >
           <HelpCircle className="w-3.5 h-3.5" />
         </button>
 
         {/* Utilities cluster */}
-        <div className="flex items-center bg-obsidian-950 p-0.5 rounded-lg border border-obsidian-border gap-0.5 shrink-0">
+        <div className="flex items-center bg-neo-surface p-0.5 rounded border-2 border-neo-ink gap-0.5 shrink-0">
           <button
             onClick={toggleTheme}
-            className="p-1.5 rounded-md hover:bg-obsidian-850 text-obsidian-muted hover:text-brand-orange transition-colors"
+            className="neo-icon-btn"
             title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
           >
-            {theme === 'dark' ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-brand-orange" />}
+            {theme === 'dark' ? <Sun className="w-3.5 h-3.5 text-neo-ink" /> : <Moon className="w-3.5 h-3.5 text-neo-ink" />}
           </button>
 
           <button
             onClick={undo}
             disabled={isRunning || history.past.length === 0}
-            className="p-1.5 rounded-md hover:bg-obsidian-850 text-obsidian-muted hover:text-obsidian-text transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+            className="neo-icon-btn"
             title={`Undo (${MOD}+Z)`}
             aria-label="Undo"
           >
@@ -220,7 +220,7 @@ export function TopNav({ onToggleHints }: TopNavProps) {
           <button
             onClick={redo}
             disabled={isRunning || history.future.length === 0}
-            className="p-1.5 rounded-md hover:bg-obsidian-850 text-obsidian-muted hover:text-obsidian-text transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+            className="neo-icon-btn"
             title={`Redo (${MOD}+Shift+Z)`}
             aria-label="Redo"
           >
@@ -229,7 +229,7 @@ export function TopNav({ onToggleHints }: TopNavProps) {
 
           <button
             onClick={openSettings}
-            className="p-1.5 rounded-md hover:bg-obsidian-850 text-obsidian-muted hover:text-obsidian-text transition-colors"
+            className="neo-icon-btn"
             title="Start over, export / import board"
             aria-label="Start over or export board"
           >
@@ -238,24 +238,24 @@ export function TopNav({ onToggleHints }: TopNavProps) {
 
           <button
             onClick={() => setSimSpeed(simSpeed === 1 ? 2 : 1)}
-            className="px-1.5 py-1 rounded-md hover:bg-obsidian-850 text-[11px] font-mono text-obsidian-muted hover:text-brand-orange transition-colors flex items-center gap-0.5"
+            className="neo-icon-btn w-auto px-1.5 gap-0.5 text-[11px] font-mono"
             title="Simulation Speed"
           >
-            <FastForward className="w-3 h-3 text-brand-orange" />
+            <FastForward className="w-3 h-3 text-neo-ink" />
             {simSpeed}x
           </button>
 
           <button
             onClick={toggleSound}
-            className="p-1.5 rounded-md hover:bg-obsidian-850 text-obsidian-muted hover:text-obsidian-text transition-colors"
+            className="neo-icon-btn"
             title={isSoundMuted ? 'Unmute Sound' : 'Mute Sound'}
           >
-            {isSoundMuted ? <VolumeX className="w-3.5 h-3.5 text-rose-500" /> : <Volume2 className="w-3.5 h-3.5" />}
+            {isSoundMuted ? <VolumeX className="w-3.5 h-3.5 text-neo-ink" /> : <Volume2 className="w-3.5 h-3.5" />}
           </button>
 
           <button
             onClick={openSettings}
-            className="flex items-center gap-1 p-1.5 rounded-md hover:bg-obsidian-850 text-obsidian-muted hover:text-obsidian-text transition-colors"
+            className="neo-icon-btn w-auto px-1.5 gap-1"
             title="Settings"
             aria-label="Settings"
           >
@@ -271,21 +271,17 @@ export function TopNav({ onToggleHints }: TopNavProps) {
           onClick={runSimulation}
           data-tour="simulate"
           title={isRunning ? 'Skip to the results' : `Simulate (${MOD}+Enter or Space)`}
-          className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all shrink-0 whitespace-nowrap ${
-            isRunning
-              ? 'bg-obsidian-850 text-obsidian-text border border-brand-orange/60 hover:bg-obsidian-800'
-              : 'bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 hover:from-orange-400 hover:to-amber-400 text-black shadow-orange-500/25 hover:scale-[1.03] active:scale-[0.98]'
-          }`}
+          className={`neo-btn shrink-0 ${isRunning ? 'neo-btn-secondary' : 'neo-btn-primary'}`}
         >
           {isRunning ? (
             <>
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-orange shrink-0" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
               <span>Skip to end</span>
               <SkipForward className="w-3.5 h-3.5 shrink-0" />
             </>
           ) : (
             <>
-              <Play className="w-3.5 h-3.5 fill-black text-black shrink-0" />
+              <Play className="w-3.5 h-3.5 fill-current shrink-0" />
               <span>Simulate</span>
             </>
           )}

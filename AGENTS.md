@@ -54,11 +54,39 @@ New shared assets or libraries go in `packages/<name>` as `@access-denied/<name>
 7. **Essential nodes.** A level's starting nodes cannot be deleted unless the level sets `essential: false` on that node, for example a NAT Gateway the player is meant to remove.
 8. **AWS icons.** Use only the curated official icons in `packages/aws-icons`, unmodified except for scaling. Do not use AWS logos or trademarks as app branding.
 
-## Theme tokens
+## Visual style: neobrutalism, "Squid & Smile" palette
 
-- Colors come from CSS variables in `src/index.css` (`--color-obsidian-*`), which Tailwind exposes as `obsidian-*`. Do not hard-code hex surface colors in components.
-- The dark theme is dark cyan, built on `#001F1F`. Text needs at least 4.5:1 contrast and UI boundaries at least 3:1. `tests/theme.test.ts` checks this.
-- Brand accent: AWS orange `#ff9900`.
+- **Tokens:** all colors are CSS variables in `src/index.css` (`--neo-*`), exposed to Tailwind as `neo-*`. Never hard-code hex colors or use raw Tailwind palette colors (`rose-500`, `zinc-800`…) in components. `tests/styleGuard.test.ts` enforces this.
+- **Backgrounds are fixed:** light `#f8fafc`, dark `#001F1F`.
+- **Ink:**
+  - light: AWS Squid Ink `#232F3E`
+  - dark: `#E6FFFB`
+- **Shadows:**
+  - light: Squid Ink
+  - dark: AWS Sky `#00A1C9`
+- **Accent roles:** each accent fill does one job. Never use an accent as text color on the background.
+
+  | Color | Job |
+  |---|---|
+  | Smile Orange `#FF9900` | primary action, legitimate traffic |
+  | Prime Yellow `#FFD814` | highlight, stars, NEW, pager, focus |
+  | Lambda Lilac `#B69CFF` | selection, active tab |
+  | Glacier Sky `#7FD8EC` | concept tags, guide |
+  | Storage Lime `#A7D34B` | pass, allowed |
+  | Security Coral `#FF6B7A` | deny, exploit, destructive |
+
+- **On-accent scope:** any element with a solid accent fill must also carry `neo-on-accent`, which switches nested text to dark ink in both themes. The `neo-btn-primary`, `neo-btn-danger`, `neo-tab-active` and `neo-badge-*` primitives already include it.
+- **Primitives:** use the primitives in `src/styles/neo.css` instead of hand-written style strings:
+  - surfaces: `neo-card`, `neo-modal`, `neo-panel`, `neo-inset`
+  - buttons: `neo-btn` with `-primary`, `-secondary`, `-danger` or `-ghost`; `neo-icon-btn`
+  - small elements: `neo-chip`, `neo-tab`, `neo-input`, `neo-badge-*`
+  - type: `neo-heading`
+- **Banned:** gradients, `backdrop-blur`, blurred colored shadows, and `rounded-xl` or larger. Shadows are hard offsets: `shadow-neo-sm`, `shadow-neo` and `shadow-neo-lg`.
+- **Fonts:** Archivo (`font-display`), IBM Plex Sans (`font-sans`) and IBM Plex Mono (`font-mono`), bundled through `@fontsource/*`.
+- **Contrast:**
+  - text: at least 7:1 for ink and 4.5:1 for muted text and text on fills
+  - UI boundaries and shadows: at least 3:1
+  - `tests/theme.test.ts` checks both themes.
 
 ## Writing in-game copy
 

@@ -3,15 +3,17 @@ import { BaseEdge, EdgeLabelRenderer, EdgeProps, getBezierPath } from '@xyflow/r
 import { useGameStore, ReturnOutcome } from '../../../store/useGameStore';
 import { X, ArrowLeftRight } from 'lucide-react';
 
+// Squid & Smile roles: ink idle, lilac selected, orange legit, coral exploit.
 const COLOR = {
-  idle: 'var(--color-edge)',
-  selected: '#ff9900',
-  legit: '#ff9900',
-  exploit: 'var(--color-exploit)',
-  threat: 'var(--color-exploit)',
-  allow: 'var(--color-success)',
-  deny: 'var(--color-exploit)',
-  timeout: 'var(--color-warning)',
+  ink: 'var(--neo-ink)',
+  idle: 'var(--neo-ink)',
+  selected: 'var(--neo-lilac)',
+  legit: 'var(--neo-orange)',
+  exploit: 'var(--neo-coral)',
+  threat: 'var(--neo-coral)',
+  allow: 'var(--neo-lime)',
+  deny: 'var(--neo-coral)',
+  timeout: 'var(--neo-yellow)',
 };
 
 /**
@@ -19,7 +21,7 @@ const COLOR = {
  * begin time are timed from document load, so a dot inserted mid-session
  * would already be "finished"; start each one explicitly when it mounts.
  */
-function PacketDot({ path, dur, reverse, fill, stroke }: { path: string; dur: number; reverse?: boolean; fill: string; stroke?: string }) {
+function PacketDot({ path, dur, reverse, fill, stroke = COLOR.ink }: { path: string; dur: number; reverse?: boolean; fill: string; stroke?: string }) {
   const circleRef = useRef<SVGCircleElement>(null);
   const motionRef = useRef<SVGAnimateMotionElement>(null);
   useEffect(() => {
@@ -28,7 +30,7 @@ function PacketDot({ path, dur, reverse, fill, stroke }: { path: string; dur: nu
     circleRef.current?.setAttribute('opacity', '1');
   }, []);
   return (
-    <circle ref={circleRef} r="6" fill={fill} stroke={stroke} strokeWidth={stroke ? 2.5 : 0} opacity={0}>
+    <circle ref={circleRef} r="7" fill={fill} stroke={stroke} strokeWidth={2.5} opacity={0}>
       <animateMotion
         ref={motionRef}
         begin="indefinite"
@@ -105,6 +107,8 @@ export function AnimatedPacketEdge({
   const returnColor = returnOutcome ? COLOR[returnOutcome] : COLOR.idle;
   // Denied and timed-out answers travel back hollow; allowed answers are filled.
   const hollow = returnOutcome === 'deny' || returnOutcome === 'timeout';
+  const emphasized = strokeColor !== COLOR.idle;
+  const width = selected || isSimulating ? 3.5 : 2.5;
 
   return (
     <>
@@ -119,9 +123,14 @@ export function AnimatedPacketEdge({
           markerUnits="userSpaceOnUse"
           orient="auto-start-reverse"
         >
-          <path d="M 0 0 L 12 6 L 0 12 z" fill={strokeColor} style={{ transition: 'fill 0.2s' }} />
+          <path d="M 1 1 L 11 6 L 1 11 z" fill={strokeColor} stroke={COLOR.ink} strokeWidth={emphasized ? 1.5 : 0} strokeLinejoin="round" />
         </marker>
       </defs>
+
+      {/* Colored edges sit on an ink underlay so they read on any background. */}
+      {emphasized && (
+        <path d={edgePath} fill="none" stroke={COLOR.ink} strokeWidth={width + 3} strokeLinecap="round" style={{ pointerEvents: 'none' }} />
+      )}
 
       <BaseEdge
         id={id}
@@ -130,9 +139,9 @@ export function AnimatedPacketEdge({
         interactionWidth={24}
         style={{
           stroke: strokeColor,
-          strokeWidth: selected || isSimulating ? 3 : 2,
-          strokeDasharray: isThreatEdge && !isSimulating ? '5,5' : undefined,
-          transition: 'stroke 0.2s, stroke-width 0.2s',
+          strokeWidth: width,
+          strokeDasharray: isThreatEdge && !isSimulating && !selected ? '8,5' : undefined,
+          strokeLinecap: 'round',
         }}
       />
 
@@ -146,8 +155,8 @@ export function AnimatedPacketEdge({
           path={edgePath}
           dur={speed / 2}
           reverse
-          fill={hollow ? 'var(--color-obsidian-950)' : returnColor}
-          stroke={returnColor}
+          fill={hollow ? 'var(--neo-surface)' : returnColor}
+          stroke={hollow ? returnColor : COLOR.ink}
         />
       )}
 
@@ -162,13 +171,9 @@ export function AnimatedPacketEdge({
         >
           {isSimulating && returnLabel && (
             <span
-              className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold border shadow-sm ${
-                returnOutcome === 'allow'
-                  ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/40'
-                  : returnOutcome === 'timeout'
-                  ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/40'
-                  : 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/40'
-              }`}
+              className={
+                returnOutcome === 'allow' ? 'neo-badge-pass' : returnOutcome === 'timeout' ? 'neo-badge-new' : 'neo-badge-deny'
+              }
             >
               {returnLabel}
             </span>
@@ -176,12 +181,8 @@ export function AnimatedPacketEdge({
 
           {label && (
             <span
-              className={`px-2 py-0.5 rounded-full text-[10px] font-mono shadow-sm select-none transition-colors ${
-                selected
-                  ? 'bg-brand-orange text-black font-bold border border-brand-orange'
-                  : isThreatEdge
-                  ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30'
-                  : 'bg-obsidian-900 text-obsidian-text border border-obsidian-border'
+              className={`neo-chip select-none shadow-neo-sm ${
+                selected ? 'bg-neo-lilac neo-on-accent' : isThreatEdge ? 'bg-neo-coral neo-on-accent' : ''
               }`}
             >
               {label}
@@ -194,7 +195,7 @@ export function AnimatedPacketEdge({
               e.stopPropagation();
               reverseEdge(id);
             }}
-            className={`w-5 h-5 rounded-full bg-obsidian-900 border border-obsidian-border hover:border-brand-orange text-obsidian-muted hover:text-brand-orange flex items-center justify-center transition-all shadow-md ${
+            className={`w-6 h-6 rounded-sm bg-neo-surface border-2 border-neo-ink text-neo-ink hover:bg-neo-sky flex items-center justify-center shadow-neo-sm ${
               selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'
             }`}
             title="Reverse direction"
@@ -209,10 +210,8 @@ export function AnimatedPacketEdge({
               e.stopPropagation();
               removeEdge(id);
             }}
-            className={`w-5 h-5 rounded-full bg-obsidian-900 border border-obsidian-border hover:border-rose-500 hover:bg-rose-500/20 text-obsidian-muted hover:text-rose-500 flex items-center justify-center transition-all shadow-md ${
-              selected
-                ? 'opacity-100 scale-105 border-brand-orange ring-1 ring-brand-orange/40'
-                : 'opacity-0 group-hover:opacity-100 focus:opacity-100 hover:scale-110'
+            className={`w-6 h-6 rounded-sm bg-neo-surface border-2 border-neo-ink text-neo-ink hover:bg-neo-coral flex items-center justify-center shadow-neo-sm ${
+              selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'
             }`}
             title="Delete Connection Edge (Backspace / Delete)"
             aria-label="Delete connection"

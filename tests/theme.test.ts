@@ -22,39 +22,59 @@ function contrast(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05);
 }
 
+const root = block(':root');
 const dark = block('.dark');
-const light = block(':root');
-const surfaces = ['950', '900', '850', '800', 'box'].map(k => dark[`--color-obsidian-${k}`]);
+// Dark inherits anything it does not override (the accent fills).
+const themes = {
+  light: (k: string) => root[`--neo-${k}`],
+  dark: (k: string) => dark[`--neo-${k}`] ?? root[`--neo-${k}`],
+};
+const ACCENTS = ['orange', 'yellow', 'lilac', 'sky', 'lime', 'coral'];
 
-describe('Dark-cyan theme', () => {
-  it('uses #001F1F as the app background', () => {
-    expect(dark['--color-obsidian-950'].toUpperCase()).toBe('#001F1F');
+describe('Squid & Smile palette', () => {
+  it('keeps both theme backgrounds', () => {
+    expect(themes.light('bg').toLowerCase()).toBe('#f8fafc');
+    expect(themes.dark('bg').toUpperCase()).toBe('#001F1F');
   });
 
-  it('keeps no legacy near-black surfaces', () => {
+  it('uses AWS Squid Ink in light and AWS Sky shadows in dark', () => {
+    expect(themes.light('ink').toUpperCase()).toBe('#232F3E');
+    expect(themes.light('shadow').toUpperCase()).toBe('#232F3E');
+    expect(themes.dark('shadow').toUpperCase()).toBe('#00A1C9');
+  });
+
+  it('keeps the accent fills the same in both themes', () => {
+    expect(root['--neo-orange'].toUpperCase()).toBe('#FF9900');
+    for (const a of ACCENTS) expect(dark[`--neo-${a}`], a).toBeUndefined();
+  });
+
+  for (const [name, t] of Object.entries(themes)) {
+    describe(`${name} theme contrast`, () => {
+      const surfaces = ['bg', 'surface', 'raised'].map(t);
+
+      it('ink on every surface is at least 7:1', () => {
+        for (const s of surfaces) expect(contrast(t('ink'), s), s).toBeGreaterThanOrEqual(7);
+      });
+
+      it('muted text on every surface is at least 4.5:1', () => {
+        for (const s of surfaces) expect(contrast(t('muted'), s), s).toBeGreaterThanOrEqual(4.5);
+      });
+
+      it('text on every accent fill is at least 4.5:1', () => {
+        for (const a of ACCENTS) expect(contrast(t('on-accent'), t(a)), a).toBeGreaterThanOrEqual(4.5);
+      });
+
+      it('shadow and ink borders are at least 3:1 against background and surface', () => {
+        for (const s of [t('bg'), t('surface')]) {
+          expect(contrast(t('shadow'), s), `shadow on ${s}`).toBeGreaterThanOrEqual(3);
+          expect(contrast(t('ink'), s), `ink on ${s}`).toBeGreaterThanOrEqual(3);
+        }
+      });
+    });
+  }
+
+  it('keeps no legacy near-black dark surfaces', () => {
     const values = Object.values(dark).map(v => v.toLowerCase());
     for (const legacy of ['#09090b', '#121215', '#18181b']) expect(values).not.toContain(legacy);
-  });
-
-  it('body and muted text meet 4.5:1 on every dark surface', () => {
-    for (const s of surfaces) {
-      expect(contrast(dark['--color-obsidian-text'], s), s).toBeGreaterThanOrEqual(4.5);
-      expect(contrast(dark['--color-obsidian-muted'], s), s).toBeGreaterThanOrEqual(4.5);
-    }
-  });
-
-  it('borders and status colors meet 3:1 on every dark surface', () => {
-    const ui = ['--color-obsidian-border', '--color-exploit', '--color-success', '--color-warning'].map(k => dark[k]);
-    for (const color of [...ui, '#ff9900']) {
-      for (const s of surfaces) expect(contrast(color, s), `${color} on ${s}`).toBeGreaterThanOrEqual(3);
-    }
-  });
-
-  it('leaves the light theme unchanged', () => {
-    expect(light['--color-obsidian-950']).toBe('#f8fafc');
-    expect(light['--color-obsidian-900']).toBe('#ffffff');
-    expect(light['--color-obsidian-text']).toBe('#0f172a');
-    expect(light['--color-obsidian-muted']).toBe('#64748b');
-    expect(light['--color-obsidian-border']).toBe('#e2e8f0');
   });
 });

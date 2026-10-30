@@ -16,16 +16,16 @@ export function HintDrawer({ isOpen, onClose }: HintDrawerProps) {
   const hints = currentLevel.hints || [];
 
   return (
-    <div className="fixed inset-y-0 right-0 w-96 bg-obsidian-900/95 backdrop-blur-xl border-l border-obsidian-border shadow-2xl z-50 flex flex-col animate-in slide-in-from-right duration-200">
+    <div className="fixed inset-y-0 right-0 w-96 neo-panel border-l-3 z-50 flex flex-col animate-in slide-in-from-right duration-200">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3.5 border-b border-obsidian-border">
+      <div className="flex items-center justify-between px-4 py-3.5 border-b-2 border-neo-ink">
         <div className="flex items-center gap-2">
-          <BookOpen className="w-4 h-4 text-brand-orange" />
-          <span className="text-xs font-bold text-obsidian-text">Round Intel & Hints</span>
+          <BookOpen className="w-4 h-4 text-neo-ink" />
+          <span className="text-xs font-bold text-neo-ink">Round Intel & Hints</span>
         </div>
         <button
           onClick={onClose}
-          className="p-1 rounded-lg text-obsidian-muted hover:text-obsidian-text hover:bg-obsidian-850 transition-colors"
+          className="neo-icon-btn"
         >
           <X className="w-4 h-4" />
         </button>
@@ -33,24 +33,24 @@ export function HintDrawer({ isOpen, onClose }: HintDrawerProps) {
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
         {/* Mission Brief */}
-        <div className="bg-obsidian-box border border-obsidian-border rounded-xl p-3.5 space-y-2">
-          <div className="flex items-center gap-1.5 text-obsidian-text font-bold">
-            <Sparkles className="w-3.5 h-3.5 text-brand-orange" />
+        <div className="bg-neo-raised border-2 border-neo-ink rounded-neo p-3.5 space-y-2">
+          <div className="flex items-center gap-1.5 text-neo-ink font-bold">
+            <Sparkles className="w-3.5 h-3.5 text-neo-ink" />
             <span>Scenario Brief</span>
           </div>
-          <p className="text-obsidian-muted leading-relaxed text-[11px]">
+          <p className="text-neo-muted leading-relaxed text-[11px]">
             {currentLevel.storyBrief}
           </p>
         </div>
 
         {/* Threat Intel */}
         {currentLevel.threatIntel && (
-          <div className="bg-rose-500/5 border border-rose-500/20 dark:border-rose-900/40 rounded-xl p-3.5 space-y-2">
-            <div className="flex items-center gap-1.5 text-rose-500 font-bold">
-              <ShieldAlert className="w-3.5 h-3.5 text-rose-500" />
+          <div className="bg-neo-coral border-2 border-neo-ink rounded-neo p-3.5 space-y-2 neo-on-accent">
+            <div className="flex items-center gap-1.5 text-neo-ink font-bold">
+              <ShieldAlert className="w-3.5 h-3.5 text-neo-ink" />
               <span>Threat Intelligence</span>
             </div>
-            <p className="text-obsidian-muted leading-relaxed text-[11px]">
+            <p className="text-neo-muted leading-relaxed text-[11px]">
               {currentLevel.threatIntel}
             </p>
           </div>
@@ -59,7 +59,7 @@ export function HintDrawer({ isOpen, onClose }: HintDrawerProps) {
         {/* Progressive 3-Tier Hints */}
         {hints.length > 0 && (
           <div className="space-y-2 pt-2">
-            <div className="text-xs font-bold text-obsidian-text uppercase tracking-wider">
+            <div className="text-xs font-bold text-neo-ink uppercase tracking-wider">
               IAM Coach Clues
             </div>
 
@@ -68,7 +68,7 @@ export function HintDrawer({ isOpen, onClose }: HintDrawerProps) {
               return (
                 <div
                   key={idx}
-                  className="bg-obsidian-box border border-obsidian-border rounded-xl overflow-hidden transition-all"
+                  className="bg-neo-raised border-2 border-neo-ink rounded-neo overflow-hidden transition-all"
                 >
                   <button
                     onClick={() => {
@@ -76,25 +76,25 @@ export function HintDrawer({ isOpen, onClose }: HintDrawerProps) {
                         setUnlockedTier(idx);
                       }
                     }}
-                    className="w-full flex items-center justify-between p-3 text-left hover:bg-obsidian-850 transition-colors"
+                    className="w-full flex items-center justify-between p-3 text-left hover:bg-neo-raised transition-colors"
                   >
                     <div className="flex items-center gap-2">
-                      <Key className={`w-3.5 h-3.5 ${isUnlocked ? 'text-brand-orange' : 'text-obsidian-muted'}`} />
-                      <span className={`font-semibold capitalize text-xs ${isUnlocked ? 'text-obsidian-text' : 'text-obsidian-muted'}`}>
+                      <Key className={`w-3.5 h-3.5 ${isUnlocked ? 'text-neo-ink' : 'text-neo-muted'}`} />
+                      <span className={`font-semibold capitalize text-xs ${isUnlocked ? 'text-neo-ink' : 'text-neo-muted'}`}>
                         Hint {idx + 1}: {hint.title}
                       </span>
                     </div>
                     {isUnlocked ? (
-                      <ChevronDown className="w-3.5 h-3.5 text-obsidian-muted" />
+                      <ChevronDown className="w-3.5 h-3.5 text-neo-muted" />
                     ) : (
-                      <span className="text-[10px] text-brand-orange font-mono flex items-center gap-1">
+                      <span className="text-[10px] text-neo-ink font-mono flex items-center gap-1">
                         Unlock <ChevronRight className="w-3 h-3" />
                       </span>
                     )}
                   </button>
 
                   {isUnlocked && (
-                    <div className="px-3.5 pb-3 text-[11px] text-obsidian-muted leading-relaxed border-t border-obsidian-border pt-2 font-mono whitespace-pre-wrap bg-obsidian-950">
+                    <div className="px-3.5 pb-3 text-[11px] text-neo-muted leading-relaxed border-t-2 border-neo-ink pt-2 font-mono whitespace-pre-wrap bg-neo-bg">
                       {hint.content}
                     </div>
                   )}

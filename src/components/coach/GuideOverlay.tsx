@@ -84,43 +84,43 @@ export function GuideOverlay() {
       role="dialog"
       aria-label="Guide"
     >
-      <div className="rounded-2xl border-2 border-brand-orange/70 bg-obsidian-900 shadow-2xl p-4 space-y-2.5">
+      <div className="neo-modal bg-neo-sky neo-on-accent p-4 space-y-2.5">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-brand-orange font-bold">
+          <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-neo-ink font-bold">
             <GraduationCap className="w-3.5 h-3.5" />
             Step {index + 1} of {steps.length}
           </div>
-          <button onClick={exitGuide} className="text-obsidian-muted hover:text-obsidian-text" aria-label="Leave guide" title="Leave guide (resume from the top bar)">
+          <button onClick={exitGuide} className="neo-icon-btn w-6 h-6" aria-label="Leave guide" title="Leave guide (resume from the top bar)">
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="h-1 rounded-full bg-obsidian-850 overflow-hidden" aria-hidden>
-          <div className="h-full bg-brand-orange transition-all" style={{ width: `${((index + 1) / steps.length) * 100}%` }} />
+        <div className="h-2.5 rounded-sm border-2 border-neo-ink bg-neo-surface overflow-hidden" aria-hidden>
+          <div className="h-full bg-neo-orange border-r-2 border-neo-ink transition-all neo-on-accent" style={{ width: `${((index + 1) / steps.length) * 100}%` }} />
         </div>
 
         <div className="flex items-center gap-1.5">
-          <h3 className="text-sm font-bold text-obsidian-text">{step.title}</h3>
+          <h3 className="neo-heading text-base">{step.title}</h3>
           {step.conceptId && <InfoPopover conceptId={step.conceptId} />}
         </div>
-        <p className="text-xs text-obsidian-muted leading-relaxed">{step.body}</p>
+        <p className="text-xs text-neo-muted leading-relaxed">{step.body}</p>
 
         <div className="flex items-center justify-between pt-1">
           <button
             onClick={() => setGuideStep(index - 1)}
             disabled={index === 0}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-obsidian-muted hover:text-obsidian-text disabled:opacity-30"
+            className="neo-btn neo-btn-ghost px-2.5 py-1"
           >
             <ArrowLeft className="w-3.5 h-3.5" /> Back
           </button>
           {waiting ? (
-            <span className="flex items-center gap-1 text-[11px] text-obsidian-muted">
-              <Hourglass className="w-3.5 h-3.5 text-brand-orange" /> Waiting for you…
+            <span className="flex items-center gap-1 text-[11px] text-neo-muted">
+              <Hourglass className="w-3.5 h-3.5 text-neo-ink" /> Waiting for you…
             </span>
           ) : (
             <button
               onClick={() => (index >= steps.length - 1 ? completeGuide() : setGuideStep(index + 1))}
-              className="flex items-center gap-1 px-3 py-1 rounded-lg bg-brand-orange hover:bg-brand-hover text-black text-xs font-bold"
+              className="neo-btn neo-btn-primary flex items-center gap-1 px-3 py-1"
             >
               Next <ArrowRight className="w-3.5 h-3.5" />
             </button>

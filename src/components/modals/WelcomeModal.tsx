@@ -16,55 +16,55 @@ export function WelcomeModal() {
   if (!isWelcomeOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[65] flex items-center justify-center p-4 bg-scrim backdrop-blur-md" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
-      <div className="w-full max-w-lg bg-obsidian-900 border border-obsidian-border rounded-3xl shadow-2xl p-6 space-y-5">
+    <div className="fixed inset-0 z-[65] flex items-center justify-center p-4 bg-scrim " role="dialog" aria-modal="true" aria-labelledby="welcome-title">
+      <div className="w-full max-w-lg neo-modal p-6 space-y-5">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-obsidian-box border border-brand-orange/50 flex items-center justify-center">
-            <Shield className="w-5 h-5 text-brand-orange" />
+          <div className="w-11 h-11 rounded-neo bg-neo-raised border-2 border-neo-ink flex items-center justify-center">
+            <Shield className="w-5 h-5 text-neo-ink" />
           </div>
           <div>
-            <h2 id="welcome-title" className="text-lg font-extrabold text-obsidian-text tracking-tight">
-              Welcome to Access<span className="text-brand-orange">Denied</span>
+            <h2 id="welcome-title" className="neo-heading text-lg font-extrabold text-neo-ink tracking-tight">
+              Welcome to Access<span className="text-neo-ink">Denied</span>
             </h2>
-            <p className="text-xs text-obsidian-muted">Learn AWS security by fixing broken cloud setups.</p>
+            <p className="text-xs text-neo-muted">Learn AWS security by fixing broken cloud setups.</p>
           </div>
         </div>
 
         <ol className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           {LOOP.map((step, i) => (
-            <li key={step.title} className="bg-obsidian-box border border-obsidian-border rounded-xl p-3 space-y-1">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-obsidian-text">
-                <span className="w-5 h-5 rounded-md bg-brand-orange text-black text-[10px] font-extrabold flex items-center justify-center">{i + 1}</span>
-                <step.icon className="w-3.5 h-3.5 text-brand-orange" />
+            <li key={step.title} className="bg-neo-raised border-2 border-neo-ink rounded-neo p-3 space-y-1">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-neo-ink">
+                <span className="w-5 h-5 rounded-sm bg-neo-orange text-neo-on-accent text-[10px] font-extrabold flex items-center justify-center neo-on-accent">{i + 1}</span>
+                <step.icon className="w-3.5 h-3.5 text-neo-ink" />
                 {step.title}
               </div>
-              <p className="text-[11px] text-obsidian-muted leading-relaxed">{step.body}</p>
+              <p className="text-[11px] text-neo-muted leading-relaxed">{step.body}</p>
             </li>
           ))}
         </ol>
 
         <label className="block space-y-1">
-          <span className="text-xs font-semibold text-obsidian-text">What should we call you? <span className="text-obsidian-muted font-normal">(optional, stays on this device)</span></span>
+          <span className="text-xs font-semibold text-neo-ink">What should we call you? <span className="text-neo-muted font-normal">(optional, stays on this device)</span></span>
           <input
             value={name}
             onChange={e => setName(e.target.value)}
             maxLength={40}
             placeholder="Your name"
-            className="w-full bg-obsidian-box border border-obsidian-border rounded-lg px-3 py-2 text-sm text-obsidian-text placeholder-obsidian-muted focus:outline-none focus:border-brand-orange"
+            className="neo-input w-full text-sm"
           />
         </label>
 
         <div className="flex flex-col sm:flex-row gap-2">
           <button
             onClick={() => completeWelcome({ displayName: name, startTutorial: true })}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-brand-orange hover:bg-brand-hover text-black text-sm font-bold shadow-lg"
+            className="neo-btn neo-btn-primary text-sm flex-1 flex items-center justify-center gap-2 px-4 py-2.5"
           >
             Start with Round 0: Cloud Basics
             <ArrowRight className="w-4 h-4" />
           </button>
           <button
             onClick={() => completeWelcome({ displayName: name, startTutorial: false })}
-            className="px-4 py-2.5 rounded-xl bg-obsidian-850 hover:bg-obsidian-800 text-obsidian-text border border-obsidian-border text-sm font-semibold"
+            className="neo-btn neo-btn-secondary px-4 py-2.5 text-sm"
           >
             Skip, I know IAM
           </button>

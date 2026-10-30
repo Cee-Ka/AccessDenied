@@ -23,7 +23,7 @@ export function ConceptTags({ ids, max = MAX_TAGS }: { ids: string[]; max?: numb
       ))}
       {rest.length > 0 && (
         <span
-          className="text-[10px] font-mono px-1.5 py-0.5 rounded-md text-obsidian-muted border border-dashed border-obsidian-border"
+          className="text-[10px] font-mono px-1.5 py-0.5 rounded-sm text-neo-muted border-2 border-dashed border-neo-ink"
           title={rest.map(id => getConcept(id)?.title ?? id).join(', ')}
         >
           +{rest.length}
@@ -88,12 +88,12 @@ export function LevelPicker() {
         onClick={() => setOpen(o => !o)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="flex items-center gap-1.5 bg-obsidian-950 border border-obsidian-border hover:border-obsidian-muted text-obsidian-text rounded-lg px-2 py-1 text-xs font-semibold w-32 sm:w-44 md:w-52 min-w-0"
+        className="flex items-center gap-1.5 bg-neo-surface border-2 border-neo-ink shadow-neo-sm text-neo-ink rounded px-2 py-1 text-xs font-display font-bold w-28 sm:w-36 xl:w-44 min-w-0"
         title="Select stage"
       >
-        <span className="text-brand-orange font-mono shrink-0">{levelCode(currentLevel)}</span>
+        <span className="neo-chip bg-neo-orange neo-on-accent shrink-0">{levelCode(currentLevel)}</span>
         <span className="truncate flex-1 text-left">{currentLevel.title}</span>
-        <ChevronDown className="w-3.5 h-3.5 text-obsidian-muted shrink-0" />
+        <ChevronDown className="w-3.5 h-3.5 text-neo-muted shrink-0" />
       </button>
 
       {open && createPortal(
@@ -102,7 +102,7 @@ export function LevelPicker() {
           role="listbox"
           aria-label="Stages"
           style={{ position: 'fixed', top: pos?.top ?? -9999, left: pos?.left ?? -9999, maxHeight: pos?.maxHeight }}
-          className="w-[380px] max-w-[calc(100vw-1rem)] overflow-y-auto rounded-xl border border-obsidian-border bg-obsidian-900 text-obsidian-text shadow-2xl p-1.5 z-[55] space-y-1"
+          className="w-[380px] max-w-[calc(100vw-1rem)] overflow-y-auto neo-modal p-1.5 z-[55] space-y-1"
         >
           {levels.map(lvl => {
             const unlocked = isLevelUnlocked(lvl.id, starRecords);
@@ -114,9 +114,9 @@ export function LevelPicker() {
                 role="option"
                 aria-selected={active}
                 aria-disabled={!unlocked}
-                className={`rounded-lg border p-2 space-y-1.5 ${
-                  active ? 'border-brand-orange/60 bg-orange-500/5' : 'border-transparent hover:bg-obsidian-850'
-                } ${unlocked ? '' : 'opacity-50'}`}
+                className={`rounded-sm border-2 p-2 space-y-1.5 ${
+                  active ? 'border-neo-ink bg-neo-lilac neo-on-accent shadow-neo-sm' : unlocked ? 'border-transparent hover:border-neo-ink' : 'border-dashed border-neo-muted'
+                }`}
               >
                 <button
                   disabled={!unlocked}
@@ -126,19 +126,19 @@ export function LevelPicker() {
                   }}
                   className="w-full flex items-center gap-2 text-left disabled:cursor-not-allowed"
                 >
-                  <span className="text-[10px] font-mono font-bold text-brand-orange w-8 shrink-0">{levelCode(lvl)}</span>
+                  <span className="neo-chip w-9 justify-center shrink-0">{levelCode(lvl)}</span>
                   <span className="flex-1 min-w-0">
-                    <span className="block text-xs font-bold text-obsidian-text truncate">{lvl.title}</span>
-                    <span className="block text-[10px] text-obsidian-muted truncate">{lvl.subtitle}</span>
+                    <span className="block text-xs font-display font-extrabold text-neo-ink truncate">{lvl.title}</span>
+                    <span className="block text-[10px] text-neo-muted truncate">{lvl.subtitle}</span>
                   </span>
                   {unlocked ? (
                     <span className="flex gap-0.5 shrink-0" aria-label={`${stars} of 3 stars`}>
                       {[1, 2, 3].map(n => (
-                        <Star key={n} className={`w-3 h-3 ${n <= stars ? 'fill-brand-orange text-brand-orange' : 'text-obsidian-border'}`} />
+                        <Star key={n} className={`w-3 h-3 ${n <= stars ? 'fill-neo-yellow text-neo-ink' : 'text-neo-muted'}`} />
                       ))}
                     </span>
                   ) : (
-                    <Lock className="w-3.5 h-3.5 text-obsidian-muted shrink-0" aria-label="Locked" />
+                    <Lock className="w-3.5 h-3.5 text-neo-muted shrink-0" aria-label="Locked" />
                   )}
                 </button>
                 {lvl.conceptTags.length > 0 && (

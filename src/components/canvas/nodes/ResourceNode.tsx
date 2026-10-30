@@ -11,38 +11,36 @@ export const ResourceNode = memo(({ id, data, selected }: NodeProps & { data: Cl
   return (
     <div
       onClick={() => selectNode(id)}
-      className={`relative min-w-[200px] rounded-xl border bg-obsidian-900/95 backdrop-blur-md px-3.5 py-3 shadow-xl transition-all cursor-pointer ${
-        selected
-          ? 'border-brand-orange ring-2 ring-brand-orange/40 shadow-xl shadow-orange-500/20'
-          : 'border-obsidian-border hover:border-obsidian-muted'
+      className={`relative min-w-[200px] neo-card px-3.5 py-3 transition-[box-shadow,transform] cursor-pointer ${
+        selected ? 'bg-neo-lilac neo-on-accent shadow-neo-lg -translate-x-0.5 -translate-y-0.5' : 'hover:shadow-neo-lg'
       }`}
     >
       <EssentialLockBadge data={data} />
       <Handle
         type="target"
         position={Position.Left}
-        className="w-3 h-3 bg-brand-orange border-2 border-obsidian-900 hover:scale-125 transition-transform"
+        className="w-3 h-3 bg-neo-orange border-2 border-neo-ink neo-on-accent"
       />
 
       <div className="flex items-center gap-2.5">
         <ServiceIconTile data={data} />
         <div className="min-w-0 flex-1">
-          <div className="text-xs font-bold text-obsidian-text truncate">{data.label}</div>
-          <div className="text-[10px] text-obsidian-muted font-mono">${data.monthlyCost}/mo</div>
+          <div className="text-xs font-display font-extrabold text-neo-ink truncate">{data.label}</div>
+          <div className="text-[10px] text-neo-muted font-mono">${data.monthlyCost}/mo</div>
         </div>
       </div>
 
       <div className="mt-2.5 flex flex-wrap gap-1.5 items-center">
-        <span className="text-[9px] uppercase px-1.5 py-0.5 rounded font-mono bg-obsidian-box text-obsidian-muted border border-obsidian-border">
+        <span className="neo-chip text-[9px] uppercase">
           {data.type}
         </span>
 
         {data.type === 's3' && (
           <span
-            className={`text-[9px] font-mono px-1.5 py-0.5 rounded border ${
+            className={`text-[9px] ${
               data.config?.blockPublicAccess
-                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
-                : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30 animate-pulse'
+                ? 'neo-badge-pass'
+                : 'neo-badge-deny'
             }`}
           >
             {data.config?.blockPublicAccess ? 'Public Block ON' : 'Public Block OFF'}
@@ -50,7 +48,7 @@ export const ResourceNode = memo(({ id, data, selected }: NodeProps & { data: Cl
         )}
 
         {data.resourcePolicy && (
-          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-orange-500/10 text-brand-orange border border-brand-orange/30">
+          <span className="neo-badge-new text-[9px]">
             Resource Policy
           </span>
         )}
@@ -59,7 +57,7 @@ export const ResourceNode = memo(({ id, data, selected }: NodeProps & { data: Cl
       <Handle
         type="source"
         position={Position.Right}
-        className="w-3 h-3 bg-brand-orange border-2 border-obsidian-900 hover:scale-125 transition-transform"
+        className="w-3 h-3 bg-neo-orange border-2 border-neo-ink neo-on-accent"
       />
     </div>
   );

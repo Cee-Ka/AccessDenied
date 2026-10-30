@@ -12,9 +12,9 @@ export function AskAgentButton({ className = '' }: { className?: string }) {
       onClick={openAskAgent}
       disabled={!resultsCurrent}
       title={resultsCurrent ? 'Copy a tutor prompt for your own AI assistant' : 'Run the simulation first'}
-      className={`whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-obsidian-850 hover:bg-obsidian-800 text-xs font-semibold text-obsidian-text border border-obsidian-border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${className}`}
+      className={`whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded bg-neo-raised hover:bg-neo-raised text-xs font-semibold text-neo-ink border-2 border-neo-ink transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${className}`}
     >
-      <Bot className="w-3.5 h-3.5 text-brand-orange" />
+      <Bot className="w-3.5 h-3.5 text-neo-ink" />
       Ask your agent
     </button>
   );
@@ -65,18 +65,18 @@ export function AskAgentPanel() {
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-scrim backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="ask-agent-title">
-      <div className="w-full max-w-2xl bg-obsidian-900 border border-obsidian-border rounded-2xl shadow-2xl flex flex-col max-h-[85vh]">
-        <div className="flex items-center justify-between px-5 py-3 border-b border-obsidian-border">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-scrim " role="dialog" aria-modal="true" aria-labelledby="ask-agent-title">
+      <div className="w-full max-w-2xl neo-modal flex flex-col max-h-[85vh]">
+        <div className="flex items-center justify-between px-5 py-3 border-b-2 border-neo-ink">
           <div>
-            <h2 id="ask-agent-title" className="text-sm font-bold text-obsidian-text flex items-center gap-2">
-              <Bot className="w-4 h-4 text-brand-orange" /> Ask your agent
+            <h2 id="ask-agent-title" className="neo-heading text-sm font-bold text-neo-ink flex items-center gap-2">
+              <Bot className="w-4 h-4 text-neo-ink" /> Ask your agent
             </h2>
-            <p className="text-[11px] text-obsidian-muted">
+            <p className="text-[11px] text-neo-muted">
               Paste this into your own AI assistant. It explains what happened without giving away the fix. The game does not send it anywhere.
             </p>
           </div>
-          <button onClick={closeAskAgent} className="p-1.5 rounded-lg text-obsidian-muted hover:text-obsidian-text hover:bg-obsidian-850" aria-label="Close">
+          <button onClick={closeAskAgent} className="neo-icon-btn" aria-label="Close">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -86,14 +86,14 @@ export function AskAgentPanel() {
             readOnly
             value={prompt}
             aria-label="Tutor prompt"
-            className="w-full h-[50vh] resize-none bg-obsidian-box border border-obsidian-border rounded-lg p-3 font-mono text-[11px] text-obsidian-text focus:outline-none focus:border-brand-orange select-text"
+            className="w-full h-[50vh] resize-none bg-neo-raised border-2 border-neo-ink rounded p-3 font-mono text-[11px] text-neo-ink focus:outline-none focus:border-neo-ink select-text"
           />
         </div>
-        <div className="flex items-center justify-between px-5 py-3 border-t border-obsidian-border">
-          <span className="text-[11px] text-obsidian-muted font-mono">{prompt.length.toLocaleString()} characters</span>
+        <div className="flex items-center justify-between px-5 py-3 border-t-2 border-neo-ink">
+          <span className="text-[11px] text-neo-muted font-mono">{prompt.length.toLocaleString()} characters</span>
           <button
             onClick={copy}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-brand-orange hover:bg-brand-hover text-black text-xs font-bold shadow-lg"
+            className="neo-btn neo-btn-primary flex items-center gap-1.5 px-4 py-1.5"
           >
             {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
             {copied ? 'Copied' : 'Copy'}

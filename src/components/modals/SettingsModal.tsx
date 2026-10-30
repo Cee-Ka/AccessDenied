@@ -43,22 +43,22 @@ export function SettingsModal() {
     if (fileRef.current) fileRef.current.value = '';
   };
 
-  const row = 'flex items-center justify-between gap-3 py-2.5 border-b border-obsidian-border last:border-0';
-  const btn = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-obsidian-850 hover:bg-obsidian-800 text-xs font-semibold text-obsidian-text border border-obsidian-border';
+  const row = 'flex items-center justify-between gap-3 py-2.5 border-b-2 border-neo-ink last:border-0';
+  const btn = 'flex items-center gap-1.5 px-3 py-1.5 rounded bg-neo-raised hover:bg-neo-raised text-xs font-semibold text-neo-ink border-2 border-neo-ink';
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-scrim backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-      <div className="w-full max-w-md bg-obsidian-900 border border-obsidian-border rounded-2xl shadow-2xl">
-        <div className="flex items-center justify-between px-5 py-3 border-b border-obsidian-border">
-          <h2 id="settings-title" className="text-sm font-bold text-obsidian-text">Settings</h2>
-          <button onClick={closeSettings} className="p-1.5 rounded-lg text-obsidian-muted hover:text-obsidian-text hover:bg-obsidian-850" aria-label="Close">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-scrim " role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <div className="w-full max-w-md neo-modal">
+        <div className="flex items-center justify-between px-5 py-3 border-b-2 border-neo-ink">
+          <h2 id="settings-title" className="neo-heading text-sm font-bold text-neo-ink">Settings</h2>
+          <button onClick={closeSettings} className="neo-icon-btn" aria-label="Close">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         <div className="px-5 py-2 text-xs">
           {storageStatus !== 'ok' && (
-            <div className="my-2 flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 p-2.5 text-amber-700 dark:text-amber-300">
+            <div className="my-2 flex items-start gap-2 rounded border-2 border-neo-ink bg-neo-yellow p-2.5 text-neo-on-accent neo-on-accent ">
               <AlertTriangle className="w-4 h-4 shrink-0" />
               {storageStatus === 'unavailable'
                 ? 'Browser storage is blocked. Progress will not be saved after you close this tab.'
@@ -67,18 +67,18 @@ export function SettingsModal() {
           )}
 
           <label className={row}>
-            <span className="font-semibold text-obsidian-text">Display name</span>
+            <span className="font-semibold text-neo-ink">Display name</span>
             <input
               defaultValue={profile.displayName}
               onBlur={e => setDisplayName(e.target.value)}
               maxLength={40}
               placeholder="Your name"
-              className="w-44 bg-obsidian-box border border-obsidian-border rounded-lg px-2.5 py-1.5 text-xs text-obsidian-text placeholder-obsidian-muted focus:outline-none focus:border-brand-orange"
+              className="w-44 bg-neo-raised border-2 border-neo-ink rounded px-2.5 py-1.5 text-xs text-neo-ink placeholder-neo-muted focus:outline-none focus:border-neo-ink"
             />
           </label>
 
           <div className={row}>
-            <span className="font-semibold text-obsidian-text">Theme</span>
+            <span className="font-semibold text-neo-ink">Theme</span>
             <button onClick={toggleTheme} className={btn}>
               {theme === 'dark' ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
               {theme === 'dark' ? 'Dark' : 'Light'}
@@ -86,7 +86,7 @@ export function SettingsModal() {
           </div>
 
           <div className={row}>
-            <span className="font-semibold text-obsidian-text">Sound</span>
+            <span className="font-semibold text-neo-ink">Sound</span>
             <button onClick={toggleSound} className={btn}>
               {isSoundMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
               {isSoundMuted ? 'Off' : 'On'}
@@ -95,8 +95,8 @@ export function SettingsModal() {
 
           <div className={row}>
             <div>
-              <div className="font-semibold text-obsidian-text">Board for "{currentLevel.title}"</div>
-              <div className="text-[11px] text-obsidian-muted">Save or load this level's board as a JSON file.</div>
+              <div className="font-semibold text-neo-ink">Board for "{currentLevel.title}"</div>
+              <div className="text-[11px] text-neo-muted">Save or load this level's board as a JSON file.</div>
             </div>
             <div className="flex gap-1.5 shrink-0">
               <button onClick={() => downloadBoard(exportBoard(), currentLevel.id)} className={btn} title="Export board">
@@ -117,8 +117,8 @@ export function SettingsModal() {
 
           <div className={row}>
             <div>
-              <div className="font-semibold text-obsidian-text">Start over</div>
-              <div className="text-[11px] text-obsidian-muted">Reset this level's board. Your stars are kept.</div>
+              <div className="font-semibold text-neo-ink">Start over</div>
+              <div className="text-[11px] text-neo-muted">Reset this level's board. Your stars are kept.</div>
             </div>
             <button onClick={() => setPending('start-over')} className={btn}>
               <RotateCcw className="w-3.5 h-3.5" /> Start over
@@ -127,18 +127,18 @@ export function SettingsModal() {
 
           <div className={row}>
             <div>
-              <div className="font-semibold text-rose-600 dark:text-rose-400">Reset all progress</div>
-              <div className="text-[11px] text-obsidian-muted">Clears every star, board and tutorial step.</div>
+              <div className="font-semibold text-neo-ink ">Reset all progress</div>
+              <div className="text-[11px] text-neo-muted">Clears every star, board and tutorial step.</div>
             </div>
-            <button onClick={() => setPending('reset-all')} className={`${btn} hover:border-rose-500 hover:text-rose-500`}>
+            <button onClick={() => setPending('reset-all')} className={`${btn} hover:border-neo-ink hover:text-neo-ink`}>
               <Trash2 className="w-3.5 h-3.5" /> Reset all
             </button>
           </div>
         </div>
 
         {pending && (
-          <div className="px-5 py-3 border-t border-obsidian-border bg-rose-500/5 flex items-center justify-between gap-3 text-xs" role="alertdialog" aria-label="Confirm">
-            <span className="text-obsidian-text font-semibold">
+          <div className="px-5 py-3 border-t-2 border-neo-ink bg-neo-coral flex items-center justify-between gap-3 text-xs neo-on-accent" role="alertdialog" aria-label="Confirm">
+            <span className="text-neo-ink font-semibold">
               {pending === 'start-over' ? 'Reset this board to its starting state?' : 'Delete all progress on this device?'}
             </span>
             <div className="flex gap-1.5 shrink-0">
@@ -152,7 +152,7 @@ export function SettingsModal() {
                   setPending(null);
                   closeSettings();
                 }}
-                className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold"
+                className="neo-btn neo-btn-danger"
               >
                 {pending === 'start-over' ? 'Start over' : 'Reset everything'}
               </button>

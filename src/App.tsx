@@ -105,7 +105,7 @@ export function App() {
 
   return (
     <ErrorBoundary>
-      <div className={`flex flex-col w-screen h-screen bg-obsidian-950 text-obsidian-text font-sans overflow-hidden ${theme === 'dark' ? 'dark' : ''}`}>
+      <div className={`flex flex-col w-screen h-screen bg-neo-bg text-neo-ink font-sans overflow-hidden ${theme === 'dark' ? 'dark' : ''}`}>
         {/* HUD Navigation */}
         <TopNav onToggleHints={() => setHintsOpen(!hintsOpen)} />
 

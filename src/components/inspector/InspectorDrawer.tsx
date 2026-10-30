@@ -48,15 +48,15 @@ export function InspectorDrawer() {
   const hasScp = Boolean(data.scpPolicies && data.scpPolicies.length > 0);
 
   return (
-    <div className="absolute right-0 top-14 bottom-0 w-96 bg-obsidian-900/95 backdrop-blur-xl border-l border-obsidian-border shadow-2xl flex flex-col z-30 animate-in slide-in-from-right duration-200">
+    <div className="absolute right-0 top-14 bottom-0 w-96 neo-panel border-l-3 flex flex-col z-30 animate-in slide-in-from-right duration-200">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-obsidian-border">
+      <div className="flex items-center justify-between px-4 py-3 border-b-2 border-neo-ink">
         <div>
-          <div className="text-xs font-bold text-obsidian-text flex items-center gap-1.5">
+          <div className="text-xs font-bold text-neo-ink flex items-center gap-1.5">
             <span>{data.label}</span>
             <InfoPopover conceptId={data.type} />
           </div>
-          <div className="text-[10px] text-obsidian-muted font-mono capitalize">
+          <div className="text-[10px] text-neo-muted font-mono capitalize">
             {data.type.replace('_', ' ')} Inspector
           </div>
         </div>
@@ -65,17 +65,17 @@ export function InspectorDrawer() {
             <span title={ESSENTIAL_NODE_LABEL} className="relative inline-flex">
               <button
                 disabled
-                className="p-1.5 rounded-lg text-obsidian-muted opacity-40 cursor-not-allowed"
+                className="p-1.5 rounded text-neo-muted opacity-40 cursor-not-allowed"
                 aria-label={`Delete node: disabled. ${ESSENTIAL_NODE_LABEL}`}
               >
                 <Trash2 className="w-4 h-4" />
               </button>
-              <Lock className="w-2.5 h-2.5 absolute bottom-1 right-1 text-obsidian-muted pointer-events-none" aria-hidden />
+              <Lock className="w-2.5 h-2.5 absolute bottom-1 right-1 text-neo-muted pointer-events-none" aria-hidden />
             </span>
           ) : (
             <button
               onClick={() => removeNodeFromBoard(selectedNode.id)}
-              className="p-1.5 rounded-lg text-obsidian-muted hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
+              className="p-1.5 rounded text-neo-muted hover:text-neo-ink hover:bg-neo-coral transition-colors"
               title="Delete Node"
               aria-label="Delete node"
             >
@@ -84,7 +84,7 @@ export function InspectorDrawer() {
           )}
           <button
             onClick={() => selectNode(null)}
-            className="p-1.5 rounded-lg text-obsidian-muted hover:text-obsidian-text hover:bg-obsidian-850 transition-colors"
+            className="neo-icon-btn"
           >
             <X className="w-4 h-4" />
           </button>
@@ -92,13 +92,13 @@ export function InspectorDrawer() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center px-2 py-1.5 border-b border-obsidian-border bg-obsidian-950/80 overflow-x-auto text-xs gap-1">
+      <div className="flex items-center px-2 py-2 border-b-2 border-neo-ink bg-neo-raised overflow-x-auto text-xs gap-1.5">
         <button
           onClick={() => setActiveTab('config')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 ${
+          className={`neo-tab shrink-0 ${
             activeTab === 'config'
-              ? 'bg-obsidian-850 text-brand-orange border border-brand-orange/30 shadow-sm'
-              : 'text-obsidian-muted hover:text-obsidian-text'
+              ? 'neo-tab-active'
+              : ''
           }`}
         >
           <Sliders className="w-3.5 h-3.5" />
@@ -106,13 +106,13 @@ export function InspectorDrawer() {
         </button>
 
         {isPrincipal && (
-          <span className="flex items-center gap-0.5 shrink-0 rounded-lg" data-tour="tab-identity">
+          <span className="flex items-center gap-0.5 shrink-0 rounded" data-tour="tab-identity">
             <button
               onClick={() => setActiveTab('identity')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 ${
+              className={`neo-tab shrink-0 ${
                 activeTab === 'identity'
-                  ? 'bg-obsidian-850 text-brand-orange border border-brand-orange/30 shadow-sm'
-                  : 'text-obsidian-muted hover:text-obsidian-text'
+                  ? 'neo-tab-active'
+                  : ''
               }`}
             >
               <FileJson className="w-3.5 h-3.5" />
@@ -123,13 +123,13 @@ export function InspectorDrawer() {
         )}
 
         {isRole && (
-          <span className="flex items-center gap-0.5 shrink-0 rounded-lg" data-tour="tab-trust">
+          <span className="flex items-center gap-0.5 shrink-0 rounded" data-tour="tab-trust">
             <button
               onClick={() => setActiveTab('trust')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 ${
+              className={`neo-tab shrink-0 ${
                 activeTab === 'trust'
-                  ? 'bg-obsidian-850 text-brand-orange border border-brand-orange/30 shadow-sm'
-                  : 'text-obsidian-muted hover:text-obsidian-text'
+                  ? 'neo-tab-active'
+                  : ''
               }`}
             >
               <FileJson className="w-3.5 h-3.5" />
@@ -140,13 +140,13 @@ export function InspectorDrawer() {
         )}
 
         {isResource && (
-          <span className="flex items-center gap-0.5 shrink-0 rounded-lg" data-tour="tab-resource">
+          <span className="flex items-center gap-0.5 shrink-0 rounded" data-tour="tab-resource">
             <button
               onClick={() => setActiveTab('resource')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 ${
+              className={`neo-tab shrink-0 ${
                 activeTab === 'resource'
-                  ? 'bg-obsidian-850 text-brand-orange border border-brand-orange/30 shadow-sm'
-                  : 'text-obsidian-muted hover:text-obsidian-text'
+                  ? 'neo-tab-active'
+                  : ''
               }`}
             >
               <FileJson className="w-3.5 h-3.5" />
@@ -157,13 +157,13 @@ export function InspectorDrawer() {
         )}
 
         {isPrincipal && (
-          <span className="flex items-center gap-0.5 shrink-0 rounded-lg" data-tour="tab-boundary">
+          <span className="flex items-center gap-0.5 shrink-0 rounded" data-tour="tab-boundary">
             <button
               onClick={() => setActiveTab('boundary')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 ${
+              className={`neo-tab shrink-0 ${
                 activeTab === 'boundary'
-                  ? 'bg-obsidian-850 text-brand-orange border border-brand-orange/30 shadow-sm'
-                  : 'text-obsidian-muted hover:text-obsidian-text'
+                  ? 'neo-tab-active'
+                  : ''
               }`}
             >
               <FileJson className="w-3.5 h-3.5" />
@@ -174,13 +174,13 @@ export function InspectorDrawer() {
         )}
 
         {(isPrincipal || hasScp) && (
-          <span className="flex items-center gap-0.5 shrink-0 rounded-lg" data-tour="tab-scp">
+          <span className="flex items-center gap-0.5 shrink-0 rounded" data-tour="tab-scp">
             <button
               onClick={() => setActiveTab('scp')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 ${
+              className={`neo-tab shrink-0 ${
                 activeTab === 'scp'
-                  ? 'bg-obsidian-850 text-brand-orange border border-brand-orange/30 shadow-sm'
-                  : 'text-obsidian-muted hover:text-obsidian-text'
+                  ? 'neo-tab-active'
+                  : ''
               }`}
             >
               <FileJson className="w-3.5 h-3.5" />

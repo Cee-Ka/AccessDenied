@@ -9,28 +9,28 @@ export const ContainerNode = memo(({ id, data, selected }: NodeProps & { data: C
   const selectNode = useGameStore(s => s.selectNode);
 
   const getBorderColor = () => {
-    if (selected) return 'border-brand-orange ring-2 ring-brand-orange/40 shadow-lg shadow-orange-500/10';
-    if (data.type === 'aws_account') return 'border-obsidian-border bg-obsidian-850/40';
-    if (data.type === 'vpc') return 'border-brand-orange/40 bg-orange-500/5';
-    if (data.config?.inPrivateSubnet) return 'border-obsidian-border bg-obsidian-800/40';
-    return 'border-obsidian-border bg-obsidian-850/30';
+    if (selected) return 'border-neo-ink border-solid bg-neo-lilac/40 shadow-neo';
+    if (data.type === 'aws_account') return 'border-neo-ink bg-neo-raised';
+    if (data.type === 'vpc') return 'border-neo-ink bg-neo-raised';
+    if (data.config?.inPrivateSubnet) return 'border-neo-ink bg-neo-raised';
+    return 'border-neo-ink bg-neo-raised';
   };
 
 
   return (
     <div
       onClick={() => selectNode(id)}
-      className={`relative min-w-[340px] min-h-[220px] rounded-2xl border-2 border-dashed p-4 shadow-sm transition-all cursor-pointer ${getBorderColor()}`}
+      className={`relative min-w-[340px] min-h-[220px] rounded-neo border-3 border-dashed p-4 cursor-pointer ${getBorderColor()}`}
     >
       <EssentialLockBadge data={data} />
-      <div className="flex items-center justify-between pb-2 mb-2 border-b border-obsidian-border">
+      <div className="flex items-center justify-between pb-2 mb-2 border-b-2 border-neo-ink">
         <div className="flex items-center gap-2">
           <AwsIcon type={data.type} privateSubnet={data.config?.inPrivateSubnet} size={20} />
-          <span className="text-xs font-bold uppercase tracking-wider text-obsidian-text">
+          <span className="text-xs font-display font-extrabold uppercase tracking-wider text-neo-ink">
             {data.label}
           </span>
         </div>
-        <span className="text-[10px] font-mono text-obsidian-muted">{data.arn}</span>
+        <span className="text-[10px] font-mono text-neo-muted">{data.arn}</span>
       </div>
     </div>
   );
