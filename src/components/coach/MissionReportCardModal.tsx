@@ -1,20 +1,7 @@
 import { useGameStore } from '../../store/useGameStore';
-import {
-  X,
-  Sparkles,
-  ShieldAlert,
-  DollarSign,
-  CheckCircle,
-  Server,
-  Archive,
-  Database,
-  Key,
-  Shield,
-  Cpu,
-  Network,
-  ArrowRight,
-  Layers,
-} from 'lucide-react';
+import { X, Sparkles, ShieldAlert, DollarSign, CheckCircle, ArrowRight, BookOpen } from 'lucide-react';
+import { AwsIcon } from '@access-denied/aws-icons';
+import { ConceptTags } from '../hud/LevelPicker';
 
 export function MissionReportCardModal() {
   const { isReportCardOpen, closeReportCard, currentLevel } = useGameStore();
@@ -24,30 +11,9 @@ export function MissionReportCardModal() {
   const card = currentLevel.reportCard;
   const newService = card.newService || currentLevel.newlyUnlockedService;
 
-  const getServiceIcon = (type?: string) => {
-    switch (type) {
-      case 's3':
-        return <Archive className="w-5 h-5 text-brand-orange" />;
-      case 'ec2':
-        return <Server className="w-5 h-5 text-brand-orange" />;
-      case 'iam_role':
-        return <Shield className="w-5 h-5 text-brand-orange" />;
-      case 'lambda':
-        return <Cpu className="w-5 h-5 text-brand-orange" />;
-      case 'dynamodb':
-        return <Database className="w-5 h-5 text-brand-orange" />;
-      case 'kms':
-        return <Key className="w-5 h-5 text-brand-orange" />;
-      case 'vpc_endpoint':
-      case 'nat_gw':
-        return <Network className="w-5 h-5 text-white" />;
-      default:
-        return <Layers className="w-5 h-5 text-brand-orange" />;
-    }
-  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-scrim backdrop-blur-md animate-in fade-in duration-200">
       <div className="relative w-full max-w-2xl bg-obsidian-900 border border-obsidian-border rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-obsidian-border bg-obsidian-950/80">
@@ -85,6 +51,17 @@ export function MissionReportCardModal() {
             </p>
           </div>
 
+          {/* Concepts this stage relies on */}
+          {currentLevel.conceptTags.length > 0 && (
+            <div className="space-y-1.5">
+              <div className="text-[11px] font-bold text-obsidian-text uppercase tracking-wider flex items-center gap-1.5">
+                <BookOpen className="w-3.5 h-3.5 text-brand-orange" />
+                Concepts in this stage
+              </div>
+              <ConceptTags ids={currentLevel.conceptTags} max={currentLevel.conceptTags.length} />
+            </div>
+          )}
+
           {/* Newly Unlocked Service Showcase (if any) */}
           {newService && (
             <div className="bg-gradient-to-r from-orange-500/10 via-obsidian-box to-obsidian-box border border-brand-orange/40 rounded-2xl p-4 space-y-2.5">
@@ -98,8 +75,8 @@ export function MissionReportCardModal() {
               </div>
 
               <div className="flex items-start gap-3 pt-1">
-                <div className="w-10 h-10 rounded-xl bg-obsidian-box border border-brand-orange/30 flex items-center justify-center shrink-0 shadow-md">
-                  {getServiceIcon(newService.type)}
+                <div className="w-10 h-10 rounded-xl bg-white border border-brand-orange/30 flex items-center justify-center shrink-0 shadow-md">
+                  <AwsIcon type={newService.type} size={28} />
                 </div>
                 <div className="space-y-1">
                   <div className="font-bold text-sm text-obsidian-text">{newService.name}</div>
@@ -132,7 +109,7 @@ export function MissionReportCardModal() {
               {card.tasks.map(t => (
                 <div
                   key={t.step}
-                  className="bg-obsidian-box border border-obsidian-border rounded-xl p-3 flex items-start gap-3 hover:border-zinc-400 dark:hover:border-zinc-700 transition-colors"
+                  className="bg-obsidian-box border border-obsidian-border rounded-xl p-3 flex items-start gap-3 hover:border-obsidian-muted transition-colors"
                 >
                   <div className="w-6 h-6 rounded-lg bg-obsidian-850 border border-brand-orange/40 text-brand-orange font-mono font-bold text-xs flex items-center justify-center shrink-0">
                     {t.step}

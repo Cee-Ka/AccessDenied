@@ -1,5 +1,5 @@
-import { useGameStore, GameMode, isLevelUnlocked } from '../../store/useGameStore';
-import { ALL_LEVELS } from '../../levels';
+import { useGameStore, GameMode } from '../../store/useGameStore';
+import { LevelPicker } from './LevelPicker';
 import {
   Shield,
   Star,
@@ -15,7 +15,15 @@ import {
   Loader2,
   Sun,
   Moon,
+  Undo2,
+  Redo2,
+  Settings,
+  GraduationCap,
+  SkipForward,
 } from 'lucide-react';
+
+const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
+const MOD = isMac ? '⌘' : 'Ctrl';
 
 interface TopNavProps {
   onToggleHints: () => void;
@@ -28,8 +36,6 @@ export function TopNav({ onToggleHints }: TopNavProps) {
     gameMode,
     setGameMode,
     currentLevelId,
-    loadLevel,
-    resetCurrentLevel,
     currentLevel,
     starRecords,
     isSoundMuted,
@@ -41,7 +47,16 @@ export function TopNav({ onToggleHints }: TopNavProps) {
     nodes,
     results,
     openReportCard,
+    history,
+    undo,
+    redo,
+    openSettings,
+    profile,
+    isGuideOpen,
+    openGuide,
   } = useGameStore();
+  const isRunning = simStatus === 'running';
+  const hasGuide = Boolean(currentLevel.onboardingSteps?.length);
 
   const totalCost = nodes.reduce((acc, n) => acc + (n.data.monthlyCost || 0), 0);
   const targetBudget = currentLevel.targetBudget;
@@ -91,31 +106,7 @@ export function TopNav({ onToggleHints }: TopNavProps) {
         {/* Compact Stage Dropdown (Resized smaller per user request) */}
         {gameMode !== 'Sandbox' && (
           <div className="flex items-center gap-1 shrink min-w-0">
-            <select
-              value={currentLevelId}
-              onChange={e => loadLevel(e.target.value)}
-              className="bg-obsidian-950 border border-obsidian-border hover:border-zinc-500 text-obsidian-text rounded-lg px-2 py-1 text-xs font-semibold focus:outline-none focus:border-brand-orange transition-colors w-28 sm:w-36 md:w-44 truncate cursor-pointer shrink"
-              title="Select Challenge Stage"
-            >
-              {ALL_LEVELS.filter(l => l.category === gameMode).map(lvl => {
-                const unlocked = isLevelUnlocked(lvl.id, starRecords);
-                const stars = starRecords[lvl.id] || 0;
-                const starStr = stars > 0 ? ` (${'★'.repeat(stars)})` : '';
-                return (
-                  <option
-                    key={lvl.id}
-                    value={lvl.id}
-                    disabled={!unlocked}
-                    className={unlocked ? 'bg-obsidian-950 text-obsidian-text' : 'bg-obsidian-900 text-obsidian-muted'}
-                  >
-                    {unlocked ? '' : '🔒 '}
-                    {lvl.roundNumber > 0 ? `S${lvl.roundNumber}: ` : ''}
-                    {lvl.title}
-                    {unlocked ? starStr : ' (Locked)'}
-                  </option>
-                );
-              })}
-            </select>
+<LevelPicker />
 
             <div className="hidden xl:flex items-center gap-0.5 shrink-0">
               {[1, 2, 3].map(starNum => (
@@ -187,6 +178,17 @@ export function TopNav({ onToggleHints }: TopNavProps) {
           </button>
         )}
 
+        {hasGuide && !isGuideOpen && (
+          <button
+            onClick={openGuide}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-obsidian-950 hover:bg-obsidian-850 border border-brand-orange/40 text-brand-orange text-xs font-bold shrink-0"
+            title="Resume the guide"
+          >
+            <GraduationCap className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Guide</span>
+          </button>
+        )}
+
         <button
           onClick={onToggleHints}
           className="p-1.5 rounded-lg bg-obsidian-950 hover:bg-obsidian-850 border border-obsidian-border text-obsidian-muted hover:text-brand-orange transition-colors shrink-0"
@@ -206,9 +208,30 @@ export function TopNav({ onToggleHints }: TopNavProps) {
           </button>
 
           <button
-            onClick={resetCurrentLevel}
+            onClick={undo}
+            disabled={isRunning || history.past.length === 0}
+            className="p-1.5 rounded-md hover:bg-obsidian-850 text-obsidian-muted hover:text-obsidian-text transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+            title={`Undo (${MOD}+Z)`}
+            aria-label="Undo"
+          >
+            <Undo2 className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            onClick={redo}
+            disabled={isRunning || history.future.length === 0}
+            className="p-1.5 rounded-md hover:bg-obsidian-850 text-obsidian-muted hover:text-obsidian-text transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+            title={`Redo (${MOD}+Shift+Z)`}
+            aria-label="Redo"
+          >
+            <Redo2 className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            onClick={openSettings}
             className="p-1.5 rounded-md hover:bg-obsidian-850 text-obsidian-muted hover:text-obsidian-text transition-colors"
-            title="Reset Canvas"
+            title="Start over, export / import board"
+            aria-label="Start over or export board"
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
@@ -229,22 +252,36 @@ export function TopNav({ onToggleHints }: TopNavProps) {
           >
             {isSoundMuted ? <VolumeX className="w-3.5 h-3.5 text-rose-500" /> : <Volume2 className="w-3.5 h-3.5" />}
           </button>
+
+          <button
+            onClick={openSettings}
+            className="flex items-center gap-1 p-1.5 rounded-md hover:bg-obsidian-850 text-obsidian-muted hover:text-obsidian-text transition-colors"
+            title="Settings"
+            aria-label="Settings"
+          >
+            <Settings className="w-3.5 h-3.5" />
+            {profile.displayName && (
+              <span className="hidden xl:inline text-[11px] font-semibold max-w-[90px] truncate">{profile.displayName}</span>
+            )}
+          </button>
         </div>
 
-        {/* Primary CTA: Simulate - Protected with shrink-0 and whitespace-nowrap */}
+        {/* Primary CTA: Simulate, or Skip to end while running */}
         <button
           onClick={runSimulation}
-          disabled={simStatus === 'running'}
+          data-tour="simulate"
+          title={isRunning ? 'Skip to the results' : `Simulate (${MOD}+Enter or Space)`}
           className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all shrink-0 whitespace-nowrap ${
-            simStatus === 'running'
-              ? 'bg-zinc-800 text-zinc-400 border border-zinc-700 cursor-not-allowed'
+            isRunning
+              ? 'bg-obsidian-850 text-obsidian-text border border-brand-orange/60 hover:bg-obsidian-800'
               : 'bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 hover:from-orange-400 hover:to-amber-400 text-black shadow-orange-500/25 hover:scale-[1.03] active:scale-[0.98]'
           }`}
         >
-          {simStatus === 'running' ? (
+          {isRunning ? (
             <>
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-zinc-400 shrink-0" />
-              <span>Simulating...</span>
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-orange shrink-0" />
+              <span>Skip to end</span>
+              <SkipForward className="w-3.5 h-3.5 shrink-0" />
             </>
           ) : (
             <>

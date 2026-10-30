@@ -31,6 +31,13 @@ describe('Level Progression & Gating Suite', () => {
     expect(isLevelUnlocked('round-4', stars)).toBe(false);
   });
 
+  it('Round 0 (tutorial) is always unlocked and does not gate Round 1', () => {
+    expect(isLevelUnlocked('round-0', {})).toBe(true);
+    expect(isLevelUnlocked('round-1', {})).toBe(true);
+    // Rounds 2+ keep their one-star-on-the-previous-round gating
+    expect(isLevelUnlocked('round-2', { 'round-0': 3 })).toBe(false);
+  });
+
   it('Sandbox mode is always unlocked regardless of star progress', () => {
     expect(isLevelUnlocked('sandbox-default', {})).toBe(true);
   });

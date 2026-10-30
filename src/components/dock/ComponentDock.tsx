@@ -1,14 +1,9 @@
 import { useState } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { NodeType } from '../../types/engine';
+import { AwsIcon } from '@access-denied/aws-icons';
+import { InfoPopover } from '../common/InfoPopover';
 import {
-  Server,
-  Archive,
-  Database,
-  Key,
-  Shield,
-  Cpu,
-  Network,
   ChevronLeft,
   ChevronRight,
   Plus,
@@ -20,20 +15,18 @@ interface ComponentItem {
   type: NodeType;
   label: string;
   cost: number;
-  icon: typeof Server;
-  color: string;
   unlockedAtRound: number;
 }
 
 const PALETTE: ComponentItem[] = [
-  { type: 's3', label: 'S3 Bucket', cost: 5, icon: Archive, color: 'text-brand-orange', unlockedAtRound: 1 },
-  { type: 'iam_role', label: 'IAM Role', cost: 0, icon: Shield, color: 'text-brand-orange', unlockedAtRound: 1 },
-  { type: 'ec2', label: 'EC2 Instance', cost: 15, icon: Server, color: 'text-brand-orange', unlockedAtRound: 2 },
-  { type: 'lambda', label: 'AWS Lambda', cost: 5, icon: Cpu, color: 'text-brand-orange', unlockedAtRound: 4 },
-  { type: 'dynamodb', label: 'DynamoDB Table', cost: 10, icon: Database, color: 'text-brand-orange', unlockedAtRound: 5 },
-  { type: 'kms', label: 'KMS Key', cost: 1, icon: Key, color: 'text-brand-orange', unlockedAtRound: 6 },
-  { type: 'vpc_endpoint', label: 'VPC S3 Endpoint', cost: 0, icon: Network, color: 'text-obsidian-text', unlockedAtRound: 7 },
-  { type: 'nat_gw', label: 'NAT Gateway', cost: 32, icon: Network, color: 'text-rose-500', unlockedAtRound: 7 },
+  { type: 's3', label: 'S3 Bucket', cost: 5, unlockedAtRound: 1 },
+  { type: 'iam_role', label: 'IAM Role', cost: 0, unlockedAtRound: 1 },
+  { type: 'ec2', label: 'EC2 Instance', cost: 15, unlockedAtRound: 2 },
+  { type: 'lambda', label: 'AWS Lambda', cost: 5, unlockedAtRound: 4 },
+  { type: 'dynamodb', label: 'DynamoDB Table', cost: 10, unlockedAtRound: 5 },
+  { type: 'kms', label: 'KMS Key', cost: 1, unlockedAtRound: 6 },
+  { type: 'vpc_endpoint', label: 'VPC S3 Endpoint', cost: 0, unlockedAtRound: 7 },
+  { type: 'nat_gw', label: 'NAT Gateway', cost: 32, unlockedAtRound: 7 },
 ];
 
 export function ComponentDock() {
@@ -87,13 +80,12 @@ export function ComponentDock() {
 
       <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
         {PALETTE.map(item => {
-          const Icon = item.icon;
           const unlocked = isServiceUnlocked(item);
           const isNew = isNewlyUnlocked(item);
 
           return (
+            <div key={item.label} className="relative group/item">
             <button
-              key={item.label}
               disabled={!unlocked}
               draggable={unlocked}
               onDragStart={e => handleDragStart(e, item)}
@@ -108,7 +100,7 @@ export function ComponentDock() {
                 unlocked
                   ? isNew
                     ? 'border-brand-orange/60 bg-orange-500/10 hover:bg-orange-500/20 shadow-sm shadow-orange-500/10 cursor-grab active:cursor-grabbing'
-                    : 'border-obsidian-border bg-obsidian-900 hover:bg-obsidian-850 hover:border-zinc-400 dark:hover:border-zinc-700 cursor-grab active:cursor-grabbing'
+                    : 'border-obsidian-border bg-obsidian-900 hover:bg-obsidian-850 hover:border-obsidian-muted cursor-grab active:cursor-grabbing'
                   : 'border-obsidian-border/40 bg-obsidian-850/50 opacity-40 cursor-not-allowed'
               }`}
               title={
@@ -119,14 +111,14 @@ export function ComponentDock() {
             >
               <div className="flex items-center gap-2.5 min-w-0">
                 <div
-                  className={`w-7 h-7 rounded-lg bg-obsidian-box border flex items-center justify-center shrink-0 transition-transform ${
+                  className={`w-7 h-7 rounded-lg bg-white border flex items-center justify-center shrink-0 transition-transform ${
                     unlocked
                       ? 'border-obsidian-border group-hover:scale-105'
                       : 'border-obsidian-border'
                   }`}
                 >
                   {unlocked ? (
-                    <Icon className={`w-3.5 h-3.5 ${item.color}`} />
+                    <AwsIcon type={item.type} size={18} />
                   ) : (
                     <Lock className="w-3.5 h-3.5 text-obsidian-muted" />
                   )}
@@ -161,7 +153,7 @@ export function ComponentDock() {
               </div>
 
               {!collapsed && (
-                <div>
+                <div className="pr-5">
                   {unlocked ? (
                     <Plus className="w-3.5 h-3.5 text-obsidian-muted group-hover:text-brand-orange transition-colors shrink-0" />
                   ) : (
@@ -170,6 +162,12 @@ export function ComponentDock() {
                 </div>
               )}
             </button>
+            {!collapsed && (
+              <span className="absolute right-2 top-1/2 -translate-y-1/2">
+                <InfoPopover conceptId={item.type} />
+              </span>
+            )}
+            </div>
           );
         })}
       </div>

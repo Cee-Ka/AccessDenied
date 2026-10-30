@@ -15,21 +15,59 @@
   --color-obsidian-box: #f1f5f9; /* Slate-100 badges and code boxes */
   --scrollbar-track: #f8fafc;
   --scrollbar-thumb: #cbd5e1;
+
+  /* Canvas & status tokens */
+  --color-edge: #94a3b8;
+  --color-grid: #cbd5e1;
+  --color-exploit: #ef4444;
+  --color-success: #059669;
+  --color-warning: #d97706;
+  --color-scrim: rgba(15, 23, 42, 0.6);
+
+  /* RGB channels so Tailwind opacity modifiers (bg-obsidian-900/95) work */
+  --color-obsidian-950-rgb: 248 250 252;
+  --color-obsidian-900-rgb: 255 255 255;
+  --color-obsidian-850-rgb: 241 245 249;
+  --color-obsidian-800-rgb: 226 232 240;
+  --color-obsidian-border-rgb: 226 232 240;
+  --color-obsidian-subtle-rgb: 248 250 252;
+  --color-obsidian-text-rgb: 15 23 42;
+  --color-obsidian-muted-rgb: 100 116 139;
+  --color-obsidian-box-rgb: 241 245 249;
 }
 
 .dark {
-  /* DARK MODE (Obsidian Black, Crisp White & AWS Orange) */
-  --color-obsidian-950: #09090b;
-  --color-obsidian-900: #121215;
-  --color-obsidian-850: #18181b;
-  --color-obsidian-800: #222227;
-  --color-obsidian-border: #27272a;
-  --color-obsidian-subtle: #1f1f23;
-  --color-obsidian-text: #ffffff;
-  --color-obsidian-muted: #a1a1aa;
-  --color-obsidian-box: #000000;
-  --scrollbar-track: #09090b;
-  --scrollbar-thumb: #27272a;
+  /* DARK MODE (#001F1F, hue-locked to 180°, & AWS Orange).
+     Contrast is enforced by tests/theme.test.ts. */
+  --color-obsidian-950: #001F1F; /* App background */
+  --color-obsidian-900: #002929; /* Cards, nav bar, dock, inspector, modals */
+  --color-obsidian-850: #003333; /* Secondary surfaces */
+  --color-obsidian-800: #003D3D; /* Hover states */
+  --color-obsidian-border: #3E8A8A; /* >= 3:1 against every dark surface */
+  --color-obsidian-subtle: #002424;
+  --color-obsidian-text: #E6FFFB;
+  --color-obsidian-muted: #8FBFBF; /* >= 4.5:1 against every dark surface */
+  --color-obsidian-box: #001717; /* Badges and code boxes */
+  --scrollbar-track: #001F1F;
+  --scrollbar-thumb: #3E8A8A;
+
+  --color-edge: #5A9E9E;
+  --color-grid: #0B4A4A;
+  --color-exploit: #FF6B6B;
+  --color-success: #34D399;
+  --color-warning: #FBBF24;
+  --color-scrim: rgba(0, 18, 18, 0.85);
+
+  /* RGB channels so Tailwind opacity modifiers (bg-obsidian-900/95) work */
+  --color-obsidian-950-rgb: 0 31 31;
+  --color-obsidian-900-rgb: 0 41 41;
+  --color-obsidian-850-rgb: 0 51 51;
+  --color-obsidian-800-rgb: 0 61 61;
+  --color-obsidian-border-rgb: 62 138 138;
+  --color-obsidian-subtle-rgb: 0 36 36;
+  --color-obsidian-text-rgb: 230 255 251;
+  --color-obsidian-muted-rgb: 143 191 191;
+  --color-obsidian-box-rgb: 0 23 23;
 }
 
 @layer base {
@@ -66,4 +104,33 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #f97316;
+}
+
+/* React Flow chrome follows the theme tokens */
+.react-flow__controls-button {
+  background: var(--color-obsidian-900);
+  border-bottom-color: var(--color-obsidian-border);
+  fill: var(--color-obsidian-text);
+  color: var(--color-obsidian-text);
+}
+.react-flow__controls-button:hover {
+  background: var(--color-obsidian-850);
+}
+.react-flow__minimap {
+  background: var(--color-obsidian-900);
+}
+
+/* Guided onboarding highlight ring */
+.guide-highlight {
+  outline: 3px solid #ff9900 !important;
+  outline-offset: 4px;
+  border-radius: 12px;
+  animation: guide-pulse 1.6s ease-in-out infinite;
+}
+@keyframes guide-pulse {
+  0%, 100% { outline-color: rgba(255, 153, 0, 1); }
+  50% { outline-color: rgba(255, 153, 0, 0.35); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .guide-highlight { animation: none; }
 }

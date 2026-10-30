@@ -30,14 +30,25 @@ export function evaluateNetworkPath(
   const sourceIsExternal = sourceNode.type === 'external_vendor' || sourceNode.type === 'iam_user';
 
   // Rule 0: Canvas Edge Connectivity Check (for non-external actors)
+  // Edges are directed: an edge means "source calls target".
   if (edges !== undefined) {
-    const hasDirectEdge = edges.some(
-      e => (e.source === sourceNode.id && e.target === targetNode.id) ||
-           (e.target === sourceNode.id && e.source === targetNode.id)
-    );
+    const hasDirectEdge = edges.some(e => e.source === sourceNode.id && e.target === targetNode.id);
     const hasIntermediate = edges.some(
       e => e.source === sourceNode.id && allNodes.some(m => m.id === e.target && ['nat_gw', 'vpc_endpoint', 'iam_role'].includes(m.type))
     );
+    const hasReverseEdge = edges.some(e => e.source === targetNode.id && e.target === sourceNode.id);
+
+    if (!hasDirectEdge && !hasIntermediate && hasReverseEdge && sourceNode.type !== 'external_vendor') {
+      return {
+        reachable: false,
+        reason: 'EDGE_REVERSED',
+        trace: {
+          stage: 'NETWORK',
+          status: 'DENIED',
+          summary: `Wrong Direction: The connection points from '${targetNode.label}' to '${sourceNode.label}', but '${sourceNode.label}' is the caller. Select the arrow and choose "Reverse direction" so it points at '${targetNode.label}'.`
+        }
+      };
+    }
 
     if (!hasDirectEdge && !hasIntermediate && sourceNode.type !== 'external_vendor') {
       return {

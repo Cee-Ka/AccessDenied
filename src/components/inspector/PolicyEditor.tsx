@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { json } from '@codemirror/lang-json';
 import { vscodeDark, vscodeLight } from '@uiw/codemirror-theme-vscode';
@@ -12,15 +12,34 @@ interface PolicyEditorProps {
   title: string;
 }
 
+const EMPTY_POLICY = '{\n  "Version": "2012-10-17",\n  "Statement": []\n}';
+
 export function PolicyEditor({ initialPolicy, onChange, title }: PolicyEditorProps) {
   const [rawText, setRawText] = useState(() =>
-    initialPolicy ? JSON.stringify(initialPolicy, null, 2) : '{\n  "Version": "2012-10-17",\n  "Statement": []\n}'
+    initialPolicy ? JSON.stringify(initialPolicy, null, 2) : EMPTY_POLICY
   );
   const [parseError, setParseError] = useState<string | null>(null);
 
+  // Sync from the store only when the stored policy differs from what is typed
+  // (undo, import, another node). Echoes of our own edits must not reformat the text.
+  const rawTextRef = useRef(rawText);
+  rawTextRef.current = rawText;
+
   useEffect(() => {
+    let typed: unknown;
+    try {
+      typed = JSON.parse(rawTextRef.current);
+    } catch {
+      typed = undefined;
+    }
+    let next: string | null = null;
     if (initialPolicy) {
-      setRawText(JSON.stringify(initialPolicy, null, 2));
+      if (JSON.stringify(typed) !== JSON.stringify(initialPolicy)) next = JSON.stringify(initialPolicy, null, 2);
+    } else if (typed === undefined || (typed as { Statement?: unknown[] }).Statement?.length) {
+      next = EMPTY_POLICY;
+    }
+    if (next !== null) {
+      setRawText(next);
       setParseError(null);
     }
   }, [initialPolicy]);

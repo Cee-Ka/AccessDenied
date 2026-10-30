@@ -1,4 +1,5 @@
 import { GameLevel } from '../types/engine';
+import { round0CloudBasics } from './round0-cloud-basics';
 import { round1LeakyBucket } from './round1-leaky-bucket';
 import { round2ImdsHeist } from './round2-imds-heist';
 import { round3ConfusedDeputy } from './round3-confused-deputy';
@@ -10,6 +11,7 @@ import { round8GuardrailClash } from './round8-guardrail-clash';
 import { incidentCapitalOne } from './incident-capital-one';
 
 export const ALL_LEVELS: GameLevel[] = [
+  round0CloudBasics,
   round1LeakyBucket,
   round2ImdsHeist,
   round3ConfusedDeputy,
@@ -34,6 +36,7 @@ export const SANDBOX_DEFAULT_LEVEL: GameLevel = {
     'Build and experiment with arbitrary multi-account AWS topologies. Drag AWS services from the dock, connect nodes, author custom IAM policy documents, and simulate legitimate or adversary request flows.',
   threatIntel: 'Design your own attack scenarios or test production policy configurations before deployment.',
   targetBudget: 100,
+  conceptTags: ['identity_policy', 'resource_policy', 'principal'],
   criteria: {
     star1Functional: { workloadPassRateTarget: 1.0, description: 'All custom workloads pass' },
     star2Secure: { exploitsBlockedTarget: 1.0, noWildcardAdmin: false, description: 'All custom exploits blocked' },

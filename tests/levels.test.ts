@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { ALL_LEVELS } from '../src/levels';
 import { evaluateExploitChain } from '../src/engine/exploitChains';
 import { evaluateRequest } from '../src/engine/evaluator';
+import { round0CloudBasics } from '../src/levels/round0-cloud-basics';
 import { round1LeakyBucket } from '../src/levels/round1-leaky-bucket';
 import { round2ImdsHeist } from '../src/levels/round2-imds-heist';
 import { round3ConfusedDeputy } from '../src/levels/round3-confused-deputy';
@@ -12,7 +13,7 @@ import { round7NatGatewayTrap } from '../src/levels/round7-nat-gateway-trap';
 import { round8GuardrailClash } from '../src/levels/round8-guardrail-clash';
 import { incidentCapitalOne } from '../src/levels/incident-capital-one';
 import { CloudNodeData, PolicyDocument } from '../src/types/engine';
-import { useGameStore } from '../src/store/useGameStore';
+import { useGameStore, evaluatePacket, scoreRun } from '../src/store/useGameStore';
 
 describe('Level Verification Suite', () => {
   it('loads all 8 learn levels + incident levels with report cards and progressive service unlocks', () => {
@@ -57,6 +58,108 @@ describe('Level Verification Suite', () => {
     expect(r6.unlockedServices).not.toContain('vpc_endpoint');
 
     expect(r7.unlockedServices).toContain('vpc_endpoint');
+  });
+
+  describe('Round 0: Cloud Basics (starter tutorial)', () => {
+    const solved = (): { nodes: CloudNodeData[]; edges: Array<{ source: string; target: string }> } => {
+      const nodes = round0CloudBasics.initialNodes.map(n => {
+        if (n.id === 'starter-app') {
+          return {
+            ...n.data,
+            identityPolicies: [{
+              Version: '2012-10-17' as const,
+              Statement: [{ Sid: 'ReadPhotos', Effect: 'Allow' as const, Action: 's3:GetObject', Resource: 'arn:aws:s3:::team-photos/*' }],
+            }],
+          };
+        }
+        if (n.id === 'starter-photos') {
+          return {
+            ...n.data,
+            resourcePolicy: {
+              Version: '2012-10-17' as const,
+              Statement: [{
+                Sid: 'AppReads', Effect: 'Allow' as const,
+                Principal: { AWS: 'arn:aws:iam::111122223333:role/PhotoAppRole' },
+                Action: 's3:GetObject', Resource: 'arn:aws:s3:::team-photos/*',
+              }],
+            },
+          };
+        }
+        if (n.id === 'starter-intern') {
+          return {
+            ...n.data,
+            identityPolicies: [{
+              Version: '2012-10-17' as const,
+              Statement: [
+                ...n.data.identityPolicies[0].Statement,
+                { Sid: 'NoDeletes', Effect: 'Deny' as const, Action: 's3:DeleteObject', Resource: '*' },
+              ],
+            }],
+            permissionBoundary: {
+              Version: '2012-10-17' as const,
+              Statement: [{
+                Effect: 'Allow' as const,
+                Action: ['s3:GetObject', 's3:PutObject', 's3:ListBucket'],
+                Resource: ['arn:aws:s3:::team-photos', 'arn:aws:s3:::team-photos/*'],
+              }],
+            },
+            scpPolicies: [{
+              Version: '2012-10-17' as const,
+              Statement: [{ Effect: 'Deny' as const, Action: 's3:PutPublicAccessBlock', Resource: '*' }],
+            }],
+          };
+        }
+        return n.data;
+      });
+      return {
+        nodes,
+        edges: [
+          { source: 'starter-intern', target: 'starter-photos' },
+          { source: 'starter-app', target: 'starter-photos' },
+        ],
+      };
+    };
+
+    it('is a Learn level numbered 0 with a guide covering the eight core concepts in order', () => {
+      expect(ALL_LEVELS[0].id).toBe('round-0');
+      expect(round0CloudBasics.category).toBe('Learn');
+      expect(round0CloudBasics.roundNumber).toBe(0);
+      const concepts = round0CloudBasics.onboardingSteps!.map(s => s.conceptId).filter(Boolean);
+      expect(concepts).toEqual([
+        'principal', 'resource', 'connection', 'identity_policy',
+        'resource_policy', 'explicit_deny', 'permission_boundary', 'scp',
+      ]);
+    });
+
+    it('initial state fails legitimate traffic and lets attacks through', () => {
+      const nodes = round0CloudBasics.initialNodes.map(n => n.data);
+      const edges = round0CloudBasics.initialEdges.map(e => ({ source: e.source, target: e.target }));
+      const results = round0CloudBasics.packets.map(p => evaluatePacket(p, nodes, edges));
+
+      const appRead = results[round0CloudBasics.packets.findIndex(p => p.id === 'pkt-0-app-read')];
+      expect(appRead.success).toBe(false);
+      const del = results[round0CloudBasics.packets.findIndex(p => p.id === 'pkt-0-intern-delete')];
+      expect(del.success).toBe(false); // the attack got through
+      expect(scoreRun(round0CloudBasics.packets, results, nodes, round0CloudBasics.targetBudget).earned).toBe(0);
+    });
+
+    it('target solution passes all workloads, blocks all attacks and stays within budget (3 stars)', () => {
+      const { nodes, edges } = solved();
+      const results = round0CloudBasics.packets.map(p => evaluatePacket(p, nodes, edges));
+      expect(results.every(r => r.success)).toBe(true);
+
+      const score = scoreRun(round0CloudBasics.packets, results, nodes, round0CloudBasics.targetBudget);
+      expect(score.earned).toBe(3);
+      expect(score.totalCost).toBeLessThanOrEqual(round0CloudBasics.targetBudget);
+    });
+
+    it('the permission boundary alone stops the "make public" attack', () => {
+      const { nodes, edges } = solved();
+      const pkt = round0CloudBasics.packets.find(p => p.id === 'pkt-0-intern-public')!;
+      const res = evaluateRequest(pkt, nodes, edges);
+      expect(res.outcome).toBe('DENY');
+      expect(res.traces.some(t => t.stage === 'PERMISSION_BOUNDARY' && t.status === 'DENIED')).toBe(true);
+    });
   });
 
   describe('Round 1: The Leaky Bucket', () => {

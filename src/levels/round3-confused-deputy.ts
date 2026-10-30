@@ -11,6 +11,8 @@ export const round3ConfusedDeputy: GameLevel = {
   threatIntel:
     'In a Confused Deputy attack, a third party with legitimate trust is tricked by a malicious customer into accessing another customer\'s resources. You must require a unique, unguessable sts:ExternalId.',
   targetBudget: 20,
+  conceptTags: ['trust_policy', 'external_id', 'confused_deputy'],
+  twistPager: 'Pager: CloudTrail shows AssumeRole on VendorAnalyticsRole for a customer we never onboarded.',
   unlockedServices: ['s3', 'iam_role', 'ec2'],
   newlyUnlockedService: {
     type: 'iam_role',

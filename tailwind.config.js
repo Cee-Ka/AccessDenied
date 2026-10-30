@@ -9,16 +9,17 @@ export default {
     extend: {
       colors: {
         obsidian: {
-          950: 'var(--color-obsidian-950)',
-          900: 'var(--color-obsidian-900)',
-          850: 'var(--color-obsidian-850)',
-          800: 'var(--color-obsidian-800)',
-          border: 'var(--color-obsidian-border)',
-          subtle: 'var(--color-obsidian-subtle)',
-          text: 'var(--color-obsidian-text)',
-          muted: 'var(--color-obsidian-muted)',
-          box: 'var(--color-obsidian-box)',
+          950: 'rgb(var(--color-obsidian-950-rgb) / <alpha-value>)',
+          900: 'rgb(var(--color-obsidian-900-rgb) / <alpha-value>)',
+          850: 'rgb(var(--color-obsidian-850-rgb) / <alpha-value>)',
+          800: 'rgb(var(--color-obsidian-800-rgb) / <alpha-value>)',
+          border: 'rgb(var(--color-obsidian-border-rgb) / <alpha-value>)',
+          subtle: 'rgb(var(--color-obsidian-subtle-rgb) / <alpha-value>)',
+          text: 'rgb(var(--color-obsidian-text-rgb) / <alpha-value>)',
+          muted: 'rgb(var(--color-obsidian-muted-rgb) / <alpha-value>)',
+          box: 'rgb(var(--color-obsidian-box-rgb) / <alpha-value>)',
         },
+        scrim: 'var(--color-scrim)',
         brand: {
           orange: '#ff9900',
           vivid: '#f97316',

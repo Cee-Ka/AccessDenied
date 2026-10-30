@@ -11,6 +11,8 @@ export const round5TenantHopping: GameLevel = {
   threatIntel:
     'Adversary crafts queries requesting partition key TENANT#bravo. You must enforce fine-grained access control using the dynamodb:LeadingKeys condition key matching the authenticated principal tag.',
   targetBudget: 20,
+  conceptTags: ['leading_keys', 'condition_keys', 'dynamodb'],
+  twistPager: 'Pager: Tenant alpha reports seeing records that belong to another company.',
   unlockedServices: ['s3', 'iam_role', 'ec2', 'lambda', 'dynamodb'],
   newlyUnlockedService: {
     type: 'dynamodb',

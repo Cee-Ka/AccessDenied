@@ -1,38 +1,23 @@
 import { memo } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { CloudNodeData } from '../../../types/engine';
-import { Database, Key, Archive, Lock, Server } from 'lucide-react';
+import { EssentialLockBadge, ServiceIconTile } from './NodeParts';
 import { useGameStore } from '../../../store/useGameStore';
 
 export const ResourceNode = memo(({ id, data, selected }: NodeProps & { data: CloudNodeData }) => {
   const selectNode = useGameStore(s => s.selectNode);
 
-  const getIcon = () => {
-    switch (data.type) {
-      case 's3':
-        return <Archive className="w-4 h-4 text-brand-orange" />;
-      case 'dynamodb':
-        return <Database className="w-4 h-4 text-brand-orange" />;
-      case 'kms':
-        return <Key className="w-4 h-4 text-brand-orange" />;
-      case 'secrets_manager':
-        return <Lock className="w-4 h-4 text-obsidian-text" />;
-      case 'rds':
-        return <Server className="w-4 h-4 text-brand-orange" />;
-      default:
-        return <Archive className="w-4 h-4 text-brand-orange" />;
-    }
-  };
 
   return (
     <div
       onClick={() => selectNode(id)}
-      className={`min-w-[200px] rounded-xl border bg-obsidian-900/95 backdrop-blur-md px-3.5 py-3 shadow-xl transition-all cursor-pointer ${
+      className={`relative min-w-[200px] rounded-xl border bg-obsidian-900/95 backdrop-blur-md px-3.5 py-3 shadow-xl transition-all cursor-pointer ${
         selected
           ? 'border-brand-orange ring-2 ring-brand-orange/40 shadow-xl shadow-orange-500/20'
-          : 'border-obsidian-border hover:border-zinc-400 dark:hover:border-zinc-600'
+          : 'border-obsidian-border hover:border-obsidian-muted'
       }`}
     >
+      <EssentialLockBadge data={data} />
       <Handle
         type="target"
         position={Position.Left}
@@ -40,9 +25,7 @@ export const ResourceNode = memo(({ id, data, selected }: NodeProps & { data: Cl
       />
 
       <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-lg bg-obsidian-box border border-obsidian-border flex items-center justify-center shrink-0">
-          {getIcon()}
-        </div>
+        <ServiceIconTile data={data} />
         <div className="min-w-0 flex-1">
           <div className="text-xs font-bold text-obsidian-text truncate">{data.label}</div>
           <div className="text-[10px] text-obsidian-muted font-mono">${data.monthlyCost}/mo</div>

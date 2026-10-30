@@ -2,7 +2,10 @@ import { useState, useEffect } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { ConfigToggles } from './ConfigToggles';
 import { PolicyEditor } from './PolicyEditor';
-import { X, Sliders, FileJson, Trash2 } from 'lucide-react';
+import { X, Sliders, FileJson, Trash2, Lock } from 'lucide-react';
+import { InfoPopover } from '../common/InfoPopover';
+import { POLICY_TAB_CONCEPT } from '../../content/concepts';
+import { ESSENTIAL_NODE_LABEL } from '../../store/essential';
 
 export function InspectorDrawer() {
   const {
@@ -51,19 +54,34 @@ export function InspectorDrawer() {
         <div>
           <div className="text-xs font-bold text-obsidian-text flex items-center gap-1.5">
             <span>{data.label}</span>
+            <InfoPopover conceptId={data.type} />
           </div>
           <div className="text-[10px] text-obsidian-muted font-mono capitalize">
             {data.type.replace('_', ' ')} Inspector
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <button
-            onClick={() => removeNodeFromBoard(selectedNode.id)}
-            className="p-1.5 rounded-lg text-obsidian-muted hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
-            title="Delete Node"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          {data.essential ? (
+            <span title={ESSENTIAL_NODE_LABEL} className="relative inline-flex">
+              <button
+                disabled
+                className="p-1.5 rounded-lg text-obsidian-muted opacity-40 cursor-not-allowed"
+                aria-label={`Delete node: disabled. ${ESSENTIAL_NODE_LABEL}`}
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+              <Lock className="w-2.5 h-2.5 absolute bottom-1 right-1 text-obsidian-muted pointer-events-none" aria-hidden />
+            </span>
+          ) : (
+            <button
+              onClick={() => removeNodeFromBoard(selectedNode.id)}
+              className="p-1.5 rounded-lg text-obsidian-muted hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
+              title="Delete Node"
+              aria-label="Delete node"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
           <button
             onClick={() => selectNode(null)}
             className="p-1.5 rounded-lg text-obsidian-muted hover:text-obsidian-text hover:bg-obsidian-850 transition-colors"
@@ -88,73 +106,88 @@ export function InspectorDrawer() {
         </button>
 
         {isPrincipal && (
-          <button
-            onClick={() => setActiveTab('identity')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 ${
-              activeTab === 'identity'
-                ? 'bg-obsidian-850 text-brand-orange border border-brand-orange/30 shadow-sm'
-                : 'text-obsidian-muted hover:text-obsidian-text'
-            }`}
-          >
-            <FileJson className="w-3.5 h-3.5" />
-            Identity Policy
-          </button>
+          <span className="flex items-center gap-0.5 shrink-0 rounded-lg" data-tour="tab-identity">
+            <button
+              onClick={() => setActiveTab('identity')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 ${
+                activeTab === 'identity'
+                  ? 'bg-obsidian-850 text-brand-orange border border-brand-orange/30 shadow-sm'
+                  : 'text-obsidian-muted hover:text-obsidian-text'
+              }`}
+            >
+              <FileJson className="w-3.5 h-3.5" />
+              Identity Policy
+            </button>
+            <InfoPopover conceptId={POLICY_TAB_CONCEPT.identity} />
+          </span>
         )}
 
         {isRole && (
-          <button
-            onClick={() => setActiveTab('trust')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 ${
-              activeTab === 'trust'
-                ? 'bg-obsidian-850 text-brand-orange border border-brand-orange/30 shadow-sm'
-                : 'text-obsidian-muted hover:text-obsidian-text'
-            }`}
-          >
-            <FileJson className="w-3.5 h-3.5" />
-            Trust Policy
-          </button>
+          <span className="flex items-center gap-0.5 shrink-0 rounded-lg" data-tour="tab-trust">
+            <button
+              onClick={() => setActiveTab('trust')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 ${
+                activeTab === 'trust'
+                  ? 'bg-obsidian-850 text-brand-orange border border-brand-orange/30 shadow-sm'
+                  : 'text-obsidian-muted hover:text-obsidian-text'
+              }`}
+            >
+              <FileJson className="w-3.5 h-3.5" />
+              Trust Policy
+            </button>
+            <InfoPopover conceptId={POLICY_TAB_CONCEPT.trust} />
+          </span>
         )}
 
         {isResource && (
-          <button
-            onClick={() => setActiveTab('resource')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 ${
-              activeTab === 'resource'
-                ? 'bg-obsidian-850 text-brand-orange border border-brand-orange/30 shadow-sm'
-                : 'text-obsidian-muted hover:text-obsidian-text'
-            }`}
-          >
-            <FileJson className="w-3.5 h-3.5" />
-            Resource Policy
-          </button>
+          <span className="flex items-center gap-0.5 shrink-0 rounded-lg" data-tour="tab-resource">
+            <button
+              onClick={() => setActiveTab('resource')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 ${
+                activeTab === 'resource'
+                  ? 'bg-obsidian-850 text-brand-orange border border-brand-orange/30 shadow-sm'
+                  : 'text-obsidian-muted hover:text-obsidian-text'
+              }`}
+            >
+              <FileJson className="w-3.5 h-3.5" />
+              Resource Policy
+            </button>
+            <InfoPopover conceptId={POLICY_TAB_CONCEPT.resource} />
+          </span>
         )}
 
         {isPrincipal && (
-          <button
-            onClick={() => setActiveTab('boundary')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 ${
-              activeTab === 'boundary'
-                ? 'bg-obsidian-850 text-brand-orange border border-brand-orange/30 shadow-sm'
-                : 'text-obsidian-muted hover:text-obsidian-text'
-            }`}
-          >
-            <FileJson className="w-3.5 h-3.5" />
-            Boundary
-          </button>
+          <span className="flex items-center gap-0.5 shrink-0 rounded-lg" data-tour="tab-boundary">
+            <button
+              onClick={() => setActiveTab('boundary')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 ${
+                activeTab === 'boundary'
+                  ? 'bg-obsidian-850 text-brand-orange border border-brand-orange/30 shadow-sm'
+                  : 'text-obsidian-muted hover:text-obsidian-text'
+              }`}
+            >
+              <FileJson className="w-3.5 h-3.5" />
+              Boundary
+            </button>
+            <InfoPopover conceptId={POLICY_TAB_CONCEPT.boundary} />
+          </span>
         )}
 
         {(isPrincipal || hasScp) && (
-          <button
-            onClick={() => setActiveTab('scp')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 ${
-              activeTab === 'scp'
-                ? 'bg-obsidian-850 text-brand-orange border border-brand-orange/30 shadow-sm'
-                : 'text-obsidian-muted hover:text-obsidian-text'
-            }`}
-          >
-            <FileJson className="w-3.5 h-3.5" />
-            SCP Guardrail
-          </button>
+          <span className="flex items-center gap-0.5 shrink-0 rounded-lg" data-tour="tab-scp">
+            <button
+              onClick={() => setActiveTab('scp')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors shrink-0 ${
+                activeTab === 'scp'
+                  ? 'bg-obsidian-850 text-brand-orange border border-brand-orange/30 shadow-sm'
+                  : 'text-obsidian-muted hover:text-obsidian-text'
+              }`}
+            >
+              <FileJson className="w-3.5 h-3.5" />
+              SCP Guardrail
+            </button>
+            <InfoPopover conceptId={POLICY_TAB_CONCEPT.scp} />
+          </span>
         )}
       </div>
 

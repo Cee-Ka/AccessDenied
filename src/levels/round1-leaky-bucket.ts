@@ -11,6 +11,8 @@ export const round1LeakyBucket: GameLevel = {
   threatIntel:
     'Adversary botnets are probing sequential invoice URLs. Legitimate web servers must continue reading/writing invoices, but all unauthorized internet traffic must be blocked.',
   targetBudget: 25,
+  conceptTags: ['block_public_access', 'resource_policy', 'least_privilege'],
+  twistPager: "Pager: Outbound traffic from the customer-invoices bucket is 40x normal. The requests come from IPs we don't own.",
   unlockedServices: ['s3', 'iam_role'],
   newlyUnlockedService: {
     type: 's3',

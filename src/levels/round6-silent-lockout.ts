@@ -11,6 +11,8 @@ export const round6SilentLockout: GameLevel = {
   threatIntel:
     'AWS KMS Customer Managed Keys do NOT allow IAM policies to delegate access unless the Key Policy itself explicitly grants permissions to the account root ("arn:aws:iam::ACCOUNT:root"). You must establish proper key delegation while preventing cross-service unauthorized decryption.',
   targetBudget: 15,
+  conceptTags: ['kms_key_policy', 'kms', 'secrets_manager'],
+  twistPager: 'Pager: Payments are failing with 403 since the last deploy.',
   unlockedServices: ['s3', 'iam_role', 'ec2', 'lambda', 'dynamodb', 'kms'],
   newlyUnlockedService: {
     type: 'kms',

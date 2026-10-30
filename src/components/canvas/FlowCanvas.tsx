@@ -19,7 +19,6 @@ import { ErrorBoundary } from '../common/ErrorBoundary';
 
 function FlowCanvasInner() {
   const {
-    theme,
     nodes,
     edges,
     onNodesChange,
@@ -27,6 +26,8 @@ function FlowCanvasInner() {
     onConnect,
     selectNode,
     addServiceToBoard,
+    onNodeDragStart,
+    onNodeDragStop,
   } = useGameStore();
 
   const { screenToFlowPosition } = useReactFlow();
@@ -84,6 +85,9 @@ function FlowCanvasInner() {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onPaneClick={() => selectNode(null)}
+        onNodeDragStart={onNodeDragStart}
+        onNodeDragStop={onNodeDragStop}
+        connectionLineStyle={{ stroke: '#ff9900', strokeWidth: 2 }}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitView
@@ -94,12 +98,13 @@ function FlowCanvasInner() {
         edgesFocusable={true}
         edgesReconnectable={true}
         className="touch-none"
+        aria-label="Architecture canvas. Arrows point from the caller to the part it calls."
       >
         <Background
           variant={BackgroundVariant.Dots}
           gap={20}
           size={1.5}
-          color={theme === 'dark' ? '#27272a' : '#cbd5e1'}
+          color="var(--color-grid)"
         />
         <Controls
           className="bg-obsidian-900 border border-obsidian-border text-obsidian-text rounded-lg overflow-hidden fill-current shadow-xl"

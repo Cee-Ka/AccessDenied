@@ -1,5 +1,8 @@
 import { useGameStore } from '../../store/useGameStore';
 import { X, CheckCircle2, XCircle, AlertTriangle, ShieldX, ArrowRight } from 'lucide-react';
+import { InfoPopover } from '../common/InfoPopover';
+import { STAGE_CONCEPT } from '../../content/concepts';
+import { AskAgentButton } from './AskAgentPanel';
 
 export function IAMCoachModal() {
   const {
@@ -25,7 +28,7 @@ export function IAMCoachModal() {
   const traces = inspectedResult.traces || [];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-scrim backdrop-blur-md animate-in fade-in duration-150">
       <div className="relative w-full max-w-2xl bg-obsidian-900 border border-obsidian-border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-obsidian-border bg-obsidian-950/80">
@@ -95,8 +98,11 @@ export function IAMCoachModal() {
 
                   <div className="flex-1 min-w-0 space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold uppercase tracking-wider text-[10px] text-brand-orange font-mono">
-                        {trace.stage.replace('_', ' ')}
+                      <span className="flex items-center gap-1">
+                        <span className="font-bold uppercase tracking-wider text-[10px] text-brand-orange font-mono">
+                          {trace.stage.replace(/_/g, ' ')}
+                        </span>
+                        <InfoPopover conceptId={STAGE_CONCEPT[trace.stage]} />
                       </span>
 
                       <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${
@@ -128,19 +134,20 @@ export function IAMCoachModal() {
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-obsidian-border bg-obsidian-950/80">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-t border-obsidian-border bg-obsidian-950">
           <div className="text-[11px] text-obsidian-muted">
             Source: <span className="font-mono text-obsidian-text">{currentPacket.sourceNodeId}</span> &rarr; Target: <span className="font-mono text-obsidian-text">{currentPacket.targetNodeId}</span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 ml-auto">
+            <AskAgentButton />
             {currentPacket.targetNodeId && (
               <button
                 onClick={() => {
                   selectNode(currentPacket.targetNodeId);
                   closeCoachModal();
                 }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-obsidian-850 hover:bg-obsidian-800 text-xs font-semibold text-obsidian-text border border-obsidian-border transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-obsidian-850 hover:bg-obsidian-800 text-xs font-semibold text-obsidian-text border border-obsidian-border transition-colors whitespace-nowrap"
               >
                 Inspect Target Node
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -148,7 +155,7 @@ export function IAMCoachModal() {
             )}
             <button
               onClick={closeCoachModal}
-              className="px-4 py-1.5 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-black text-xs font-bold shadow-lg shadow-orange-500/25 transition-all"
+              className="whitespace-nowrap px-4 py-1.5 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-black text-xs font-bold shadow-lg shadow-orange-500/25 transition-all"
             >
               Got it
             </button>

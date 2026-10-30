@@ -3,5 +3,9 @@ dist
 .DS_Store
 *.local
 .agents
-AGENTS.md
 plan.md
+
+# Full AWS icon download (only the curated copies in packages/aws-icons/svg are used)
+assets/
+# Personal Claude Code settings
+.claude/settings.local.json

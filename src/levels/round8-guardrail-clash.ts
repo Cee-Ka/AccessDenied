@@ -11,6 +11,8 @@ export const round8GuardrailClash: GameLevel = {
   threatIntel:
     'An adversary simultaneously attempts to create rogue EC2 instances in ap-southeast-1. You must craft an SCP Region Deny guardrail that exempts the DR Backup Role while blocking all unauthorized regions.',
   targetBudget: 45,
+  conceptTags: ['scp', 'explicit_deny', 'condition_keys'],
+  twistPager: 'Pager: Nightly DR backups to eu-central-1 failed. GPU instances are also launching in ap-east-1.',
   unlockedServices: ['s3', 'iam_role', 'ec2', 'lambda', 'dynamodb', 'kms', 'vpc_endpoint', 'nat_gw'],
   newlyUnlockedService: {
     type: 'iam_role',

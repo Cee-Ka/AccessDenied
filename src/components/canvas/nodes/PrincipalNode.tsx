@@ -1,40 +1,23 @@
 import { memo } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { CloudNodeData } from '../../../types/engine';
-import { User, Server, Cpu, Shield, Users } from 'lucide-react';
+import { EssentialLockBadge, ServiceIconTile } from './NodeParts';
 import { useGameStore } from '../../../store/useGameStore';
 
 export const PrincipalNode = memo(({ id, data, selected }: NodeProps & { data: CloudNodeData }) => {
   const selectNode = useGameStore(s => s.selectNode);
 
-  const getIcon = () => {
-    switch (data.type) {
-      case 'iam_user':
-        return <User className="w-4 h-4 text-obsidian-text" />;
-      case 'iam_role':
-        return <Shield className="w-4 h-4 text-brand-orange" />;
-      case 'ec2':
-        return <Server className="w-4 h-4 text-brand-orange" />;
-      case 'lambda':
-        return <Cpu className="w-4 h-4 text-brand-orange" />;
-      case 'cognito':
-        return <Users className="w-4 h-4 text-obsidian-text" />;
-      case 'external_vendor':
-        return <Users className="w-4 h-4 text-rose-500" />;
-      default:
-        return <Shield className="w-4 h-4 text-brand-orange" />;
-    }
-  };
 
   return (
     <div
       onClick={() => selectNode(id)}
-      className={`min-w-[200px] rounded-xl border bg-obsidian-900/95 backdrop-blur-md px-3.5 py-3 shadow-xl transition-all cursor-pointer ${
+      className={`relative min-w-[200px] rounded-xl border bg-obsidian-900/95 backdrop-blur-md px-3.5 py-3 shadow-xl transition-all cursor-pointer ${
         selected
           ? 'border-brand-orange ring-2 ring-brand-orange/40 shadow-xl shadow-orange-500/20'
-          : 'border-obsidian-border hover:border-zinc-400 dark:hover:border-zinc-600'
+          : 'border-obsidian-border hover:border-obsidian-muted'
       }`}
     >
+      <EssentialLockBadge data={data} />
       {/* Ingress Target Handle */}
       <Handle
         type="target"
@@ -43,9 +26,7 @@ export const PrincipalNode = memo(({ id, data, selected }: NodeProps & { data: C
       />
 
       <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-lg bg-obsidian-box border border-obsidian-border flex items-center justify-center shrink-0">
-          {getIcon()}
-        </div>
+        <ServiceIconTile data={data} />
         <div className="min-w-0 flex-1">
           <div className="text-xs font-bold text-obsidian-text truncate">{data.label}</div>
           <div className="text-[10px] text-obsidian-muted font-mono">

@@ -22,7 +22,7 @@ export function ConfigToggles({ nodeData, onUpdateConfig }: ConfigTogglesProps) 
       {/* Node Info Header */}
       <div className="bg-obsidian-900 border border-obsidian-border rounded-xl p-3 space-y-2 shadow-sm">
         <div className="flex items-center justify-between">
-          <span className="text-zinc-400 font-medium">Resource ARN</span>
+          <span className="text-obsidian-muted font-medium">Resource ARN</span>
           <button
             onClick={handleCopyArn}
             className="flex items-center gap-1 text-[10px] text-brand-orange hover:text-amber-300 font-mono"
@@ -135,7 +135,7 @@ export function ConfigToggles({ nodeData, onUpdateConfig }: ConfigTogglesProps) 
             value={config?.requireExternalId || ''}
             onChange={e => onUpdateConfig({ requireExternalId: e.target.value })}
             placeholder="e.g. ac-9841-sec (empty = vulnerable)"
-            className="w-full bg-obsidian-box border border-obsidian-border rounded px-2.5 py-1.5 text-xs font-mono text-obsidian-text placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-brand-orange"
+            className="w-full bg-obsidian-box border border-obsidian-border rounded px-2.5 py-1.5 text-xs font-mono text-obsidian-text placeholder-obsidian-muted dark:placeholder-obsidian-muted focus:outline-none focus:border-brand-orange"
           />
           <p className="text-[11px] text-obsidian-muted leading-relaxed">
             Protects against Confused Deputy attacks when third-party vendors assume this role.
@@ -164,7 +164,7 @@ export function ConfigToggles({ nodeData, onUpdateConfig }: ConfigTogglesProps) 
               />
             </button>
           </div>
-          <p className="text-[11px] text-zinc-400 leading-relaxed">
+          <p className="text-[11px] text-obsidian-muted leading-relaxed">
             Placing compute in a private subnet blocks direct internet ingress, but requires a NAT Gateway or VPC Endpoint for AWS API egress.
           </p>
         </div>
