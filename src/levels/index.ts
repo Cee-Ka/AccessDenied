@@ -1,26 +1,69 @@
 import { GameLevel } from '../types/engine';
-import { round0CloudBasics } from './round0-cloud-basics';
-import { round1LeakyBucket } from './round1-leaky-bucket';
-import { round2ImdsHeist } from './round2-imds-heist';
-import { round3ConfusedDeputy } from './round3-confused-deputy';
-import { round4ShadowAdmin } from './round4-shadow-admin';
-import { round5TenantHopping } from './round5-tenant-hopping';
-import { round6SilentLockout } from './round6-silent-lockout';
-import { round7NatGatewayTrap } from './round7-nat-gateway-trap';
-import { round8GuardrailClash } from './round8-guardrail-clash';
-import { incidentCapitalOne } from './incident-capital-one';
+import { STAGE_1_1 } from './stage1-1-hello-cloud';
+import { STAGE_1_2 } from './stage1-2-curious-teammate';
+import { STAGE_2_1 } from './stage2-1-credential-leak';
+import { STAGE_2_2 } from './stage2-2-two-sided-coin';
+import { STAGE_2_3 } from './stage2-3-serverless-worker';
+import { STAGE_3_1 } from './stage3-1-leaky-bucket';
+import { STAGE_3_2 } from './stage3-2-cross-account-bridge';
+import { STAGE_3_3 } from './stage3-3-silent-lockout';
+import { STAGE_4_1 } from './stage4-1-metadata-heist';
+import { STAGE_4_2 } from './stage4-2-confused-deputy';
+import { STAGE_4_3 } from './stage4-3-shadow-admin';
+import { STAGE_4_4 } from './stage4-4-tenant-hopping';
+import { STAGE_5_1 } from './stage5-1-glass-ceiling';
+import { STAGE_5_2 } from './stage5-2-nat-gateway-trap';
+import { STAGE_5_3 } from './stage5-3-organization-shield';
+import { STAGE_6_1 } from './stage6-1-capital-one';
+
+export {
+  STAGE_1_1,
+  STAGE_1_2,
+  STAGE_2_1,
+  STAGE_2_2,
+  STAGE_2_3,
+  STAGE_3_1,
+  STAGE_3_2,
+  STAGE_3_3,
+  STAGE_4_1,
+  STAGE_4_2,
+  STAGE_4_3,
+  STAGE_4_4,
+  STAGE_5_1,
+  STAGE_5_2,
+  STAGE_5_3,
+  STAGE_6_1,
+};
+
+// Legacy aliases for backward compatibility
+export const round0CloudBasics = STAGE_1_1;
+export const round1LeakyBucket = STAGE_3_1;
+export const round2ImdsHeist = STAGE_4_1;
+export const round3ConfusedDeputy = STAGE_4_2;
+export const round4ShadowAdmin = STAGE_4_3;
+export const round5TenantHopping = STAGE_4_4;
+export const round6SilentLockout = STAGE_3_3;
+export const round7NatGatewayTrap = STAGE_5_2;
+export const round8GuardrailClash = STAGE_5_3;
+export const incidentCapitalOne = STAGE_6_1;
 
 export const ALL_LEVELS: GameLevel[] = [
-  round0CloudBasics,
-  round1LeakyBucket,
-  round2ImdsHeist,
-  round3ConfusedDeputy,
-  round4ShadowAdmin,
-  round5TenantHopping,
-  round6SilentLockout,
-  round7NatGatewayTrap,
-  round8GuardrailClash,
-  incidentCapitalOne,
+  STAGE_1_1,
+  STAGE_1_2,
+  STAGE_2_1,
+  STAGE_2_2,
+  STAGE_2_3,
+  STAGE_3_1,
+  STAGE_3_2,
+  STAGE_3_3,
+  STAGE_4_1,
+  STAGE_4_2,
+  STAGE_4_3,
+  STAGE_4_4,
+  STAGE_5_1,
+  STAGE_5_2,
+  STAGE_5_3,
+  STAGE_6_1,
 ];
 
 export const LEARN_LEVELS = ALL_LEVELS.filter(l => l.category === 'Learn');
@@ -105,3 +148,22 @@ export const SANDBOX_DEFAULT_LEVEL: GameLevel = {
     }
   ]
 };
+
+export const LEGACY_ID_MAP: Record<string, string> = {
+  'round-0': STAGE_1_1.id,
+  'round-1': STAGE_3_1.id,
+  'round-2': STAGE_4_1.id,
+  'round-3': STAGE_4_2.id,
+  'round-4': STAGE_4_3.id,
+  'round-5': STAGE_4_4.id,
+  'round-6': STAGE_3_3.id,
+  'round-7': STAGE_5_2.id,
+  'round-8': STAGE_5_3.id,
+  'incident-capital-one': STAGE_6_1.id,
+};
+
+export function findLevel(id: string): GameLevel | undefined {
+  if (id === SANDBOX_DEFAULT_LEVEL.id) return SANDBOX_DEFAULT_LEVEL;
+  const resolvedId = LEGACY_ID_MAP[id] || id;
+  return ALL_LEVELS.find(l => l.id === resolvedId);
+}

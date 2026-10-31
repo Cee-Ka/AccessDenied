@@ -28,9 +28,16 @@ export function matchAction(pattern: string | string[], action: string): boolean
   return patterns.some(p => matchPattern(p, action, false));
 }
 
-export function matchResource(pattern: string | string[] | undefined, resourceArn: string): boolean {
+export function matchResource(
+  pattern: string | string[] | undefined,
+  resourceArn: string,
+  context?: Record<string, string | boolean | number>
+): boolean {
   if (!pattern) return true;
-  const patterns = Array.isArray(pattern) ? pattern : [pattern];
+  const rawPatterns = Array.isArray(pattern) ? pattern : [pattern];
+  const patterns = context
+    ? rawPatterns.map(p => (p.includes('${') ? interpolateVariables(p, context) : p))
+    : rawPatterns;
   return patterns.some(p => matchPattern(p, resourceArn, true));
 }
 
@@ -64,6 +71,6 @@ export function matchPrincipal(
 
 export function interpolateVariables(template: string, context: Record<string, string | boolean | number>): string {
   return template.replace(/\$\{([^}]+)\}/g, (_, key) => {
-    return key in context ? String(context[key]) : `\${${key}}`;
+    return (key in context && context[key] !== undefined) ? String(context[key]) : `\${${key}}`;
   });
 }

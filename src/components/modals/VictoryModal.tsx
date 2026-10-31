@@ -39,7 +39,7 @@ export function VictoryModal() {
             Architecture Verified!
           </h2>
           <p className="text-xs text-neo-muted mt-1">
-            {currentLevel.title}{currentLevel.category === 'Learn' ? ` — Round ${currentLevel.roundNumber}` : ''} Complete
+            {currentLevel.title}{currentLevel.category === 'Learn' ? ' — Stage ' + currentLevel.stage + '.' + currentLevel.stageLevel : ''} Complete
           </p>
           {nextLevel && nextLevel.category === currentLevel.category && (
             <div className="neo-badge-new mt-2 text-[11px] px-3 py-1">

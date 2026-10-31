@@ -16,7 +16,7 @@ import {
   SimulationPacket,
   SimulationResult,
 } from '../types/engine';
-import { ALL_LEVELS, SANDBOX_DEFAULT_LEVEL } from '../levels';
+import { ALL_LEVELS, SANDBOX_DEFAULT_LEVEL, findLevel } from '../levels';
 import { evaluateExploitChain } from '../engine/exploitChains';
 import { sounds } from '../utils/sound';
 import confetti from 'canvas-confetti';
@@ -184,16 +184,13 @@ export function applyThemeToDocument(theme: ThemeMode) {
 export function isLevelUnlocked(levelId: string, starRecords: Record<string, number>): boolean {
   if (levelId === 'sandbox-default') return true;
 
-  const targetLevel = ALL_LEVELS.find(l => l.id === levelId);
+  const targetLevel = findLevel(levelId);
   if (!targetLevel) return true;
 
   if (targetLevel.category === 'Sandbox') return true;
 
-  // Round 0 is the optional tutorial: always open, and it never gates Round 1.
-  if (targetLevel.roundNumber === 0) return true;
-
-  const trackLevels = ALL_LEVELS.filter(l => l.category === targetLevel.category && l.roundNumber !== 0);
-  const index = trackLevels.findIndex(l => l.id === levelId);
+  const trackLevels = ALL_LEVELS.filter(l => l.category === targetLevel.category);
+  const index = trackLevels.findIndex(l => l.id === targetLevel.id);
 
   // The first level in any track is always unlocked
   if (index <= 0) return true;
@@ -203,10 +200,7 @@ export function isLevelUnlocked(levelId: string, starRecords: Record<string, num
   return (starRecords[prevLevel.id] || 0) >= 1;
 }
 
-export function findLevel(levelId: string): GameLevel | undefined {
-  if (levelId === SANDBOX_DEFAULT_LEVEL.id) return SANDBOX_DEFAULT_LEVEL;
-  return ALL_LEVELS.find(l => l.id === levelId);
-}
+export { findLevel };
 
 /** Changes whenever a level's starting setup changes, so stale saved boards are detected. */
 export function levelRevision(lvl: GameLevel): string {
@@ -308,7 +302,7 @@ export const useGameStore = create<GameState>((set, get) => {
   const startLevelId =
     save.profile.lastLevelId && findLevel(save.profile.lastLevelId) && isLevelUnlocked(save.profile.lastLevelId, save.progress.stars)
       ? save.profile.lastLevelId
-      : 'round-1';
+      : ALL_LEVELS[0].id;
   const startLevel = findLevel(startLevelId) || ALL_LEVELS[0];
 
   /** Board for a level: the saved board when it matches the current level revision, else the initial board. */
@@ -499,7 +493,7 @@ export const useGameStore = create<GameState>((set, get) => {
       const lvl =
         last && last.category === mode && isLevelUnlocked(last.id, starRecords)
           ? last
-          : ALL_LEVELS.find(l => l.category === mode && l.roundNumber !== 0) || ALL_LEVELS[0];
+          : ALL_LEVELS.find(l => l.category === mode) || ALL_LEVELS[0];
       openLevel(lvl);
     },
 
@@ -516,7 +510,7 @@ export const useGameStore = create<GameState>((set, get) => {
     },
 
     resetCampaignProgress: () => {
-      const firstLevel = findLevel('round-1') || ALL_LEVELS[0];
+      const firstLevel = ALL_LEVELS[0];
       const fresh = createDefaultSave();
       set({
         ...boardSwitch(firstLevel, mapLevelToFlow(firstLevel)),
@@ -1156,7 +1150,7 @@ export const useGameStore = create<GameState>((set, get) => {
         isWelcomeOpen: false,
         profile: { ...state.profile, displayName: displayName.trim().slice(0, 40), firstRunCompleted: true },
       }));
-      const target = startTutorial ? findLevel('round-0') : findLevel('round-1');
+      const target = ALL_LEVELS[0];
       if (target && target.id !== get().currentLevelId) openLevel(target);
       if (startTutorial) set({ isGuideOpen: true });
     },

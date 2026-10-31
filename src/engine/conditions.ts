@@ -6,7 +6,7 @@
  *           ForAllValues:StringEquals, ForAnyValue:StringEquals
  */
 
-import { matchPattern } from './matcher';
+import { matchPattern, interpolateVariables } from './matcher';
 
 export interface ConditionResult {
   passed: boolean;
@@ -28,8 +28,19 @@ export function evaluateConditionBlock(
   for (const [rawOperator, keyMap] of Object.entries(conditionBlock)) {
     const operator = rawOperator.trim();
 
-    for (const [key, expectedVal] of Object.entries(keyMap)) {
+    for (const [key, rawExpectedVal] of Object.entries(keyMap)) {
       const actualVal = context[key];
+
+      let expectedVal = rawExpectedVal;
+      if (typeof rawExpectedVal === 'string' && rawExpectedVal.includes('${')) {
+        expectedVal = interpolateVariables(rawExpectedVal, context as Record<string, string | boolean | number>);
+      } else if (Array.isArray(rawExpectedVal)) {
+        expectedVal = rawExpectedVal.map(item =>
+          typeof item === 'string' && item.includes('${')
+            ? interpolateVariables(item, context as Record<string, string | boolean | number>)
+            : item
+        );
+      }
 
       const check = evaluateSingleCondition(operator, expectedVal, actualVal);
       if (!check.passed) {

@@ -4,7 +4,7 @@ import { json } from '@codemirror/lang-json';
 import { vscodeDark, vscodeLight } from '@uiw/codemirror-theme-vscode';
 import { PolicyDocument } from '../../types/engine';
 import { useGameStore } from '../../store/useGameStore';
-import { AlertCircle, CheckCircle2, Code2, Sparkles } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Code2, Sparkles, Copy } from 'lucide-react';
 
 interface PolicyEditorProps {
   initialPolicy?: PolicyDocument;
@@ -19,6 +19,48 @@ export function PolicyEditor({ initialPolicy, onChange, title }: PolicyEditorPro
     initialPolicy ? JSON.stringify(initialPolicy, null, 2) : EMPTY_POLICY
   );
   const [parseError, setParseError] = useState<string | null>(null);
+
+  const nodes = useGameStore(s => s.nodes);
+  const currentLevel = useGameStore(s => s.currentLevel);
+  const showToast = useGameStore(s => s.showToast);
+
+  // Collect all ARNs available in this level (resources, identities, exploit targets)
+  const relevantArns: Array<{ label: string; arn: string }> = [];
+  const seenArns = new Set<string>();
+
+  const addArn = (label: string, arn: string) => {
+    if (!arn || seenArns.has(arn)) return;
+    seenArns.add(arn);
+    relevantArns.push({ label, arn });
+  };
+
+  // 1. Resources and principals on the canvas
+  for (const node of nodes) {
+    if (!node.data.arn) continue;
+    const label = node.data.label || node.id;
+    if (node.data.type === 's3') {
+      addArn(label, `${node.data.arn}/*`);
+    } else {
+      addArn(label, node.data.arn);
+    }
+  }
+
+  // 2. Exploit / subfolder target paths in level packets
+  const packets = currentLevel?.packets || [];
+  for (const p of packets) {
+    if (p.resourceArn) {
+      let arn = p.resourceArn;
+      const parts = arn.split('/');
+      if (parts.length > 1 && !arn.endsWith('/*') && !arn.endsWith('*')) {
+        parts.pop();
+        arn = `${parts.join('/')}/*`;
+      }
+      if (!seenArns.has(arn)) {
+        const subfolder = arn.split('/').slice(1, -1).pop() || 'target';
+        addArn(subfolder, arn);
+      }
+    }
+  }
 
   // Sync from the store only when the stored policy differs from what is typed
   // (undo, import, another node). Echoes of our own edits must not reformat the text.
@@ -81,6 +123,13 @@ export function PolicyEditor({ initialPolicy, onChange, title }: PolicyEditorPro
     }
   };
 
+  const handleUseArn = (arn: string) => {
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(arn).catch(() => {});
+    }
+    showToast(`Copied ${arn} to clipboard`, 'info');
+  };
+
   const insertAllowTemplate = () => {
     try {
       const parsed = JSON.parse(rawText) || { Version: '2012-10-17', Statement: [] };
@@ -104,17 +153,29 @@ export function PolicyEditor({ initialPolicy, onChange, title }: PolicyEditorPro
     try {
       const parsed = JSON.parse(rawText) || { Version: '2012-10-17', Statement: [] };
       parsed.Statement = parsed.Statement || [];
-      parsed.Statement.push({
-        Sid: `DenyRule${parsed.Statement.length + 1}`,
-        Effect: 'Deny',
-        Action: ['*'],
-        Resource: ['*'],
-        Condition: {
-          StringNotEquals: {
-            'aws:PrincipalArn': 'arn:aws:iam::111122223333:role/AdminRole',
+
+      const isScp = title.toLowerCase().includes('scp');
+      if (isScp) {
+        parsed.Statement.push({
+          Sid: `DenyRule${parsed.Statement.length + 1}`,
+          Effect: 'Deny',
+          Action: ['*'],
+          Resource: ['*'],
+          Condition: {
+            StringNotEquals: {
+              'aws:RequestedRegion': ['us-east-1'],
+            },
           },
-        },
-      });
+        });
+      } else {
+        parsed.Statement.push({
+          Sid: `DenyRule${parsed.Statement.length + 1}`,
+          Effect: 'Deny',
+          Action: ['s3:GetObject'],
+          Resource: ['arn:aws:s3:::example-bucket/*'],
+        });
+      }
+
       const updated = JSON.stringify(parsed, null, 2);
       setRawText(updated);
       setParseError(null);
@@ -156,6 +217,25 @@ export function PolicyEditor({ initialPolicy, onChange, title }: PolicyEditorPro
           </button>
         </div>
       </div>
+
+      {relevantArns.length > 0 && (
+        <div className="px-3 py-1.5 border-b-2 border-neo-ink bg-neo-surface flex flex-wrap items-center gap-1.5 text-[10px]">
+          <span className="font-mono text-neo-muted font-bold shrink-0">Level ARNs (click to copy):</span>
+          {relevantArns.map(item => (
+            <button
+              key={item.arn}
+              type="button"
+              onClick={() => handleUseArn(item.arn)}
+              title={`Click to copy: ${item.arn}`}
+              className="neo-chip hover:bg-neo-yellow transition-colors font-mono cursor-pointer flex items-center gap-1"
+            >
+              <Copy className="w-2.5 h-2.5 shrink-0 text-neo-muted" />
+              <span className="font-semibold">{item.label}:</span>
+              <span className="text-neo-muted font-mono">{item.arn}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="flex-1 overflow-auto bg-neo-raised">
         <CodeMirror

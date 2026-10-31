@@ -119,7 +119,7 @@ export function evaluateRequest(
     for (const stmt of item.doc.Statement) {
       if (stmt.Effect === 'Deny') {
         const actionMatch = matchAction(stmt.Action, packet.action);
-        const resourceMatch = matchResource(stmt.Resource, packet.resourceArn);
+        const resourceMatch = matchResource(stmt.Resource, packet.resourceArn, packet.context as Record<string, string | boolean | number>);
 
         // Check principal if statement specifies principal (resource policies / SCPs)
         let principalMatch = true;
@@ -170,7 +170,7 @@ export function evaluateRequest(
       let thisScpAllowed = false;
       for (const stmt of scp.Statement) {
         if (stmt.Effect === 'Allow') {
-          if (matchAction(stmt.Action, packet.action) && matchResource(stmt.Resource, packet.resourceArn)) {
+          if (matchAction(stmt.Action, packet.action) && matchResource(stmt.Resource, packet.resourceArn, packet.context as Record<string, string | boolean | number>)) {
             const cond = evaluateConditionBlock(stmt.Condition, packet.context);
             if (cond.passed) {
               thisScpAllowed = true;
@@ -259,7 +259,7 @@ export function evaluateRequest(
       if (stmt.Effect === 'Allow') {
         const principalMatch = matchPrincipal(stmt.Principal, sourceNode.arn);
         const actionMatch = matchAction(stmt.Action, packet.action);
-        const resourceMatch = matchResource(stmt.Resource, packet.resourceArn);
+        const resourceMatch = matchResource(stmt.Resource, packet.resourceArn, packet.context as Record<string, string | boolean | number>);
 
         if (principalMatch && actionMatch && resourceMatch) {
           const cond = evaluateConditionBlock(stmt.Condition, packet.context);
@@ -279,12 +279,78 @@ export function evaluateRequest(
     }
   }
 
+  // --- Phase C - Step 5.5: Compute Node Trust Policy Verification ---
+  // Positioned between RESOURCE_POLICY and IDENTITY_POLICY per AGENTS.md Rule 2 and EVALUATION_STAGES
+  if (sourceNode.type === 'ec2' || sourceNode.type === 'lambda') {
+    const servicePrincipal = sourceNode.type === 'ec2' ? 'ec2.amazonaws.com' : 'lambda.amazonaws.com';
+    const trustDoc = sourceNode.trustPolicy;
+
+    // Backward compatibility: If no trust policy is modeled on the node (e.g. existing legacy levels),
+    // allow pass-through so legacy levels and existing unit tests do not break.
+    if (trustDoc && Array.isArray(trustDoc.Statement) && trustDoc.Statement.length > 0) {
+      // 1. Explicit Deny Sweep: Any matching Deny takes precedence
+      for (const stmt of trustDoc.Statement) {
+        if (stmt.Effect === 'Deny' && matchAction(stmt.Action, 'sts:AssumeRole')) {
+          if (matchPrincipal(stmt.Principal, servicePrincipal)) {
+            traces.push({
+              stage: 'TRUST_POLICY',
+              status: 'DENIED',
+              summary: `Trust Policy Explicit Deny: Compute node '${sourceNode.label}' explicitly denies AssumeRole to '${servicePrincipal}'.`
+            });
+            return {
+              packetId: packet.id,
+              success: false,
+              outcome: 'DENY',
+              failureReason: `Trust Policy explicitly denies ${servicePrincipal} from assuming role`,
+              traces
+            };
+          }
+        }
+      }
+
+      // 2. Allow Check: Require an explicit Allow statement
+      let trustAllowed = false;
+      for (const stmt of trustDoc.Statement) {
+        if (stmt.Effect === 'Allow' && matchAction(stmt.Action, 'sts:AssumeRole')) {
+          if (matchPrincipal(stmt.Principal, servicePrincipal)) {
+            const cond = evaluateConditionBlock(stmt.Condition, packet.context);
+            if (cond.passed) {
+              trustAllowed = true;
+              break;
+            }
+          }
+        }
+      }
+
+      if (!trustAllowed) {
+        traces.push({
+          stage: 'TRUST_POLICY',
+          status: 'DENIED',
+          summary: `Trust Policy Lockout: Compute node '${sourceNode.label}' lacks an AssumeRole trust relationship with '${servicePrincipal}'.`
+        });
+        return {
+          packetId: packet.id,
+          success: false,
+          outcome: 'DENY',
+          failureReason: `Trust Policy does not allow ${servicePrincipal} to assume role`,
+          traces
+        };
+      }
+
+      traces.push({
+        stage: 'TRUST_POLICY',
+        status: 'PASS',
+        summary: `Trust Policy Verified: '${servicePrincipal}' is authorized to assume execution role on '${sourceNode.label}'.`
+      });
+    }
+  }
+
   // Evaluate Identity Policies
   for (const pol of identityPolicies) {
     for (const stmt of pol.Statement) {
       if (stmt.Effect === 'Allow') {
         const actionMatch = matchAction(stmt.Action, packet.action);
-        const resourceMatch = matchResource(stmt.Resource, packet.resourceArn);
+        const resourceMatch = matchResource(stmt.Resource, packet.resourceArn, packet.context as Record<string, string | boolean | number>);
 
         if (actionMatch && resourceMatch) {
           const cond = evaluateConditionBlock(stmt.Condition, packet.context);
@@ -388,7 +454,7 @@ export function evaluateRequest(
     let boundaryAllowed = false;
     for (const stmt of permissionBoundary.Statement) {
       if (stmt.Effect === 'Allow') {
-        if (matchAction(stmt.Action, packet.action) && matchResource(stmt.Resource, packet.resourceArn)) {
+        if (matchAction(stmt.Action, packet.action) && matchResource(stmt.Resource, packet.resourceArn, packet.context as Record<string, string | boolean | number>)) {
           const cond = evaluateConditionBlock(stmt.Condition, packet.context);
           if (cond.passed) {
             boundaryAllowed = true;

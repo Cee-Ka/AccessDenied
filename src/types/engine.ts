@@ -184,6 +184,9 @@ export interface OnboardingStep {
 
 export interface GameLevel {
   id: string;
+  stage?: 1 | 2 | 3 | 4 | 5 | 6;
+  stageLevel?: number;
+  stageTitle?: string;
   roundNumber: number;
   title: string;
   subtitle: string;

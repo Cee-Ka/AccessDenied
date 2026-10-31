@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { evaluateRequest } from '../src/engine/evaluator';
 import { evaluateNetworkPath } from '../src/engine/network';
-import { round1LeakyBucket } from '../src/levels/round1-leaky-bucket';
+import { STAGE_1_1, STAGE_1_2, STAGE_3_1 } from '../src/levels';
 import { round0CloudBasics } from '../src/levels/round0-cloud-basics';
 import { useGameStore } from '../src/store/useGameStore';
 import { CloudNodeData } from '../src/types/engine';
 import { freshLevel } from './helpers';
 
-const web: CloudNodeData = round1LeakyBucket.initialNodes.find(n => n.id === 'web-server-ec2')!.data;
+const web: CloudNodeData = STAGE_3_1.initialNodes.find(n => n.id === 'web-server-ec2')!.data;
 const bucket: CloudNodeData = {
   id: 'invoices-bucket',
   type: 's3',
@@ -37,7 +37,7 @@ describe('Directional connections', () => {
   });
 
   it('still lets unwired external actors be evaluated as before', () => {
-    const scraper = round1LeakyBucket.initialNodes.find(n => n.data.type === 'external_vendor')!.data;
+    const scraper = STAGE_3_1.initialNodes.find(n => n.data.type === 'external_vendor')!.data;
     const res = evaluateNetworkPath(scraper, bucket, [scraper, bucket], 's3:GetObject', `${bucket.arn}/a.pdf`, []);
     expect(res.reachable).toBe(true);
   });
@@ -51,20 +51,20 @@ describe('Directional connections', () => {
   });
 
   it('reverses a selected edge in one action, and undo restores it', () => {
-    freshLevel('round-0');
+    freshLevel(STAGE_1_2.id, { [STAGE_1_1.id]: 1 });
     const before = useGameStore.getState().edges[0];
-    expect(before).toMatchObject({ source: 'starter-intern', target: 'starter-photos' });
+    expect(before).toMatchObject({ source: 'intern-alice', target: 'company-reports' });
 
     useGameStore.getState().reverseEdge(before.id);
-    expect(useGameStore.getState().edges[0]).toMatchObject({ source: 'starter-photos', target: 'starter-intern' });
+    expect(useGameStore.getState().edges[0]).toMatchObject({ source: 'company-reports', target: 'intern-alice' });
 
     useGameStore.getState().undo();
-    expect(useGameStore.getState().edges[0]).toMatchObject({ source: 'starter-intern', target: 'starter-photos' });
+    expect(useGameStore.getState().edges[0]).toMatchObject({ source: 'intern-alice', target: 'company-reports' });
   });
 
   it('ignores a duplicate connection in the same direction', () => {
-    freshLevel('round-0');
-    const conn = { source: 'starter-intern', target: 'starter-photos', sourceHandle: null, targetHandle: null };
+    freshLevel(STAGE_1_2.id, { [STAGE_1_1.id]: 1 });
+    const conn = { source: 'intern-alice', target: 'company-reports', sourceHandle: null, targetHandle: null };
     useGameStore.getState().onConnect(conn);
     expect(useGameStore.getState().edges).toHaveLength(1);
   });

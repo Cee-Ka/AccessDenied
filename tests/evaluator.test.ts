@@ -227,4 +227,206 @@ describe('IAM Evaluation Pipeline', () => {
     expect(res.outcome).toBe('DENY');
     expect(res.failureReason).toContain('KMS Key Policy missing root delegation');
   });
+
+  describe('Compute Node Trust Policy Verification', () => {
+    const s3Target: CloudNodeData = {
+      id: 's3-bucket',
+      type: 's3',
+      label: 'App Storage',
+      arn: 'arn:aws:s3:::app-storage',
+      accountId: '111122223333',
+      monthlyCost: 5,
+      config: { blockPublicAccess: true },
+      identityPolicies: []
+    };
+
+    const basePacket: SimulationPacket = {
+      id: 'pkt-trust-test',
+      name: 'Write to Storage',
+      kind: 'legitimate',
+      sourceNodeId: 'ec2-worker',
+      targetNodeId: 's3-bucket',
+      action: 's3:PutObject',
+      resourceArn: 'arn:aws:s3:::app-storage/uploads/file.png',
+      context: {},
+      expectedOutcome: 'ALLOW',
+      description: 'Write file from EC2 instance'
+    };
+
+    it('allows compute node when trust policy allows ec2.amazonaws.com to assume role', () => {
+      const ec2Trusted: CloudNodeData = {
+        id: 'ec2-worker',
+        type: 'ec2',
+        label: 'Worker Instance',
+        arn: 'arn:aws:iam::111122223333:role/WorkerRole',
+        accountId: '111122223333',
+        monthlyCost: 15,
+        config: {},
+        identityPolicies: [
+          {
+            Version: '2012-10-17',
+            Statement: [{ Effect: 'Allow', Action: 's3:PutObject', Resource: 'arn:aws:s3:::app-storage/*' }]
+          }
+        ],
+        trustPolicy: {
+          Version: '2012-10-17',
+          Statement: [
+            {
+              Effect: 'Allow',
+              Principal: { Service: 'ec2.amazonaws.com' },
+              Action: 'sts:AssumeRole'
+            }
+          ]
+        }
+      };
+
+      const res = evaluateRequest(basePacket, [ec2Trusted, s3Target]);
+      expect(res.outcome).toBe('ALLOW');
+      expect(res.success).toBe(true);
+      expect(res.traces.some(t => t.stage === 'TRUST_POLICY' && t.status === 'PASS')).toBe(true);
+    });
+
+    it('blocks compute node when trust policy does not allow the service principal (Trust Policy Lockout)', () => {
+      const ec2Untrusted: CloudNodeData = {
+        id: 'ec2-worker',
+        type: 'ec2',
+        label: 'Worker Instance',
+        arn: 'arn:aws:iam::111122223333:role/WorkerRole',
+        accountId: '111122223333',
+        monthlyCost: 15,
+        config: {},
+        identityPolicies: [
+          {
+            Version: '2012-10-17',
+            Statement: [{ Effect: 'Allow', Action: 's3:PutObject', Resource: 'arn:aws:s3:::app-storage/*' }]
+          }
+        ],
+        trustPolicy: {
+          Version: '2012-10-17',
+          Statement: [
+            {
+              Effect: 'Allow',
+              Principal: { Service: 'lambda.amazonaws.com' }, // Only Lambda trusted, NOT EC2!
+              Action: 'sts:AssumeRole'
+            }
+          ]
+        }
+      };
+
+      const res = evaluateRequest(basePacket, [ec2Untrusted, s3Target]);
+      expect(res.outcome).toBe('DENY');
+      expect(res.success).toBe(false);
+      expect(res.failureReason).toContain('Trust Policy does not allow ec2.amazonaws.com to assume role');
+      const trustTrace = res.traces.find(t => t.stage === 'TRUST_POLICY');
+      expect(trustTrace?.status).toBe('DENIED');
+      expect(trustTrace?.summary).toContain('Trust Policy Lockout');
+    });
+
+    it('blocks compute node when trust policy contains explicit Deny', () => {
+      const lambdaDenied: CloudNodeData = {
+        id: 'lambda-worker',
+        type: 'lambda',
+        label: 'Worker Function',
+        arn: 'arn:aws:iam::111122223333:role/LambdaRole',
+        accountId: '111122223333',
+        monthlyCost: 5,
+        config: {},
+        identityPolicies: [
+          {
+            Version: '2012-10-17',
+            Statement: [{ Effect: 'Allow', Action: 's3:PutObject', Resource: 'arn:aws:s3:::app-storage/*' }]
+          }
+        ],
+        trustPolicy: {
+          Version: '2012-10-17',
+          Statement: [
+            {
+              Effect: 'Allow',
+              Principal: { Service: 'lambda.amazonaws.com' },
+              Action: 'sts:AssumeRole'
+            },
+            {
+              Effect: 'Deny',
+              Principal: { Service: 'lambda.amazonaws.com' },
+              Action: 'sts:AssumeRole'
+            }
+          ]
+        }
+      };
+
+      const lambdaPacket: SimulationPacket = {
+        ...basePacket,
+        sourceNodeId: 'lambda-worker'
+      };
+
+      const res = evaluateRequest(lambdaPacket, [lambdaDenied, s3Target]);
+      expect(res.outcome).toBe('DENY');
+      expect(res.failureReason).toContain('Trust Policy explicitly denies lambda.amazonaws.com');
+      const trustTrace = res.traces.find(t => t.stage === 'TRUST_POLICY');
+      expect(trustTrace?.status).toBe('DENIED');
+      expect(trustTrace?.summary).toContain('Trust Policy Explicit Deny');
+    });
+
+    it('passes legacy compute nodes without trust policy for backward compatibility', () => {
+      const legacyEc2: CloudNodeData = {
+        id: 'ec2-worker',
+        type: 'ec2',
+        label: 'Legacy EC2',
+        arn: 'arn:aws:iam::111122223333:role/LegacyRole',
+        accountId: '111122223333',
+        monthlyCost: 15,
+        config: {},
+        identityPolicies: [
+          {
+            Version: '2012-10-17',
+            Statement: [{ Effect: 'Allow', Action: 's3:PutObject', Resource: 'arn:aws:s3:::app-storage/*' }]
+          }
+        ]
+        // No trustPolicy property
+      };
+
+      const res = evaluateRequest(basePacket, [legacyEc2, s3Target]);
+      expect(res.outcome).toBe('ALLOW');
+      expect(res.success).toBe(true);
+    });
+
+    it('interpolates policy variables in resource matching (e.g. ${aws:PrincipalTag/TenantId})', () => {
+      const tenantEc2: CloudNodeData = {
+        id: 'ec2-worker',
+        type: 'ec2',
+        label: 'Tenant Worker',
+        arn: 'arn:aws:iam::111122223333:role/TenantRole',
+        accountId: '111122223333',
+        monthlyCost: 15,
+        config: {},
+        identityPolicies: [
+          {
+            Version: '2012-10-17',
+            Statement: [
+              {
+                Effect: 'Allow',
+                Action: 's3:PutObject',
+                Resource: 'arn:aws:s3:::app-storage/${aws:PrincipalTag/TenantId}/*'
+              }
+            ]
+          }
+        ]
+      };
+
+      const validTenantPacket: SimulationPacket = {
+        ...basePacket,
+        resourceArn: 'arn:aws:s3:::app-storage/TENANT-A/data.json',
+        context: { 'aws:PrincipalTag/TenantId': 'TENANT-A' }
+      };
+
+      const invalidTenantPacket: SimulationPacket = {
+        ...basePacket,
+        resourceArn: 'arn:aws:s3:::app-storage/TENANT-B/data.json',
+        context: { 'aws:PrincipalTag/TenantId': 'TENANT-A' }
+      };
+
+      expect(evaluateRequest(validTenantPacket, [tenantEc2, s3Target]).outcome).toBe('ALLOW');
+      expect(evaluateRequest(invalidTenantPacket, [tenantEc2, s3Target]).outcome).toBe('DENY');
+    });
+  });
 });

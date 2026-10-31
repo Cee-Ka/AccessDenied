@@ -25,7 +25,7 @@ export function InspectorDrawer() {
     if (!selectedNode) return;
     const isPrincipal = ['iam_user', 'iam_role', 'ec2', 'lambda', 'cognito'].includes(selectedNode.data.type);
     const isResource = ['s3', 'dynamodb', 'kms', 'secrets_manager'].includes(selectedNode.data.type);
-    const isRole = selectedNode.data.type === 'iam_role';
+    const isRole = ['iam_role', 'ec2', 'lambda'].includes(selectedNode.data.type);
     const hasScp = Boolean(selectedNode.data.scpPolicies && selectedNode.data.scpPolicies.length > 0);
 
     const validTabs: string[] = ['config'];
@@ -44,7 +44,7 @@ export function InspectorDrawer() {
   const { data } = selectedNode;
   const isPrincipal = ['iam_user', 'iam_role', 'ec2', 'lambda', 'cognito'].includes(data.type);
   const isResource = ['s3', 'dynamodb', 'kms', 'secrets_manager'].includes(data.type);
-  const isRole = data.type === 'iam_role';
+  const isRole = ['iam_role', 'ec2', 'lambda'].includes(data.type);
   const hasScp = Boolean(data.scpPolicies && data.scpPolicies.length > 0);
 
   return (

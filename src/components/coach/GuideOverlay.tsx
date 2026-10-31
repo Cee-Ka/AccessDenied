@@ -46,7 +46,7 @@ export function GuideOverlay() {
     if (isStepComplete(step, { nodes, edges, selectedNodeId, results, simStatus })) {
       if (index >= steps.length - 1) {
         completeGuide();
-        showToast('Guide complete. You know the building blocks. Round 1 is next.', 'success');
+        showToast('Guide complete. You know the building blocks. Level 1.2 is next.', 'success');
       } else {
         setGuideStep(index + 1);
       }

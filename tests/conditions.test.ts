@@ -48,4 +48,33 @@ describe('IAM Condition Evaluator', () => {
     expect(evaluateConditionBlock(block, { 'aws:SourceIp': '192.168.1.50' }).passed).toBe(true);
     expect(evaluateConditionBlock(block, { 'aws:SourceIp': '10.0.0.1' }).passed).toBe(false);
   });
+
+  it('interpolates policy variables in condition values (e.g. ${aws:PrincipalTag/TenantId})', () => {
+    const block = {
+      'ForAllValues:StringEquals': {
+        'dynamodb:LeadingKeys': ['${aws:PrincipalTag/TenantId}'],
+      },
+    };
+    const matchingContext = {
+      'aws:PrincipalTag/TenantId': 'TENANT#42',
+      'dynamodb:LeadingKeys': ['TENANT#42'],
+    };
+    const mismatchContext = {
+      'aws:PrincipalTag/TenantId': 'TENANT#42',
+      'dynamodb:LeadingKeys': ['TENANT#99'],
+    };
+    expect(evaluateConditionBlock(block, matchingContext).passed).toBe(true);
+    expect(evaluateConditionBlock(block, mismatchContext).passed).toBe(false);
+  });
+
+  it('interpolates string condition variables with fallback when key is missing in context', () => {
+    const block = {
+      StringEquals: {
+        'dynamodb:LeadingKeys': '${aws:username}',
+      },
+    };
+    expect(evaluateConditionBlock(block, { 'aws:username': 'alice', 'dynamodb:LeadingKeys': 'alice' }).passed).toBe(true);
+    // Missing context key retains literal ${aws:username}
+    expect(evaluateConditionBlock(block, { 'dynamodb:LeadingKeys': 'alice' }).passed).toBe(false);
+  });
 });

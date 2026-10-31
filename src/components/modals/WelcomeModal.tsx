@@ -59,7 +59,7 @@ export function WelcomeModal() {
             onClick={() => completeWelcome({ displayName: name, startTutorial: true })}
             className="neo-btn neo-btn-primary text-sm flex-1 flex items-center justify-center gap-2 px-4 py-2.5"
           >
-            Start with Round 0: Cloud Basics
+            Start with Level 1.1: Hello Cloud
             <ArrowRight className="w-4 h-4" />
           </button>
           <button
