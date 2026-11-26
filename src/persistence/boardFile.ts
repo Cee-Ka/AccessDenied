@@ -6,7 +6,7 @@
 
 import type { Edge, Node } from '@xyflow/react';
 import { NODE_TYPES } from '../types/engine';
-import type { CloudNodeData, NodeType, PolicyDocument } from '../types/engine';
+import type { CloudNodeData, NodeType } from '../types/engine';
 import { serializeBoard } from './save';
 
 export const BOARD_FILE_FORMAT = 'access-denied-board';
@@ -48,8 +48,18 @@ export function validatePolicyDocument(doc: unknown, where: string): string | nu
     if (stmt.Effect !== 'Allow' && stmt.Effect !== 'Deny') {
       return `${where} Statement[${i}]${stmt.Sid ? ` ('${stmt.Sid}')` : ''}: Effect must be "Allow" or "Deny", got ${JSON.stringify(stmt.Effect)}`;
     }
-    if (typeof stmt.Action !== 'string' && !Array.isArray(stmt.Action)) {
-      return `${where} Statement[${i}]: "Action" must be a string or array`;
+    if (
+      typeof stmt.Action !== 'string' &&
+      (!Array.isArray(stmt.Action) || stmt.Action.some(a => typeof a !== 'string'))
+    ) {
+      return `${where} Statement[${i}]: "Action" must be a string or string array`;
+    }
+    if (
+      stmt.Resource !== undefined &&
+      typeof stmt.Resource !== 'string' &&
+      (!Array.isArray(stmt.Resource) || stmt.Resource.some(r => typeof r !== 'string'))
+    ) {
+      return `${where} Statement[${i}]: "Resource" must be a string or string array`;
     }
   }
   return null;
@@ -129,8 +139,4 @@ export function parseBoardFile(text: string, expectedLevelId: string, expectedLe
     // Connections to nodes that are missing are dropped by the store after essential restore.
     edges: parsed.edges as unknown as Edge[],
   };
-}
-
-export function isPolicyDocument(doc: unknown): doc is PolicyDocument {
-  return validatePolicyDocument(doc, 'policy') === null;
 }

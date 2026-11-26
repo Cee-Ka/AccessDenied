@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { X, BookOpen, ShieldAlert, Key, Sparkles, ChevronDown, ChevronRight } from 'lucide-react';
 
@@ -11,12 +11,20 @@ export function HintDrawer({ isOpen, onClose }: HintDrawerProps) {
   const currentLevel = useGameStore(s => s.currentLevel);
   const [unlockedTier, setUnlockedTier] = useState<number>(0);
 
+  useEffect(() => {
+    setUnlockedTier(0);
+  }, [currentLevel.id]);
+
   if (!isOpen) return null;
 
   const hints = currentLevel.hints || [];
 
   return (
-    <div className="fixed inset-y-0 right-0 w-96 neo-panel border-l-3 z-50 flex flex-col animate-in slide-in-from-right duration-200">
+    <aside
+      role="complementary"
+      aria-label="Round Intel and Hints"
+      className="absolute top-0 bottom-0 right-0 w-96 max-w-[calc(100vw-3rem)] neo-panel border-l-3 z-30 flex flex-col"
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3.5 border-b-2 border-neo-ink">
         <div className="flex items-center gap-2">
@@ -26,6 +34,8 @@ export function HintDrawer({ isOpen, onClose }: HintDrawerProps) {
         <button
           onClick={onClose}
           className="neo-icon-btn"
+          title="Close hints"
+          aria-label="Close hints"
         >
           <X className="w-4 h-4" />
         </button>
@@ -38,7 +48,7 @@ export function HintDrawer({ isOpen, onClose }: HintDrawerProps) {
             <Sparkles className="w-3.5 h-3.5 text-neo-ink" />
             <span>Scenario Brief</span>
           </div>
-          <p className="text-neo-muted leading-relaxed text-[11px]">
+          <p className="text-neo-muted leading-relaxed text-xs">
             {currentLevel.storyBrief}
           </p>
         </div>
@@ -50,7 +60,7 @@ export function HintDrawer({ isOpen, onClose }: HintDrawerProps) {
               <ShieldAlert className="w-3.5 h-3.5 text-neo-ink" />
               <span>Threat Intelligence</span>
             </div>
-            <p className="text-neo-muted leading-relaxed text-[11px]">
+            <p className="text-neo-muted leading-relaxed text-xs">
               {currentLevel.threatIntel}
             </p>
           </div>
@@ -76,7 +86,8 @@ export function HintDrawer({ isOpen, onClose }: HintDrawerProps) {
                         setUnlockedTier(idx);
                       }
                     }}
-                    className="w-full flex items-center justify-between p-3 text-left hover:bg-neo-raised transition-colors"
+                    aria-expanded={isUnlocked}
+                    className="w-full flex items-center justify-between p-3 text-left hover:bg-neo-surface transition-colors"
                   >
                     <div className="flex items-center gap-2">
                       <Key className={`w-3.5 h-3.5 ${isUnlocked ? 'text-neo-ink' : 'text-neo-muted'}`} />
@@ -94,7 +105,7 @@ export function HintDrawer({ isOpen, onClose }: HintDrawerProps) {
                   </button>
 
                   {isUnlocked && (
-                    <div className="px-3.5 pb-3 text-[11px] text-neo-muted leading-relaxed border-t-2 border-neo-ink pt-2 font-mono whitespace-pre-wrap bg-neo-bg">
+                    <div className="px-3.5 pb-3 text-xs text-neo-muted leading-relaxed border-t-2 border-neo-ink pt-2 font-mono whitespace-pre-wrap bg-neo-bg">
                       {hint.content}
                     </div>
                   )}
@@ -104,6 +115,6 @@ export function HintDrawer({ isOpen, onClose }: HintDrawerProps) {
           </div>
         )}
       </div>
-    </div>
+    </aside>
   );
 }

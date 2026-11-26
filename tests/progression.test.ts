@@ -16,12 +16,12 @@ describe('Level Progression & Gating Suite', () => {
     expect(isLevelUnlocked(STAGE_1_1.id, emptyStars)).toBe(true);
   });
 
-  it('Higher levels (Level 1.2 to 6.1) are locked when no stars are recorded', () => {
+  it('Higher Learn levels (Level 1.2 to 5.3) are locked when no stars are recorded', () => {
     const emptyStars = {};
     expect(isLevelUnlocked(STAGE_1_2.id, emptyStars)).toBe(false);
     expect(isLevelUnlocked(STAGE_2_1.id, emptyStars)).toBe(false);
     expect(isLevelUnlocked(STAGE_2_2.id, emptyStars)).toBe(false);
-    expect(isLevelUnlocked(STAGE_6_1.id, emptyStars)).toBe(false);
+    expect(isLevelUnlocked(STAGE_5_3.id, emptyStars)).toBe(false);
   });
 
   it('Completing Level 1.1 with 1 star unlocks Level 1.2, but Level 2.1 remains locked', () => {
@@ -39,16 +39,18 @@ describe('Level Progression & Gating Suite', () => {
     expect(isLevelUnlocked(STAGE_2_2.id, stars)).toBe(false);
   });
 
-  it('verifies progressive sequential gating across all 16 levels', () => {
+  it('verifies progressive sequential gating across all 15 Learn levels', () => {
+    const learnLevels = ALL_LEVELS.filter(l => l.category === 'Learn');
+    expect(learnLevels).toHaveLength(15);
     const cumulativeStars: Record<string, number> = {};
-    for (let i = 0; i < ALL_LEVELS.length; i++) {
-      const current = ALL_LEVELS[i];
+    for (let i = 0; i < learnLevels.length; i++) {
+      const current = learnLevels[i];
       // Current level should be unlocked with stars from all previous levels
       expect(isLevelUnlocked(current.id, cumulativeStars), `${current.id} should be unlocked`).toBe(true);
 
       // Subsequent levels should remain locked
-      if (i + 1 < ALL_LEVELS.length) {
-        const next = ALL_LEVELS[i + 1];
+      if (i + 1 < learnLevels.length) {
+        const next = learnLevels[i + 1];
         expect(isLevelUnlocked(next.id, cumulativeStars), `${next.id} should be locked before ${current.id} completed`).toBe(false);
       }
 
@@ -61,9 +63,15 @@ describe('Level Progression & Gating Suite', () => {
     expect(isLevelUnlocked('sandbox-default', {})).toBe(true);
   });
 
-  it('Capstone Boss Fight (Stage 6.1) unlocks when previous level has at least 1 star', () => {
-    expect(isLevelUnlocked(STAGE_6_1.id, {})).toBe(false);
-    expect(isLevelUnlocked(STAGE_6_1.id, { [STAGE_5_3.id]: 1 })).toBe(true);
+  it('Incidents track (Stage 6.1) is immediately accessible and switches to Incidents mode', () => {
+    expect(STAGE_6_1.category).toBe('Incidents');
+    expect(isLevelUnlocked(STAGE_6_1.id, {})).toBe(true);
+    useGameStore.getState().setGameMode('Incidents');
+    const state = useGameStore.getState();
+    expect(state.gameMode).toBe('Incidents');
+    expect(state.currentLevelId).toBe(STAGE_6_1.id);
+    // Reset back to Learn mode for subsequent tests
+    state.setGameMode('Learn');
   });
 
   it('GameStore loadLevel rejects loading locked levels', () => {

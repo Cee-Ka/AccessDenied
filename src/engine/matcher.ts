@@ -9,6 +9,7 @@
  */
 
 export function matchPattern(pattern: string, text: string, caseSensitive: boolean = false): boolean {
+  if (typeof pattern !== 'string' || typeof text !== 'string') return false;
   if (pattern === '*') return true;
   if (!pattern && !text) return true;
   if (!pattern || !text) return false;

@@ -154,5 +154,4 @@ export const STAGE_4_3: GameLevel = {
   ]
 };
 
-export const stage43ShadowAdmin = STAGE_4_3;
 export default STAGE_4_3;

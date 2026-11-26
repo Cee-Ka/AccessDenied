@@ -145,5 +145,4 @@ export const STAGE_4_4: GameLevel = {
   ]
 };
 
-export const stage44TenantHopping = STAGE_4_4;
 export default STAGE_4_4;

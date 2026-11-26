@@ -153,5 +153,4 @@ export const STAGE_3_3: GameLevel = {
   ]
 };
 
-export const stage33SilentLockout = STAGE_3_3;
 export default STAGE_3_3;

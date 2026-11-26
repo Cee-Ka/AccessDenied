@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { evaluateRequest } from '../src/engine/evaluator';
 import { evaluateNetworkPath } from '../src/engine/network';
 import { STAGE_1_1, STAGE_1_2, STAGE_3_1 } from '../src/levels';
-import { round0CloudBasics } from '../src/levels/round0-cloud-basics';
 import { useGameStore } from '../src/store/useGameStore';
 import { CloudNodeData } from '../src/types/engine';
 import { freshLevel } from './helpers';
@@ -43,9 +42,9 @@ describe('Directional connections', () => {
   });
 
   it('records the reversed-edge failure in the evaluation trace', () => {
-    const nodes = round0CloudBasics.initialNodes.map(n => n.data);
-    const pkt = round0CloudBasics.packets.find(p => p.id === 'pkt-0-intern-upload')!;
-    const res = evaluateRequest(pkt, nodes, [{ source: 'starter-photos', target: 'starter-intern' }]);
+    const nodes = STAGE_1_1.initialNodes.map(n => n.data);
+    const pkt = STAGE_1_1.packets.find(p => p.id === 'pkt-1-1-read-report')!;
+    const res = evaluateRequest(pkt, nodes, [{ source: 'company-reports', target: 'intern-alice' }]);
     expect(res.outcome).toBe('NETWORK_UNREACHABLE');
     expect(res.traces[0].summary).toMatch(/Wrong Direction/);
   });

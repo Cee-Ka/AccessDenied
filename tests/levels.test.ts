@@ -157,13 +157,16 @@ describe('Level Verification Suite: 6-Stage Curriculum', () => {
         expect(STAGE_2_1.reportCard!.tasks.length).toBeGreaterThanOrEqual(3);
       });
 
-      it('initial state fails legitimate web server access due to missing role and connection', () => {
+      it('initial state fails legitimate web server access and lets leaked key scrape through', () => {
         const nodes = STAGE_2_1.initialNodes.map(n => n.data);
         const edges = STAGE_2_1.initialEdges.map(e => ({ source: e.source, target: e.target }));
         const results = STAGE_2_1.packets.map(p => evaluatePacket(p, nodes, edges));
 
         const webRead = results.find(r => r.packetId === 'pkt-2-1-web-read')!;
         expect(webRead.success).toBe(false);
+        const scrapeRes = results.find(r => r.packetId === 'pkt-2-1-bot-scrape')!;
+        expect(scrapeRes.outcome).toBe('BREACHED');
+        expect(scrapeRes.success).toBe(false);
       });
 
       it('hardened target 3-star solution scopes role to EC2 and eliminates static key breach', () => {
@@ -191,10 +194,7 @@ describe('Level Verification Suite: 6-Stage Curriculum', () => {
             return n.data;
           });
 
-        const edges = [
-          { source: 'web-server-ec2', target: 'catalog-bucket' },
-          { source: 'bot-attacker', target: 'catalog-bucket' },
-        ];
+        const edges = [{ source: 'web-server-ec2', target: 'catalog-bucket' }];
         const results = STAGE_2_1.packets.map(p => evaluatePacket(p, remainingNodes, edges));
 
         expect(results.every(r => r.success)).toBe(true);
@@ -665,21 +665,6 @@ describe('Level Verification Suite: 6-Stage Curriculum', () => {
                 Effect: 'Allow',
                 Principal: { AWS: 'arn:aws:iam::222233334444:root' },
                 Action: 'sts:AssumeRole',
-                Condition: {
-                  StringEquals: { 'sts:ExternalId': 'ac-9841-sec' },
-                },
-              },
-            ],
-          },
-          resourcePolicy: {
-            Version: '2012-10-17',
-            Statement: [
-              {
-                Sid: 'TrustVendorWithExternalId',
-                Effect: 'Allow',
-                Principal: { AWS: 'arn:aws:iam::222233334444:root' },
-                Action: 'sts:AssumeRole',
-                Resource: 'arn:aws:iam::111122223333:role/VendorAnalyticsRole',
                 Condition: {
                   StringEquals: { 'sts:ExternalId': 'ac-9841-sec' },
                 },

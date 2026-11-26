@@ -6,7 +6,7 @@ export const STAGE_6_1: GameLevel = {
   stageLevel: 1,
   stageTitle: 'Stage 6: Boss Fight & Real-World Incident',
   roundNumber: 16,
-  category: 'Learn',
+  category: 'Incidents',
   title: 'The Capital One Incident',
   subtitle: 'SSRF, IMDSv2, WAF Role Scoping & Network Perimeters',
   storyBrief:
@@ -175,5 +175,4 @@ export const STAGE_6_1: GameLevel = {
   ],
 };
 
-export const stage61CapitalOne = STAGE_6_1;
 export default STAGE_6_1;

@@ -4,7 +4,6 @@ dist
 **/.DS_Store
 *.local
 .agents
-plan.md
 
 # Personal Claude Code settings
 .claude/settings.local.json
@@ -12,3 +11,8 @@ plan.md
 # agents folders
 .claude/
 .agents/
+
+# CI / test reports and Python caches
+reports/
+__pycache__/
+*.pyc

@@ -50,7 +50,7 @@ export const STAGE_3_1: GameLevel = {
     star3Optimal: {
       budgetLimit: 25,
       leastPrivilege: true,
-      description: 'Monthly cost is $20 or less and S3 bucket policy contains no public wildcard principal.'
+      description: 'Monthly cost is $25 or less and S3 bucket policy contains no public wildcard principal.'
     }
   },
   hints: [
@@ -163,5 +163,4 @@ export const STAGE_3_1: GameLevel = {
   ]
 };
 
-export const stage31LeakyBucket = STAGE_3_1;
 export default STAGE_3_1;

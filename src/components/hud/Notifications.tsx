@@ -32,7 +32,7 @@ export function ToastHost() {
       <div className={`flex items-start gap-2 neo-modal px-4 py-3 text-xs ${tone}`}>
         <Icon className="w-4 h-4 shrink-0 mt-0.5" />
         <span className="flex-1 leading-relaxed text-neo-ink">{toast.message}</span>
-        <button onClick={dismissToast} className="neo-icon-btn w-6 h-6" aria-label="Dismiss">
+        <button onClick={dismissToast} className="neo-icon-btn" aria-label="Dismiss">
           <X className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -64,7 +64,7 @@ export function TwistPagerBanner() {
           <p className="text-xs text-neo-ink leading-relaxed">{twist.message.replace(/^Pager:\s*/, '')}</p>
           {twist.sticky && <p className="text-[10px] text-neo-muted mt-1">This is a hint about what may break. Your design decides the result.</p>}
         </div>
-        <button onClick={dismissTwist} className="neo-icon-btn w-6 h-6" aria-label="Dismiss page">
+        <button onClick={dismissTwist} className="neo-icon-btn" aria-label="Dismiss page">
           <X className="w-4 h-4" />
         </button>
       </div>

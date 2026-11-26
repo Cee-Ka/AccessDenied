@@ -7,7 +7,7 @@ This is the primary rules file for every coding agent (Claude Code, Codex, Curso
 AccessDenied is a browser game that teaches AWS IAM and cloud security. Players fix broken AWS setups on a canvas, then run a simulation: legitimate requests must succeed and exploits must be blocked, within a monthly budget. The design is inspired by GonnaCrash.
 
 - Stack: React 19, Vite 6, TypeScript, Tailwind 3, Zustand 5, `@xyflow/react` 12, CodeMirror 6 and Vitest 3.
-- The product spec is in `plan.md`. Planned changes live in `openspec/changes/`.
+- Specifications live in `openspec/specs/` and planned changes live in `openspec/changes/`.
 
 ## Package manager: pnpm only
 

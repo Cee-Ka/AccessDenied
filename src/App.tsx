@@ -33,14 +33,14 @@ export function App() {
     theme,
     runSimulation,
     selectNode,
-    closeCoachModal,
     isCoachModalOpen,
+    isVictoryModalOpen,
+    isReportCardOpen,
+    isWelcomeOpen,
     undo,
     redo,
     isAskAgentOpen,
-    closeAskAgent,
     isSettingsOpen,
-    closeSettings,
   } = useGameStore();
 
   useEffect(() => {
@@ -64,18 +64,18 @@ export function App() {
     const handleKeyDown = (e: KeyboardEvent) => {
       const mod = e.metaKey || e.ctrlKey;
 
+      const anyModalOpen =
+        isWelcomeOpen || isReportCardOpen || isSettingsOpen || isVictoryModalOpen || isCoachModalOpen || isAskAgentOpen;
+
       if (e.code === 'Escape') {
-        if (isAskAgentOpen) closeAskAgent();
-        else if (isSettingsOpen) closeSettings();
-        else if (isCoachModalOpen) closeCoachModal();
-        else {
+        if (!anyModalOpen) {
           selectNode(null);
           setHintsOpen(false);
         }
         return;
       }
 
-      if (isTypingTarget(e.target)) return;
+      if (isTypingTarget(e.target) || anyModalOpen) return;
 
       const key = e.key.toLowerCase();
       if (mod && key === 'z') {
@@ -101,7 +101,7 @@ export function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [runSimulation, selectNode, closeCoachModal, isCoachModalOpen, undo, redo, isAskAgentOpen, closeAskAgent, isSettingsOpen, closeSettings]);
+  }, [runSimulation, selectNode, isCoachModalOpen, isVictoryModalOpen, isReportCardOpen, isWelcomeOpen, undo, redo, isAskAgentOpen, isSettingsOpen]);
 
   return (
     <ErrorBoundary>

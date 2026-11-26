@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Shield, PencilRuler, Play, Wrench, ArrowRight } from 'lucide-react';
 import { useGameStore } from '../../store/useGameStore';
+import { useModalDialog } from '../common/useModalDialog';
 
 const LOOP = [
   { icon: PencilRuler, title: 'Build', body: 'Wire AWS parts on the board and write their policies.' },
@@ -12,12 +13,22 @@ export function WelcomeModal() {
   const isWelcomeOpen = useGameStore(s => s.isWelcomeOpen);
   const completeWelcome = useGameStore(s => s.completeWelcome);
   const [name, setName] = useState('');
+  const dialogRef = useModalDialog(isWelcomeOpen, () =>
+    completeWelcome({ displayName: name, startTutorial: false })
+  );
 
   if (!isWelcomeOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[65] flex items-center justify-center p-4 bg-scrim " role="dialog" aria-modal="true" aria-labelledby="welcome-title">
-      <div className="w-full max-w-lg neo-modal p-6 space-y-5">
+    <div className="fixed inset-0 z-[65] flex items-center justify-center p-4 bg-scrim">
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="welcome-title"
+        className="w-full max-w-lg neo-modal p-6 space-y-5"
+      >
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-neo bg-neo-raised border-2 border-neo-ink flex items-center justify-center">
             <Shield className="w-5 h-5 text-neo-ink" />
@@ -38,7 +49,7 @@ export function WelcomeModal() {
                 <step.icon className="w-3.5 h-3.5 text-neo-ink" />
                 {step.title}
               </div>
-              <p className="text-[11px] text-neo-muted leading-relaxed">{step.body}</p>
+              <p className="text-xs text-neo-muted leading-relaxed">{step.body}</p>
             </li>
           ))}
         </ol>

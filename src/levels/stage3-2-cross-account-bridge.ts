@@ -52,7 +52,7 @@ export const STAGE_3_2: GameLevel = {
     star3Optimal: {
       budgetLimit: 25,
       leastPrivilege: true,
-      description: 'Monthly cost is $20 or less and Dual Authorization is configured with least privilege.'
+      description: 'Monthly cost is $25 or less and Dual Authorization is configured with least privilege.'
     }
   },
   hints: [
@@ -186,5 +186,4 @@ In Account B S3 Resource Policy:
   ]
 };
 
-export const stage32CrossAccountBridge = STAGE_3_2;
 export default STAGE_3_2;

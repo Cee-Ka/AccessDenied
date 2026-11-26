@@ -48,7 +48,7 @@ export function InspectorDrawer() {
   const hasScp = Boolean(data.scpPolicies && data.scpPolicies.length > 0);
 
   return (
-    <div className="absolute right-0 top-14 bottom-0 w-96 neo-panel border-l-3 flex flex-col z-30 animate-in slide-in-from-right duration-200">
+    <div className="absolute right-0 top-0 bottom-0 w-96 max-w-[calc(100vw-3rem)] neo-panel border-l-3 flex flex-col z-30">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b-2 border-neo-ink">
         <div>
@@ -85,6 +85,8 @@ export function InspectorDrawer() {
           <button
             onClick={() => selectNode(null)}
             className="neo-icon-btn"
+            title="Close inspector"
+            aria-label="Close inspector"
           >
             <X className="w-4 h-4" />
           </button>
@@ -92,8 +94,14 @@ export function InspectorDrawer() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center px-2 py-2 border-b-2 border-neo-ink bg-neo-raised overflow-x-auto text-xs gap-1.5">
+      <div
+        role="tablist"
+        aria-label="Inspector sections"
+        className="flex items-center px-2 py-2 border-b-2 border-neo-ink bg-neo-raised overflow-x-auto text-xs gap-1.5"
+      >
         <button
+          role="tab"
+          aria-selected={activeTab === 'config'}
           onClick={() => setActiveTab('config')}
           className={`neo-tab shrink-0 ${
             activeTab === 'config'
@@ -108,6 +116,8 @@ export function InspectorDrawer() {
         {isPrincipal && (
           <span className="flex items-center gap-0.5 shrink-0 rounded" data-tour="tab-identity">
             <button
+              role="tab"
+              aria-selected={activeTab === 'identity'}
               onClick={() => setActiveTab('identity')}
               className={`neo-tab shrink-0 ${
                 activeTab === 'identity'
@@ -125,6 +135,8 @@ export function InspectorDrawer() {
         {isRole && (
           <span className="flex items-center gap-0.5 shrink-0 rounded" data-tour="tab-trust">
             <button
+              role="tab"
+              aria-selected={activeTab === 'trust'}
               onClick={() => setActiveTab('trust')}
               className={`neo-tab shrink-0 ${
                 activeTab === 'trust'
@@ -142,6 +154,8 @@ export function InspectorDrawer() {
         {isResource && (
           <span className="flex items-center gap-0.5 shrink-0 rounded" data-tour="tab-resource">
             <button
+              role="tab"
+              aria-selected={activeTab === 'resource'}
               onClick={() => setActiveTab('resource')}
               className={`neo-tab shrink-0 ${
                 activeTab === 'resource'
@@ -159,6 +173,8 @@ export function InspectorDrawer() {
         {isPrincipal && (
           <span className="flex items-center gap-0.5 shrink-0 rounded" data-tour="tab-boundary">
             <button
+              role="tab"
+              aria-selected={activeTab === 'boundary'}
               onClick={() => setActiveTab('boundary')}
               className={`neo-tab shrink-0 ${
                 activeTab === 'boundary'
@@ -176,6 +192,8 @@ export function InspectorDrawer() {
         {(isPrincipal || hasScp) && (
           <span className="flex items-center gap-0.5 shrink-0 rounded" data-tour="tab-scp">
             <button
+              role="tab"
+              aria-selected={activeTab === 'scp'}
               onClick={() => setActiveTab('scp')}
               className={`neo-tab shrink-0 ${
                 activeTab === 'scp'

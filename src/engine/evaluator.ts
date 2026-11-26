@@ -103,14 +103,22 @@ export function evaluateRequest(
   }
 
   // Collect all relevant policies
+  const isAssumeRoleOnRole =
+    targetNode.type === 'iam_role' &&
+    (packet.action === 'sts:AssumeRole' || packet.action.includes('AssumeRole'));
+  const targetPolicy = isAssumeRoleOnRole
+    ? (targetNode.trustPolicy || targetNode.resourcePolicy)
+    : targetNode.resourcePolicy;
+  const targetPolicyLabel =
+    isAssumeRoleOnRole && targetNode.trustPolicy ? 'Trust Policy' : 'Resource Policy';
+
   const identityPolicies = sourceNode.identityPolicies || [];
-  const resourcePolicy = targetNode.resourcePolicy;
   const permissionBoundary = sourceNode.permissionBoundary;
   const scpPolicies = sourceNode.scpPolicies || [];
 
   const allPoliciesToAudit: { doc: PolicyDocument; type: string }[] = [];
   scpPolicies.forEach(p => allPoliciesToAudit.push({ doc: p, type: 'SCP' }));
-  if (resourcePolicy) allPoliciesToAudit.push({ doc: resourcePolicy, type: 'Resource Policy' });
+  if (targetPolicy) allPoliciesToAudit.push({ doc: targetPolicy, type: targetPolicyLabel });
   identityPolicies.forEach(p => allPoliciesToAudit.push({ doc: p, type: 'Identity Policy' }));
   if (permissionBoundary) allPoliciesToAudit.push({ doc: permissionBoundary, type: 'Permission Boundary' });
 
@@ -216,8 +224,8 @@ export function evaluateRequest(
   // Phase C - Step 4: Special KMS CMK Root Delegation Rule
   if (targetNode.type === 'kms') {
     let rootDelegated = false;
-    if (resourcePolicy) {
-      for (const stmt of resourcePolicy.Statement) {
+    if (targetPolicy) {
+      for (const stmt of targetPolicy.Statement) {
         if (stmt.Effect === 'Allow') {
           const rootArn = `arn:aws:iam::${targetNode.accountId}:root`;
           if (matchPrincipal(stmt.Principal, rootArn) || matchPrincipal(stmt.Principal, '*')) {
@@ -253,9 +261,10 @@ export function evaluateRequest(
   let matchedResourceStmt: PolicyStatement | undefined;
   let matchedIdentityStmt: PolicyStatement | undefined;
 
-  // Evaluate Resource Policy (e.g. S3 Bucket Policy, KMS Key Policy)
-  if (resourcePolicy) {
-    for (const stmt of resourcePolicy.Statement) {
+  // Evaluate Resource/Trust Policy (e.g. S3 Bucket Policy, KMS Key Policy, IAM Role Trust Policy)
+  const requiredExternalId = isAssumeRoleOnRole ? targetNode.config?.requireExternalId : undefined;
+  if (targetPolicy) {
+    for (const stmt of targetPolicy.Statement) {
       if (stmt.Effect === 'Allow') {
         const principalMatch = matchPrincipal(stmt.Principal, sourceNode.arn);
         const actionMatch = matchAction(stmt.Action, packet.action);
@@ -264,14 +273,22 @@ export function evaluateRequest(
         if (principalMatch && actionMatch && resourceMatch) {
           const cond = evaluateConditionBlock(stmt.Condition, packet.context);
           if (cond.passed) {
-            resourceAllowed = true;
-            matchedResourceStmt = stmt;
-            break;
+            if (requiredExternalId && packet.context['sts:ExternalId'] !== requiredExternalId) {
+              traces.push({
+                stage: 'CONDITION',
+                status: 'FAIL',
+                summary: `ExternalId condition failed: supplied '${packet.context['sts:ExternalId'] || 'none'}' does not match required '${requiredExternalId}'.`
+              });
+            } else {
+              resourceAllowed = true;
+              matchedResourceStmt = stmt;
+              break;
+            }
           } else {
             traces.push({
               stage: 'CONDITION',
               status: 'FAIL',
-              summary: `Resource policy statement '${stmt.Sid || 'Allow'}' condition failed: ${cond.reason || ''}`
+              summary: `${targetPolicyLabel} statement '${stmt.Sid || 'Allow'}' condition failed: ${cond.reason || ''}`
             });
           }
         }
@@ -285,9 +302,9 @@ export function evaluateRequest(
     const servicePrincipal = sourceNode.type === 'ec2' ? 'ec2.amazonaws.com' : 'lambda.amazonaws.com';
     const trustDoc = sourceNode.trustPolicy;
 
-    // Backward compatibility: If no trust policy is modeled on the node (e.g. existing legacy levels),
-    // allow pass-through so legacy levels and existing unit tests do not break.
-    if (trustDoc && Array.isArray(trustDoc.Statement) && trustDoc.Statement.length > 0) {
+    // Backward compatibility: Only legacy nodes without a `trustPolicy` field pass through;
+    // an explicit empty policy (`Statement: []`) enforces implicit deny.
+    if (trustDoc && Array.isArray(trustDoc.Statement)) {
       // 1. Explicit Deny Sweep: Any matching Deny takes precedence
       for (const stmt of trustDoc.Statement) {
         if (stmt.Effect === 'Deny' && matchAction(stmt.Action, 'sts:AssumeRole')) {
@@ -431,13 +448,13 @@ export function evaluateRequest(
       traces.push({
         stage: 'RESOURCE_POLICY',
         status: 'DENIED',
-        summary: `Cross-Account Denied: Target resource '${targetNode.label}' in account '${targetNode.accountId}' does not trust caller '${sourceNode.arn}'. Target Resource Policy must explicitly allow external principal.`
+        summary: `Cross-Account Denied: Target '${targetNode.label}' in account '${targetNode.accountId}' does not trust caller '${sourceNode.arn}'. Target ${targetPolicyLabel} must explicitly allow external principal.`
       });
       return {
         packetId: packet.id,
         success: false,
         outcome: 'DENY',
-        failureReason: 'Cross-Account request missing Resource Policy Allow',
+        failureReason: `Cross-Account request missing ${targetPolicyLabel} Allow`,
         traces
       };
     }
@@ -445,7 +462,7 @@ export function evaluateRequest(
     traces.push({
       stage: 'RESOURCE_POLICY',
       status: 'PASS',
-      summary: `Cross-Account Allowed: Both Identity Policy on '${sourceNode.label}' and Resource Policy on '${targetNode.label}' grant Allow.`
+      summary: `Cross-Account Allowed: Both Identity Policy on '${sourceNode.label}' and ${targetPolicyLabel} on '${targetNode.label}' grant Allow.`
     });
   }
 

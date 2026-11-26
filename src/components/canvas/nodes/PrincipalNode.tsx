@@ -35,13 +35,13 @@ export const PrincipalNode = memo(({ id, data, selected }: NodeProps & { data: C
 
       {/* Badges */}
       <div className="mt-2.5 flex flex-wrap gap-1.5 items-center">
-        <span className="neo-chip text-[9px] uppercase">
+        <span className="neo-chip text-[10px] uppercase">
           {data.type.replace('_', ' ')}
         </span>
 
         {data.config?.imdsVersion && (
           <span
-            className={`text-[9px] ${
+            className={`text-[10px] ${
               data.config.imdsVersion === 'v2'
                 ? 'neo-badge-pass'
                 : 'neo-badge-deny'
@@ -52,13 +52,13 @@ export const PrincipalNode = memo(({ id, data, selected }: NodeProps & { data: C
         )}
 
         {data.permissionBoundary && (
-          <span className="neo-badge-new text-[9px]">
+          <span className="neo-badge-new text-[10px]">
             Boundary
           </span>
         )}
 
         {data.identityPolicies?.length > 0 && (
-          <span className="neo-chip text-[9px]">
+          <span className="neo-chip text-[10px]">
             {data.identityPolicies.length} {data.identityPolicies.length === 1 ? 'policy' : 'policies'}
           </span>
         )}

@@ -2,6 +2,7 @@ import { useGameStore } from '../../store/useGameStore';
 import { ALL_LEVELS } from '../../levels';
 import { Star, Trophy, ArrowRight, RotateCcw, LockOpen } from 'lucide-react';
 import { AskAgentButton } from '../coach/AskAgentPanel';
+import { useModalDialog } from '../common/useModalDialog';
 
 export function VictoryModal() {
   const {
@@ -9,14 +10,20 @@ export function VictoryModal() {
     closeVictoryModal,
     earnedStars,
     currentLevel,
+    results,
     loadLevel,
     resetCurrentLevel,
   } = useGameStore();
+  const dialogRef = useModalDialog(isVictoryModalOpen, closeVictoryModal);
 
   if (!isVictoryModalOpen) return null;
 
-  const currentIdx = ALL_LEVELS.findIndex(l => l.id === currentLevel.id);
-  const nextLevel = ALL_LEVELS[currentIdx + 1];
+  const track = ALL_LEVELS.filter(l => l.category === currentLevel.category);
+  const currentIdx = track.findIndex(l => l.id === currentLevel.id);
+  const nextLevel = currentIdx >= 0 ? track[currentIdx + 1] : undefined;
+  const hasFailedExploit = currentLevel.packets.some(
+    (p, idx) => p.kind === 'exploit' && results[idx] && !results[idx].success
+  );
 
   const handleNextLevel = () => {
     if (nextLevel) {
@@ -27,15 +34,22 @@ export function VictoryModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-scrim animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md neo-modal p-6 text-center space-y-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-scrim">
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="victory-modal-title"
+        className="relative w-full max-w-md neo-modal p-6 text-center space-y-6"
+      >
         {/* Trophy Header */}
         <div className="relative mx-auto w-16 h-16 rounded-neo bg-neo-raised border-2 border-neo-ink flex items-center justify-center shadow-neo ">
           <Trophy className="w-8 h-8 text-neo-ink" />
         </div>
 
         <div>
-          <h2 className="neo-heading text-xl font-extrabold text-neo-ink tracking-tight">
+          <h2 id="victory-modal-title" className="neo-heading text-xl font-extrabold text-neo-ink tracking-tight">
             Architecture Verified!
           </h2>
           <p className="text-xs text-neo-muted mt-1">
@@ -75,7 +89,7 @@ export function VictoryModal() {
           <div className="flex items-center justify-between">
             <span className="text-neo-muted inline-flex items-center gap-1"><Star className="w-3 h-3" aria-hidden />2: Threat Hardening</span>
             <span className={earnedStars >= 2 ? 'text-neo-ink font-bold' : 'text-neo-muted'}>
-              {earnedStars >= 2 ? 'Zero Breaches' : 'Exploit Allowed'}
+              {earnedStars >= 2 ? 'Zero Breaches' : hasFailedExploit ? 'Exploit Allowed' : 'Wildcard Admin (*)'}
             </span>
           </div>
           <div className="flex items-center justify-between">

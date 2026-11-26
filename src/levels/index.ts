@@ -35,18 +35,6 @@ export {
   STAGE_6_1,
 };
 
-// Legacy aliases for backward compatibility
-export const round0CloudBasics = STAGE_1_1;
-export const round1LeakyBucket = STAGE_3_1;
-export const round2ImdsHeist = STAGE_4_1;
-export const round3ConfusedDeputy = STAGE_4_2;
-export const round4ShadowAdmin = STAGE_4_3;
-export const round5TenantHopping = STAGE_4_4;
-export const round6SilentLockout = STAGE_3_3;
-export const round7NatGatewayTrap = STAGE_5_2;
-export const round8GuardrailClash = STAGE_5_3;
-export const incidentCapitalOne = STAGE_6_1;
-
 export const ALL_LEVELS: GameLevel[] = [
   STAGE_1_1,
   STAGE_1_2,
@@ -65,9 +53,6 @@ export const ALL_LEVELS: GameLevel[] = [
   STAGE_5_3,
   STAGE_6_1,
 ];
-
-export const LEARN_LEVELS = ALL_LEVELS.filter(l => l.category === 'Learn');
-export const INCIDENT_LEVELS = ALL_LEVELS.filter(l => l.category === 'Incidents');
 
 export const SANDBOX_DEFAULT_LEVEL: GameLevel = {
   id: 'sandbox-default',

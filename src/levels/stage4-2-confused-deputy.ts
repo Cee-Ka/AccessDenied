@@ -158,5 +158,4 @@ export const STAGE_4_2: GameLevel = {
   ]
 };
 
-export const stage42ConfusedDeputy = STAGE_4_2;
 export default STAGE_4_2;

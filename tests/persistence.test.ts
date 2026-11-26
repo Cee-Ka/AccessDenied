@@ -139,4 +139,28 @@ describe('Player progress persistence', () => {
     expect(s.profile.firstRunCompleted).toBe(false);
     expect(s.isWelcomeOpen).toBe(true);
   });
+
+  it('drops malformed saved boards without crashing during loadSave', () => {
+    const corruptBoardsPayload = JSON.stringify({
+      version: 2,
+      profile: { displayName: 'Tester', createdAt: '2026-01-01T00:00:00.000Z', firstRunCompleted: true, lastLevelId: STAGE_1_1.id },
+      progress: {
+        stars: { [STAGE_1_1.id]: 2 },
+        boards: {
+          [STAGE_1_1.id]: { levelRevision: 'r1', nodes: null, edges: [] },
+          [STAGE_1_2.id]: { levelRevision: 'r1', nodes: [{ id: 'bad' }], edges: [] },
+        },
+        onboarding: { currentStep: 'bad', completed: null, seenTwists: [123, STAGE_1_1.id] },
+      },
+      settings: { theme: 'light', soundMuted: false, simSpeed: 1 },
+    });
+    const { save, status } = loadSave(new MemoryStorage({ [SAVE_KEY]: corruptBoardsPayload }));
+    expect(status).toBe('ok');
+    expect(save.progress.boards).toEqual({});
+    expect(save.progress.onboarding).toEqual({
+      currentStep: {},
+      completed: {},
+      seenTwists: [STAGE_1_1.id],
+    });
+  });
 });

@@ -245,12 +245,31 @@ export interface RunScore {
   totalCost: number;
 }
 
+function hasWildcardStar(val: string | string[] | undefined): boolean {
+  if (!val) return false;
+  return Array.isArray(val) ? val.includes('*') : val === '*';
+}
+
+function hasUnconstrainedWildcardAdmin(packets: SimulationPacket[], nodes: CloudNodeData[]): boolean {
+  const callerIds = new Set(packets.filter(p => p.kind === 'legitimate').map(p => p.sourceNodeId));
+  return nodes.some(node => {
+    if (!callerIds.has(node.id)) return false;
+    if (node.permissionBoundary || (node.scpPolicies && node.scpPolicies.length > 0)) return false;
+    return (node.identityPolicies || []).some(doc =>
+      doc.Statement.some(
+        stmt => stmt.Effect === 'Allow' && hasWildcardStar(stmt.Action) && hasWildcardStar(stmt.Resource)
+      )
+    );
+  });
+}
+
 /** Star rating for one run. Star 2 needs star 1; star 3 needs star 2. */
 export function scoreRun(
   packets: SimulationPacket[],
   results: SimulationResult[],
   nodes: CloudNodeData[],
-  targetBudget: number
+  targetBudget: number,
+  criteria?: GameLevel['criteria']
 ): RunScore {
   const legitPackets = packets.filter(p => p.kind === 'legitimate');
   const exploitPackets = packets.filter(p => p.kind === 'exploit');
@@ -258,7 +277,8 @@ export function scoreRun(
   const exploitBlocked = results.filter((r, idx) => packets[idx]?.kind === 'exploit' && r.success).length;
 
   const star1 = legitPackets.length === 0 || legitPassed === legitPackets.length;
-  const star2 = star1 && (exploitPackets.length === 0 || exploitBlocked === exploitPackets.length);
+  const wildcardPenalty = Boolean(criteria?.star2Secure?.noWildcardAdmin) && hasUnconstrainedWildcardAdmin(packets, nodes);
+  const star2 = star1 && !wildcardPenalty && (exploitPackets.length === 0 || exploitBlocked === exploitPackets.length);
   const totalCost = nodes.reduce((acc, n) => acc + (n.monthlyCost || 0), 0);
   const star3 = star2 && totalCost <= targetBudget;
 
@@ -293,6 +313,7 @@ function returnOutcomeFor(result: SimulationResult): { outcome: ReturnOutcome; l
 const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 let toastSeq = 0;
+let simRunId = 0;
 let dragSnapshot: BoardSnapshot | null = null;
 
 export const useGameStore = create<GameState>((set, get) => {
@@ -370,6 +391,7 @@ export const useGameStore = create<GameState>((set, get) => {
         monthlyCost: customData?.monthlyCost ?? cost,
         essential: false,
         config: {
+          ...(type === 'vpc_endpoint' ? { service: 's3', endpointType: 'gateway' as const } : {}),
           ...(customData?.config || {}),
         },
         identityPolicies: customData?.identityPolicies || [],
@@ -408,25 +430,28 @@ export const useGameStore = create<GameState>((set, get) => {
   };
 
   /** Shared state reset when a different board is shown. */
-  const boardSwitch = (lvl: GameLevel, flow: BoardSnapshot) => ({
-    currentLevelId: lvl.id,
-    currentLevel: lvl,
-    gameMode: lvl.category,
-    nodes: flow.nodes,
-    edges: flow.edges,
-    selectedNodeId: null,
-    history: emptyHistory(),
-    simStatus: 'idle' as const,
-    results: [],
-    resultsCurrent: false,
-    activePacketIndex: -1,
-    isCoachModalOpen: false,
-    isVictoryModalOpen: false,
-    isAskAgentOpen: false,
-    twistBanner: null,
-    isReportCardOpen: lvl.category !== 'Sandbox',
-    isGuideOpen: Boolean(lvl.onboardingSteps?.length) && !get().onboarding.completed[lvl.id],
-  });
+  const boardSwitch = (lvl: GameLevel, flow: BoardSnapshot) => {
+    simRunId++;
+    return {
+      currentLevelId: lvl.id,
+      currentLevel: lvl,
+      gameMode: lvl.category,
+      nodes: flow.nodes,
+      edges: flow.edges,
+      selectedNodeId: null,
+      history: emptyHistory(),
+      simStatus: 'idle' as const,
+      results: [],
+      resultsCurrent: false,
+      activePacketIndex: -1,
+      isCoachModalOpen: false,
+      isVictoryModalOpen: false,
+      isAskAgentOpen: false,
+      twistBanner: null,
+      isReportCardOpen: lvl.category !== 'Sandbox',
+      isGuideOpen: Boolean(lvl.onboardingSteps?.length) && !get().onboarding.completed[lvl.id],
+    };
+  };
 
   const openLevel = (lvl: GameLevel) => {
     const savedBoards = captureCurrentBoard();
@@ -625,10 +650,10 @@ export const useGameStore = create<GameState>((set, get) => {
       position?: { x: number; y: number }
     ) => {
       const state = get();
-      const round = state.currentLevel.roundNumber;
+      const levelId = state.currentLevel.id;
       let customData: Partial<CloudNodeData> | undefined;
 
-      if (round === 1 && item.type === 's3') {
+      if (levelId === 'stage3-1-leaky-bucket' && item.type === 's3') {
         customData = {
           id: 'invoices-bucket',
           label: 'customer-invoices',
@@ -647,7 +672,7 @@ export const useGameStore = create<GameState>((set, get) => {
             ],
           },
         };
-      } else if (round === 2 && item.type === 'ec2') {
+      } else if (levelId === 'stage4-1-metadata-heist' && item.type === 'ec2') {
         customData = {
           id: 'preview-ec2',
           label: 'URL Preview EC2',
@@ -667,7 +692,7 @@ export const useGameStore = create<GameState>((set, get) => {
             },
           ],
         };
-      } else if (round === 3 && item.type === 'iam_role') {
+      } else if (levelId === 'stage4-2-confused-deputy' && item.type === 'iam_role') {
         customData = {
           id: 'vendor-role',
           label: 'VendorAnalyticsRole',
@@ -698,7 +723,7 @@ export const useGameStore = create<GameState>((set, get) => {
             },
           ],
         };
-      } else if (round === 4 && (item.type === 'iam_role' || item.type === 'lambda')) {
+      } else if (levelId === 'stage4-3-shadow-admin' && (item.type === 'iam_role' || item.type === 'lambda')) {
         customData = {
           id: 'worker-role',
           label: 'lambda-worker-exec',
@@ -718,13 +743,13 @@ export const useGameStore = create<GameState>((set, get) => {
             },
           ],
         };
-      } else if (round === 5 && item.type === 'dynamodb') {
+      } else if (levelId === 'stage4-4-tenant-hopping' && item.type === 'dynamodb') {
         customData = {
           id: 'records-dynamodb',
           label: 'CustomerRecords',
           arn: 'arn:aws:dynamodb:us-east-1:111122223333:table/CustomerRecords',
         };
-      } else if (round === 6 && item.type === 'kms') {
+      } else if (levelId === 'stage3-3-silent-lockout' && item.type === 'kms') {
         customData = {
           id: 'payment-cmk',
           label: 'Payments CMK Key',
@@ -742,7 +767,7 @@ export const useGameStore = create<GameState>((set, get) => {
             ],
           },
         };
-      } else if (round === 7 && item.type === 'vpc_endpoint') {
+      } else if (levelId === 'stage5-2-nat-gateway-trap' && item.type === 'vpc_endpoint') {
         customData = {
           id: 's3-endpoint',
           label: 'VPC S3 Gateway Endpoint',
@@ -761,7 +786,7 @@ export const useGameStore = create<GameState>((set, get) => {
       insertNode(item.type, item.label, item.cost, position || { x: 380, y: 220 }, customData);
 
       // Auto-wire adversary threat vectors
-      if (round === 1 && item.type === 's3') {
+      if (levelId === 'stage3-1-leaky-bucket' && item.type === 's3') {
         insertEdge({
           id: 'edge-botnet-probe',
           source: 'botnet-scraper',
@@ -769,7 +794,7 @@ export const useGameStore = create<GameState>((set, get) => {
           label: 'Public Internet Probe',
           data: { isThreat: true },
         });
-      } else if (round === 2 && item.type === 'ec2') {
+      } else if (levelId === 'stage4-1-metadata-heist' && item.type === 'ec2') {
         insertEdge({
           id: 'edge-ssrf-probe',
           source: 'ssrf-attacker',
@@ -777,7 +802,7 @@ export const useGameStore = create<GameState>((set, get) => {
           label: 'SSRF Ingress Probe',
           data: { isThreat: true },
         });
-      } else if (round === 3 && item.type === 'iam_role') {
+      } else if (levelId === 'stage4-2-confused-deputy' && item.type === 'iam_role') {
         insertEdge({
           id: 'edge-vendor-saas',
           source: 'vendor-saas',
@@ -939,6 +964,7 @@ export const useGameStore = create<GameState>((set, get) => {
         return;
       }
 
+      const runId = ++simRunId;
       const level = state.currentLevel;
       const packets = level.packets;
       const allNodeData = state.nodes.map(n => n.data);
@@ -972,83 +998,104 @@ export const useGameStore = create<GameState>((set, get) => {
         return direct ? e.source === pkt.sourceNodeId && e.target === pkt.targetNodeId : e.source === pkt.sourceNodeId;
       };
 
-      for (let i = 0; i < packets.length; i++) {
-        const pkt = packets[i];
-        const animate = !get().skipRequested;
+      try {
+        for (let i = 0; i < packets.length; i++) {
+          if (runId !== simRunId) return;
+          const pkt = packets[i];
+          const animate = !get().skipRequested;
 
-        if (animate) {
-          set(curr => ({
-            activePacketIndex: i,
-            edges: curr.edges.map(e => ({
-              ...e,
-              data: {
-                ...e.data,
-                isSimulating: isOnPath(e, pkt),
-                isExploit: pkt.kind === 'exploit',
-                speed: speed === 2 ? 0.35 : 0.7,
-                returnOutcome: undefined,
-                returnLabel: undefined,
-              },
-            })),
-          }));
-          await delay(halfDelay);
-        }
+          if (animate) {
+            set(curr => ({
+              activePacketIndex: i,
+              edges: curr.edges.map(e => ({
+                ...e,
+                data: {
+                  ...e.data,
+                  isSimulating: isOnPath(e, pkt),
+                  isExploit: pkt.kind === 'exploit',
+                  speed: speed === 2 ? 0.35 : 0.7,
+                  returnOutcome: undefined,
+                  returnLabel: undefined,
+                },
+              })),
+            }));
+            await delay(halfDelay);
+            if (runId !== simRunId) return;
+          }
 
-        // Evaluate packet with the graph edges as they were when the run started
-        const result = evaluatePacket(pkt, allNodeData, evalEdges);
-        newResults.push(result);
-        set({ results: [...newResults] });
+          // Evaluate packet with the graph edges as they were when the run started
+          const result = evaluatePacket(pkt, allNodeData, evalEdges);
+          newResults.push(result);
+          set({ results: [...newResults] });
 
-        if (animate && !get().skipRequested) {
-          const ret = returnOutcomeFor(result);
-          set(curr => ({
-            edges: curr.edges.map(e =>
-              e.data?.isSimulating ? { ...e, data: { ...e.data, returnOutcome: ret.outcome, returnLabel: ret.label } } : e
-            ),
-          }));
-          if (result.success) sounds.playPacketPass();
-          else sounds.playPacketBlocked();
-          await delay(halfDelay);
-        }
-      }
-
-      // Clear edge animation
-      set(curr => ({
-        edges: curr.edges.map(e => ({
-          ...e,
-          data: { ...e.data, isSimulating: false, returnOutcome: undefined, returnLabel: undefined },
-        })),
-        activePacketIndex: -1,
-        simStatus: 'completed',
-        skipRequested: false,
-        resultsCurrent: true,
-      }));
-
-      const { earned } = scoreRun(packets, newResults, allNodeData, level.targetBudget);
-      set({ lastRunStars: earned });
-
-      if (earned > 0) {
-        const stars = get().starRecords;
-        const updatedStars = { ...stars, [level.id]: Math.max(stars[level.id] || 0, earned) };
-        set({ starRecords: updatedStars, earnedStars: earned, isVictoryModalOpen: true });
-        sounds.playVictory();
-        if (typeof window !== 'undefined') {
-          try {
-            confetti({ particleCount: earned * 50, spread: 70, origin: { y: 0.6 } });
-          } catch {
-            // Confetti is decoration only.
+          if (animate && !get().skipRequested) {
+            const ret = returnOutcomeFor(result);
+            set(curr => ({
+              edges: curr.edges.map(e =>
+                e.data?.isSimulating ? { ...e, data: { ...e.data, returnOutcome: ret.outcome, returnLabel: ret.label } } : e
+              ),
+            }));
+            if (result.success) sounds.playPacketPass();
+            else sounds.playPacketBlocked();
+            await delay(halfDelay);
+            if (runId !== simRunId) return;
           }
         }
-      } else {
-        // Find first failing result and automatically open coach
-        const firstFail = newResults.find(r => !r.success);
-        if (firstFail) {
-          set({ inspectedResult: firstFail, isCoachModalOpen: true });
+
+        if (runId !== simRunId) return;
+
+        // Clear edge animation
+        set(curr => ({
+          edges: curr.edges.map(e => ({
+            ...e,
+            data: { ...e.data, isSimulating: false, returnOutcome: undefined, returnLabel: undefined },
+          })),
+          activePacketIndex: -1,
+          simStatus: 'completed',
+          skipRequested: false,
+          resultsCurrent: true,
+        }));
+
+        const { earned } = scoreRun(packets, newResults, allNodeData, level.targetBudget, level.criteria);
+        set({ lastRunStars: earned });
+
+        if (earned > 0) {
+          const stars = get().starRecords;
+          const updatedStars = { ...stars, [level.id]: Math.max(stars[level.id] || 0, earned) };
+          set({ starRecords: updatedStars, earnedStars: earned, isVictoryModalOpen: true });
+          sounds.playVictory();
+          if (typeof window !== 'undefined') {
+            try {
+              confetti({ particleCount: earned * 50, spread: 70, origin: { y: 0.6 } });
+            } catch {
+              // Confetti is decoration only.
+            }
+          }
+        } else {
+          // Find first failing result and automatically open coach
+          const firstFail = newResults.find(r => !r.success);
+          if (firstFail) {
+            set({ inspectedResult: firstFail, isCoachModalOpen: true });
+          }
+        }
+      } catch (err) {
+        if (runId === simRunId) {
+          set(curr => ({
+            simStatus: 'idle',
+            activePacketIndex: -1,
+            skipRequested: false,
+            edges: curr.edges.map(e => ({
+              ...e,
+              data: { ...e.data, isSimulating: false, returnOutcome: undefined, returnLabel: undefined },
+            })),
+            toast: toastFrom(`Simulation error: ${err instanceof Error ? err.message : 'invalid policy'}`, 'error'),
+          }));
         }
       }
     },
 
     resetSimulation: () => {
+      simRunId++;
       set(curr => ({
         simStatus: 'idle',
         activePacketIndex: -1,

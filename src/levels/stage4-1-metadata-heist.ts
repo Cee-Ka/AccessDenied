@@ -152,5 +152,4 @@ export const STAGE_4_1: GameLevel = {
   ]
 };
 
-export const stage41MetadataHeist = STAGE_4_1;
 export default STAGE_4_1;

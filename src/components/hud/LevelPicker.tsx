@@ -15,7 +15,6 @@ export const STAGES = [
   { stage: 3, title: 'Stage 3: Dual Authority', subtitle: 'Identity vs Resource-Based Policies' },
   { stage: 4, title: 'Stage 4: Advanced Defense', subtitle: 'Privilege Escalation & Exploit Chains' },
   { stage: 5, title: 'Stage 5: Enterprise Governance', subtitle: 'Network & Guardrails' },
-  { stage: 6, title: 'Stage 6: Boss Fight', subtitle: 'The Capital One Historic Cloud Breach' },
 ];
 
 export function levelCode(lvl: GameLevel): string {
@@ -183,8 +182,9 @@ export function LevelPicker() {
                       <div className="text-xs font-display font-extrabold text-neo-ink truncate">{stage.title}</div>
                       <div className="text-[10px] text-neo-muted truncate">{stage.subtitle}</div>
                     </div>
-                    <div className="text-[11px] font-mono font-bold text-neo-ink shrink-0 bg-neo-surface px-1.5 py-0.5 rounded border border-neo-ink">
-                      ★ {earnedInStage}/{maxInStage}
+                    <div className="inline-flex items-center gap-1 text-[11px] font-mono font-bold text-neo-ink shrink-0 bg-neo-surface px-1.5 py-0.5 rounded border border-neo-ink">
+                      <Star className="w-3 h-3 fill-neo-yellow text-neo-ink shrink-0" aria-hidden="true" />
+                      <span>{earnedInStage}/{maxInStage}</span>
                     </div>
                   </div>
                   <div className="space-y-1">

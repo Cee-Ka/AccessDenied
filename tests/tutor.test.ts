@@ -1,23 +1,22 @@
 import { describe, it, expect } from 'vitest';
 import { buildTutorPrompt, escapeMermaidLabel, TutorPromptInput } from '../src/tutor/buildTutorPrompt';
 import { evaluatePacket } from '../src/store/useGameStore';
-import { round0CloudBasics } from '../src/levels/round0-cloud-basics';
-import { round1LeakyBucket } from '../src/levels/round1-leaky-bucket';
+import { STAGE_1_1, STAGE_1_2, STAGE_3_1 } from '../src/levels';
 import { CloudNodeData } from '../src/types/engine';
 
 function inputFor(nodes: CloudNodeData[], edges: Array<{ source: string; target: string }>, earnedStars = 0): TutorPromptInput {
   return {
-    level: round0CloudBasics,
+    level: STAGE_1_2,
     nodes,
     edges,
-    packets: round0CloudBasics.packets,
-    results: round0CloudBasics.packets.map(p => evaluatePacket(p, nodes, edges)),
+    packets: STAGE_1_2.packets,
+    results: STAGE_1_2.packets.map(p => evaluatePacket(p, nodes, edges)),
     earnedStars,
   };
 }
 
-const initialNodes = () => round0CloudBasics.initialNodes.map(n => n.data);
-const initialEdges = () => round0CloudBasics.initialEdges.map(e => ({ source: e.source, target: e.target }));
+const initialNodes = () => STAGE_1_2.initialNodes.map(n => n.data);
+const initialEdges = () => STAGE_1_2.initialEdges.map(e => ({ source: e.source, target: e.target }));
 
 describe('Ask your agent: tutor prompt', () => {
   it('is deterministic', () => {
@@ -31,15 +30,14 @@ describe('Ask your agent: tutor prompt', () => {
     const order = ['patient AWS cloud security tutor', 'simplified model', '<level>', '<design>', '<parts>', '<result>'].map(s => p.indexOf(s));
     expect(order.every(i => i >= 0)).toBe(true);
     expect([...order].sort((x, y) => x - y)).toEqual(order);
-    expect(p).toContain('Learn, round 0: Cloud Basics');
+    expect(p).toContain('Learn, round 2: The Curious Teammate');
     expect(p).toContain('Budget: $10/month. My design costs $5/month.');
   });
 
   it('draws directed Mermaid edges from caller to callee', () => {
-    const p = buildTutorPrompt(inputFor(initialNodes(), [...initialEdges(), { source: 'starter-app', target: 'starter-photos' }]));
-    // Board order: starter-app = n1, starter-photos = n2, starter-intern = n3
+    const p = buildTutorPrompt(inputFor(initialNodes(), initialEdges()));
+    // Board order: intern-alice = n1, company-reports = n2
     expect(p).toContain('flowchart LR');
-    expect(p).toContain('  n3 --> n2');
     expect(p).toContain('  n1 --> n2');
     expect(p).not.toContain('n2 --> n1');
     expect(p).toContain('Arrows show the direction requests travel.');
@@ -47,33 +45,43 @@ describe('Ask your agent: tutor prompt', () => {
 
   it('includes each part\'s role, connections and policies as compact JSON', () => {
     const p = buildTutorPrompt(inputFor(initialNodes(), initialEdges()));
-    const intern = p.split('\n').find(l => l.startsWith('- intern-dev'))!;
+    const intern = p.split('\n').find(l => l.startsWith('- intern-alice'))!;
     expect(intern).toContain('(IAM User, Free)');
-    expect(intern).toContain('Sends to: team-photos.');
-    expect(intern).toContain('Identity policy: {"Version":"2012-10-17","Statement":[{"Sid":"InternBucketAccess"');
-    const bucket = p.split('\n').find(l => l.startsWith('- team-photos'))!;
-    expect(bucket).toContain('Gets requests from: intern-dev.');
+    expect(intern).toContain('Sends to: company-reports.');
+    expect(intern).toContain('Identity policy: {"Version":"2012-10-17","Statement":[{"Sid":"AllowReportsRead"');
+    const bucket = p.split('\n').find(l => l.startsWith('- company-reports'))!;
+    expect(bucket).toContain('Gets requests from: intern-alice.');
     expect(bucket).toContain('Block Public Access on.');
   });
 
   it('labels a resource policy as such', () => {
-    const nodes = round1LeakyBucket.initialNodes.map(n => n.data).concat([{
+    const nodes = STAGE_3_1.initialNodes.map(n => n.data).concat([{
       id: 'invoices-bucket', type: 's3', label: 'customer-invoices', arn: 'arn:aws:s3:::customer-invoices', accountId: '111122223333',
       monthlyCost: 5, config: { blockPublicAccess: false }, identityPolicies: [],
       resourcePolicy: { Version: '2012-10-17', Statement: [{ Effect: 'Allow', Principal: '*', Action: 's3:GetObject', Resource: '*' }] },
     }]);
     const p = buildTutorPrompt({
-      level: round1LeakyBucket, nodes, edges: [], packets: round1LeakyBucket.packets,
-      results: round1LeakyBucket.packets.map(pk => evaluatePacket(pk, nodes, [])), earnedStars: 0,
+      level: STAGE_3_1, nodes, edges: [], packets: STAGE_3_1.packets,
+      results: STAGE_3_1.packets.map(pk => evaluatePacket(pk, nodes, [])), earnedStars: 0,
     });
     expect(p.split('\n').find(l => l.startsWith('- customer-invoices'))).toContain('Resource policy: {"Version"');
   });
 
   it('names the deciding stage for failed packets', () => {
-    const edges = [...initialEdges(), { source: 'starter-app', target: 'starter-photos' }];
-    const p = buildTutorPrompt(inputFor(initialNodes(), edges));
-    expect(p).toMatch(/Legitimate "Photo app reads a photo" \(s3:GetObject on arn:aws:s3:::team-photos\/cat\.jpg\) was denied at Identity Policy: Implicit Deny/);
-    expect(p).toMatch(/Attack "Stolen login deletes photos" .* got through/);
+    const s1Nodes = STAGE_1_1.initialNodes.map(n => n.data);
+    const s1Edges = [{ source: 'intern-alice', target: 'company-reports' }];
+    const p1 = buildTutorPrompt({
+      level: STAGE_1_1,
+      nodes: s1Nodes,
+      edges: s1Edges,
+      packets: STAGE_1_1.packets,
+      results: STAGE_1_1.packets.map(pk => evaluatePacket(pk, s1Nodes, s1Edges)),
+      earnedStars: 0,
+    });
+    expect(p1).toMatch(/Legitimate "Intern Alice reads quarterly report" \(s3:GetObject on arn:aws:s3:::company-reports\/q3-report\.pdf\) was denied at Identity Policy: Implicit Deny/);
+
+    const p2 = buildTutorPrompt(inputFor(initialNodes(), initialEdges()));
+    expect(p2).toMatch(/Attack "Curious probe reads payroll spreadsheet" .* got through/);
   });
 
   it('switches closing instructions by outcome', () => {
@@ -95,10 +103,10 @@ describe('Ask your agent: tutor prompt', () => {
 
   it('escapes labels that would break Mermaid', () => {
     expect(escapeMermaidLabel('a "quoted" [x] <y>')).toBe('a #quot;quoted#quot; #91;x#93; #lt;y#gt;');
-    const nodes = initialNodes().map(n => (n.id === 'starter-app' ? { ...n, label: 'App "v2" [prod]' } : n));
+    const nodes = initialNodes().map(n => (n.id === 'intern-alice' ? { ...n, label: 'App "v2" [prod]' } : n));
     const p = buildTutorPrompt(inputFor(nodes, initialEdges()));
     const line = p.split('\n').find(l => l.startsWith('  n1['))!;
-    expect(line).toBe('  n1["App #quot;v2#quot; #91;prod#93;<br>IAM Role · Free"]');
+    expect(line).toBe('  n1["App #quot;v2#quot; #91;prod#93;<br>IAM User · Free"]');
   });
 
   it('never includes profile data', () => {
@@ -108,7 +116,7 @@ describe('Ask your agent: tutor prompt', () => {
 
   it('truncates very long policies to keep the prompt bounded', () => {
     const big = Array.from({ length: 200 }, (_, i) => ({ Sid: `S${i}`, Effect: 'Allow' as const, Action: `s3:Get${i}`, Resource: '*' }));
-    const nodes = initialNodes().map(n => (n.id === 'starter-app' ? { ...n, identityPolicies: [{ Version: '2012-10-17' as const, Statement: big }] } : n));
+    const nodes = initialNodes().map(n => (n.id === 'intern-alice' ? { ...n, identityPolicies: [{ Version: '2012-10-17' as const, Statement: big }] } : n));
     const p = buildTutorPrompt(inputFor(nodes, initialEdges()));
     expect(p).toContain('…(truncated)');
     expect(p.length).toBeLessThan(12_000);

@@ -33,9 +33,18 @@ export function evaluateNetworkPath(
   // Edges are directed: an edge means "source calls target".
   if (edges !== undefined) {
     const hasDirectEdge = edges.some(e => e.source === sourceNode.id && e.target === targetNode.id);
-    const hasIntermediate = edges.some(
-      e => e.source === sourceNode.id && allNodes.some(m => m.id === e.target && ['nat_gw', 'vpc_endpoint', 'iam_role'].includes(m.type))
-    );
+    const hasIntermediate = edges.some(e => {
+      if (e.source !== sourceNode.id) return false;
+      const mid = allNodes.find(m => m.id === e.target);
+      if (!mid) return false;
+      if (mid.type === 'nat_gw' || mid.type === 'vpc_endpoint') {
+        return edges.some(e2 => e2.source === mid.id && e2.target === targetNode.id);
+      }
+      if (mid.type === 'iam_role') {
+        return targetNode.type === 'iam_role' || edges.some(e2 => e2.source === mid.id && e2.target === targetNode.id);
+      }
+      return false;
+    });
     const hasReverseEdge = edges.some(e => e.source === targetNode.id && e.target === sourceNode.id);
 
     if (!hasDirectEdge && !hasIntermediate && hasReverseEdge && sourceNode.type !== 'external_vendor') {

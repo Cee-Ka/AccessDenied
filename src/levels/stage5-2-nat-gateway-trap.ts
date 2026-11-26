@@ -196,5 +196,4 @@ export const STAGE_5_2: GameLevel = {
   ]
 };
 
-export const stage5_2NatGatewayTrap: GameLevel = STAGE_5_2;
 export default STAGE_5_2;

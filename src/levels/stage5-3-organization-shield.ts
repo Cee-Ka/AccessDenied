@@ -276,5 +276,4 @@ export const STAGE_5_3: GameLevel = {
   ]
 };
 
-export const stage5_3OrganizationShield: GameLevel = STAGE_5_3;
 export default STAGE_5_3;

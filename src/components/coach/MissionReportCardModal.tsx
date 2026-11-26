@@ -2,19 +2,29 @@ import { useGameStore } from '../../store/useGameStore';
 import { X, Sparkles, ShieldAlert, DollarSign, CheckCircle, ArrowRight, BookOpen } from 'lucide-react';
 import { AwsIcon } from '@access-denied/aws-icons';
 import { ConceptTags } from '../hud/LevelPicker';
+import { useModalDialog } from '../common/useModalDialog';
 
 export function MissionReportCardModal() {
   const { isReportCardOpen, closeReportCard, currentLevel } = useGameStore();
+  const isOpen = Boolean(isReportCardOpen && currentLevel.reportCard);
+  const dialogRef = useModalDialog(isOpen, closeReportCard);
 
-  if (!isReportCardOpen || !currentLevel.reportCard) return null;
+  if (!isOpen || !currentLevel.reportCard) return null;
 
   const card = currentLevel.reportCard;
   const newService = card.newService || currentLevel.newlyUnlockedService;
 
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-scrim animate-in fade-in duration-200">
-      <div className="relative w-full max-w-2xl neo-modal overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-scrim">
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="mission-report-title"
+        className="relative w-full max-w-2xl neo-modal overflow-hidden flex flex-col max-h-[90vh]"
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b-2 border-neo-ink bg-neo-bg">
           <div className="flex items-center gap-3">
@@ -25,7 +35,7 @@ export function MissionReportCardModal() {
               <div className="text-[10px] font-mono uppercase tracking-wider text-neo-ink font-bold">
                 Architecture Mission Dossier
               </div>
-              <h2 className="neo-heading text-base font-extrabold text-neo-ink tracking-tight">
+              <h2 id="mission-report-title" className="neo-heading text-base font-extrabold text-neo-ink tracking-tight">
                 {card.headline}
               </h2>
             </div>
@@ -33,6 +43,8 @@ export function MissionReportCardModal() {
           <button
             onClick={closeReportCard}
             className="neo-icon-btn"
+            title="Close mission dossier"
+            aria-label="Close mission dossier"
           >
             <X className="w-5 h-5" />
           </button>
@@ -116,7 +128,7 @@ export function MissionReportCardModal() {
                   </div>
                   <div className="min-w-0 space-y-0.5">
                     <div className="font-bold text-neo-ink text-xs">{t.title}</div>
-                    <div className="text-neo-muted text-[11px] leading-relaxed">
+                    <div className="text-neo-muted text-xs leading-relaxed">
                       {t.instruction}
                     </div>
                   </div>
@@ -128,21 +140,21 @@ export function MissionReportCardModal() {
           {/* Threat Warning & Budget Notice */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <div className="bg-neo-coral border-2 border-neo-ink rounded-neo p-3 space-y-1 neo-on-accent">
-              <div className="flex items-center gap-1.5 text-neo-ink font-bold text-[11px]">
+              <div className="flex items-center gap-1.5 text-neo-ink font-bold text-xs">
                 <ShieldAlert className="w-3.5 h-3.5 text-neo-ink shrink-0" />
                 Security Threat Intel
               </div>
-              <p className="text-neo-muted text-[11px] leading-relaxed">
+              <p className="text-neo-muted text-xs leading-relaxed">
                 {card.securityIntel}
               </p>
             </div>
 
             <div className="bg-neo-raised border-2 border-neo-ink rounded-neo p-3 space-y-1">
-              <div className="flex items-center gap-1.5 text-neo-ink font-bold text-[11px]">
+              <div className="flex items-center gap-1.5 text-neo-ink font-bold text-xs">
                 <DollarSign className="w-3.5 h-3.5 text-neo-ink shrink-0" />
                 Budget Cap Target
               </div>
-              <p className="text-neo-muted text-[11px] leading-relaxed">
+              <p className="text-neo-muted text-xs leading-relaxed">
                 {card.budgetNotice}
               </p>
             </div>

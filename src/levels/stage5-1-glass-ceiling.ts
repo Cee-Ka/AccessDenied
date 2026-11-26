@@ -227,5 +227,4 @@ export const STAGE_5_1: GameLevel = {
   ]
 };
 
-export const stage5_1GlassCeiling: GameLevel = STAGE_5_1;
 export default STAGE_5_1;
