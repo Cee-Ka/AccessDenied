@@ -3,6 +3,7 @@ import { CONCEPTS, POLICY_TAB_CONCEPT, STAGE_CONCEPT } from '../src/content/conc
 import { EVALUATION_STAGES, NODE_TYPES } from '../src/types/engine';
 import { ALL_LEVELS, SANDBOX_DEFAULT_LEVEL } from '../src/levels';
 
+
 const REQUIRED = [
   'iam_user', 'iam_role', 'identity_policy', 'resource_policy', 'trust_policy', 'permission_boundary', 'scp',
   'explicit_deny', 'implicit_deny', 'condition_keys', 'vpc_endpoint', 'nat_gw', 'kms_key_policy', 'imdsv2',
@@ -45,10 +46,10 @@ describe('Concept glossary', () => {
     }
   });
 
-  it('gives Round 4 and Round 6 the concepts their report cards promise', () => {
-    const r4 = ALL_LEVELS.find(l => l.id === 'round-4')!;
-    const r6 = ALL_LEVELS.find(l => l.id === 'round-6')!;
-    expect(r4.conceptTags).toEqual(expect.arrayContaining(['permission_boundary', 'pass_role']));
-    expect(r6.conceptTags).toEqual(expect.arrayContaining(['kms_key_policy', 'secrets_manager']));
+  it('gives Stage 4.3 and Stage 3.3 the concepts their report cards promise', () => {
+    const s4_3 = ALL_LEVELS.find(l => l.id === 'stage4-3-shadow-admin')!;
+    const s3_3 = ALL_LEVELS.find(l => l.id === 'stage3-3-silent-lockout')!;
+    expect(s4_3.conceptTags).toEqual(expect.arrayContaining(['permission_boundary', 'pass_role']));
+    expect(s3_3.conceptTags).toEqual(expect.arrayContaining(['kms_key_policy', 'root_delegation']));
   });
 });

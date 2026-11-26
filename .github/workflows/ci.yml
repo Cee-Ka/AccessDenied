@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  pull_request:
+    branches: ['master', 'main']
+  push:
+    branches: ['master', 'main', 'feat/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Typecheck, Tests & Bundle Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run TypeScript typecheck
+        run: pnpm typecheck
+
+      - name: Run Vitest suite with JUnit output
+        run: pnpm test:ci
+
+      - name: Run Python tooling unit tests
+        run: pnpm test:tools
+
+      - name: Build production bundle
+        run: pnpm build
+
+      - name: Audit built bundle for offline compliance
+        run: pnpm audit:bundle
+
+      - name: Package static release archive
+        run: pnpm package:release
+
+      - name: Upload verification reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verify-reports
+          path: reports/
+          if-no-files-found: warn
+
+  container-smoke:
+    name: Container Build & Smoke Test
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build Docker image
+        run: docker build -t access-denied:ci .
+
+      - name: Start container for smoke test
+        run: |
+          docker run -d --rm \
+            --name access-denied-ci-smoke \
+            -p 127.0.0.1:18080:8080 \
+            access-denied:ci
+
+      - name: Run live HTTP smoke tests
+        run: |
+          python3 tools/smoke_test.py \
+            --base-url http://127.0.0.1:18080 \
+            --junit-out reports/smoke-junit.xml \
+            --json-out reports/smoke.json
+
+      - name: Stop smoke-test container
+        if: always()
+        run: docker rm -f access-denied-ci-smoke || true
+
+      - name: Upload smoke reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: container-smoke-reports
+          path: reports/
+          if-no-files-found: warn

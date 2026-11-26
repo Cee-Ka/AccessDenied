@@ -1,10 +1,13 @@
 import { GameLevel } from '../types/engine';
 
-export const round8GuardrailClash: GameLevel = {
-  id: 'round-8',
-  roundNumber: 8,
-  title: 'Guardrail Clash',
-  subtitle: 'Organizations SCPs vs. Identity Policies',
+export const STAGE_5_3: GameLevel = {
+  id: 'stage5-3-organization-shield',
+  stage: 5,
+  stageLevel: 3,
+  stageTitle: 'Stage 5: Enterprise Governance & Guardrails',
+  roundNumber: 15,
+  title: 'The Organization Shield',
+  subtitle: 'Organizations SCP Guardrails',
   category: 'Learn',
   storyBrief:
     'The corporate security team pushed an Organization-level Service Control Policy (SCP) to enforce regional boundaries. The SCP denies all API calls outside us-east-1. Suddenly, the automated Disaster Recovery (DR) backup replication to eu-central-1 begins failing with AccessDenied outages!',
@@ -18,20 +21,46 @@ export const round8GuardrailClash: GameLevel = {
     type: 'iam_role',
     name: 'Organizations Service Control Policies (SCPs)',
     category: 'Governance',
-    primer: 'SCPs are organization-level guardrails that centrally control permissions across all member accounts. An SCP explicit deny overrides ALL identity and resource policies, making condition exemptions critical.',
+    primer:
+      'SCPs are organization-level guardrails that centrally control permissions across all member accounts. An SCP explicit deny overrides ALL identity and resource policies, making condition exemptions critical.',
     keyConcepts: ['Service Control Policies', 'aws:RequestedRegion', 'Condition Exemptions']
   },
   reportCard: {
-    headline: 'Stage 8: Enterprise Governance — Guardrails vs Identity',
-    scenario: 'The security team deployed an SCP denying all API calls outside us-east-1. Suddenly, production Disaster Recovery replication to eu-central-1 breaks with AccessDenied outages. Meanwhile, ransomware actors probe ap-southeast-1 to launch unauthorized crypto miners.',
+    headline: 'Stage 5: Enterprise Governance — Guardrails vs Identity',
+    scenario:
+      'The security team deployed an SCP denying all API calls outside us-east-1. Suddenly, production Disaster Recovery replication to eu-central-1 breaks with AccessDenied outages. Meanwhile, ransomware actors probe ap-southeast-1 to launch unauthorized crypto miners.',
     tasks: [
-      { step: 1, title: 'Connect Replication Route', instruction: 'Wire a connection edge between the DR Backup Worker Role and the eu-central-1-backup-vault S3 bucket.' },
-      { step: 2, title: 'Analyze Region Guardrail', instruction: 'Select DR Backup Worker Role and open the "SCP Guardrail" tab in the Inspector Drawer. Notice the broad Deny on non-US regions.' },
-      { step: 3, title: 'Craft Role Exemption', instruction: 'Add a StringNotEquals condition to the SCP Deny statement to exempt the DRBackupRole ARN.' },
-      { step: 4, title: 'Verify Mining Block', instruction: 'Ensure unauthorized EC2 instance creation in ap-southeast-1 remains blocked.' },
-      { step: 5, title: 'Simulate', instruction: 'Verify Frankfurt DR backup succeeds while the Singapore crypto exploit is denied.' }
+      {
+        step: 1,
+        title: 'Connect Replication Route',
+        instruction:
+          'Wire a connection edge between the DR Backup Worker Role and the eu-central-1-backup-vault S3 bucket.'
+      },
+      {
+        step: 2,
+        title: 'Analyze Region Guardrail',
+        instruction:
+          'Select DR Backup Worker Role and open the "SCP Guardrail" tab in the Inspector Drawer. Notice the broad Deny on non-US regions.'
+      },
+      {
+        step: 3,
+        title: 'Craft Role Exemption',
+        instruction:
+          'Add a StringNotEquals condition to the SCP Deny statement to exempt the DRBackupRole ARN.'
+      },
+      {
+        step: 4,
+        title: 'Verify Mining Block',
+        instruction: 'Ensure unauthorized EC2 instance creation in ap-southeast-1 remains blocked.'
+      },
+      {
+        step: 5,
+        title: 'Simulate',
+        instruction: 'Verify Frankfurt DR backup succeeds while the Singapore crypto exploit is denied.'
+      }
     ],
-    securityIntel: 'Explicit Deny in an SCP overrides all Allow statements across identity policies, resource policies, and boundaries without exception.',
+    securityIntel:
+      'Explicit Deny in an SCP overrides all Allow statements across identity policies, resource policies, and boundaries without exception.',
     budgetNotice: 'Target budget is $45/mo.'
   },
   criteria: {
@@ -54,12 +83,14 @@ export const round8GuardrailClash: GameLevel = {
     {
       level: 'nudge',
       title: 'Inspect the SCP Policy',
-      content: 'Click the DR Backup Role and look at its inherited SCP policies. Notice the broad Deny on non-US regions.'
+      content:
+        'Click the DR Backup Role and look at its inherited SCP policies. Notice the broad Deny on non-US regions.'
     },
     {
       level: 'root_cause',
       title: 'SCP Explicit Deny Overrides Identity Allow',
-      content: 'Even though the DR Backup Role identity policy allows S3 replication to eu-central-1, the SCP explicit deny overrides it because it has no exemption condition.'
+      content:
+        'Even though the DR Backup Role identity policy allows S3 replication to eu-central-1, the SCP explicit deny overrides it because it has no exemption condition.'
     },
     {
       level: 'solution_diff',
@@ -84,6 +115,7 @@ export const round8GuardrailClash: GameLevel = {
       id: 'dr-backup-role',
       type: 'iam_role',
       position: { x: 120, y: 160 },
+      essential: true,
       data: {
         id: 'dr-backup-role',
         type: 'iam_role',
@@ -91,6 +123,7 @@ export const round8GuardrailClash: GameLevel = {
         arn: 'arn:aws:iam::111122223333:role/DRBackupRole',
         accountId: '111122223333',
         monthlyCost: 0,
+        essential: true,
         config: {},
         identityPolicies: [
           {
@@ -117,7 +150,6 @@ export const round8GuardrailClash: GameLevel = {
                 Condition: {
                   StringNotEquals: {
                     'aws:RequestedRegion': 'us-east-1'
-                    // Missing role exemption condition!
                   }
                 }
               }
@@ -130,6 +162,7 @@ export const round8GuardrailClash: GameLevel = {
       id: 'dr-eu-s3',
       type: 's3',
       position: { x: 620, y: 160 },
+      essential: true,
       data: {
         id: 'dr-eu-s3',
         type: 's3',
@@ -137,6 +170,7 @@ export const round8GuardrailClash: GameLevel = {
         arn: 'arn:aws:s3:eu-central-1:111122223333:backup-vault',
         accountId: '111122223333',
         monthlyCost: 5,
+        essential: true,
         config: { blockPublicAccess: true },
         identityPolicies: []
       }
@@ -145,6 +179,7 @@ export const round8GuardrailClash: GameLevel = {
       id: 'ransom-attacker',
       type: 'external_vendor',
       position: { x: 120, y: 360 },
+      essential: true,
       data: {
         id: 'ransom-attacker',
         type: 'external_vendor',
@@ -152,6 +187,7 @@ export const round8GuardrailClash: GameLevel = {
         arn: 'arn:aws:iam::111122223333:user/compromised-intern',
         accountId: '111122223333',
         monthlyCost: 0,
+        essential: true,
         config: {},
         identityPolicies: [
           {
@@ -183,6 +219,7 @@ export const round8GuardrailClash: GameLevel = {
       id: 'ap-ec2-target',
       type: 'ec2',
       position: { x: 620, y: 360 },
+      essential: true,
       data: {
         id: 'ap-ec2-target',
         type: 'ec2',
@@ -190,6 +227,7 @@ export const round8GuardrailClash: GameLevel = {
         arn: 'arn:aws:ec2:ap-southeast-1:111122223333:instance/i-crypto',
         accountId: '111122223333',
         monthlyCost: 15,
+        essential: true,
         config: {},
         identityPolicies: []
       }
@@ -201,12 +239,12 @@ export const round8GuardrailClash: GameLevel = {
       source: 'ransom-attacker',
       target: 'ap-ec2-target',
       label: 'Unauthorized Provisioning',
-      data: { isThreat: true },
-    },
+      data: { isThreat: true }
+    }
   ],
   packets: [
     {
-      id: 'pkt-8-dr-replicate',
+      id: 'pkt-5-3-dr-replicate',
       name: 'Replicate Snapshot to Frankfurt (eu-central-1)',
       kind: 'legitimate',
       sourceNodeId: 'dr-backup-role',
@@ -221,7 +259,7 @@ export const round8GuardrailClash: GameLevel = {
       description: 'DR snapshot replication to secondary European region'
     },
     {
-      id: 'pkt-8-exploit-crypto',
+      id: 'pkt-5-3-exploit-crypto',
       name: 'Crypto Miner Launch in Singapore (ap-southeast-1)',
       kind: 'exploit',
       sourceNodeId: 'ransom-attacker',
@@ -237,3 +275,5 @@ export const round8GuardrailClash: GameLevel = {
     }
   ]
 };
+
+export default STAGE_5_3;

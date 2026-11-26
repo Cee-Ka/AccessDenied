@@ -1,8 +1,11 @@
 import { GameLevel } from '../types/engine';
 
-export const round2ImdsHeist: GameLevel = {
-  id: 'round-2',
-  roundNumber: 2,
+export const STAGE_4_1: GameLevel = {
+  id: 'stage4-1-metadata-heist',
+  stage: 4,
+  stageLevel: 1,
+  stageTitle: 'Stage 4: Advanced Defense',
+  roundNumber: 9,
   title: 'The Metadata Heist',
   subtitle: 'EC2 IMDSv2 & Least Privilege',
   category: 'Learn',
@@ -22,7 +25,7 @@ export const round2ImdsHeist: GameLevel = {
     keyConcepts: ['IMDSv1 vs IMDSv2', 'Instance Profiles', 'Hop Limit']
   },
   reportCard: {
-    headline: 'Stage 2: Compute & Metadata Security — EC2 & IMDSv2',
+    headline: 'Stage 4: Advanced Defense — EC2 & IMDSv2',
     scenario: 'Your application needs a URL preview generator. You deploy an EC2 instance to fetch webpages and save thumbnails into app-storage. However, an attacker attempts an SSRF exploit targeting the metadata IP (169.254.169.254) to steal temporary instance role credentials and exfiltrate your confidential-vault bucket.',
     tasks: [
       { step: 1, title: 'Deploy Preview Compute', instruction: 'Drag an EC2 Instance from the left dock onto the canvas and wire connection lines to app-storage.' },
@@ -148,3 +151,5 @@ export const round2ImdsHeist: GameLevel = {
     }
   ]
 };
+
+export default STAGE_4_1;

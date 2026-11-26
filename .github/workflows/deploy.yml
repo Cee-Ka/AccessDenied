@@ -7,8 +7,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: 'pages'
@@ -19,6 +17,10 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,14 +35,28 @@ jobs:
           node-version: 20
           cache: 'pnpm'
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run verification tests
-        run: pnpm test
+      - name: Run TypeScript typecheck
+        run: pnpm typecheck
+
+      - name: Run Vitest suite
+        run: pnpm test:ci
+
+      - name: Run Python tooling tests
+        run: pnpm test:tools
 
       - name: Build production bundle
         run: pnpm build
+
+      - name: Audit built bundle for offline compliance
+        run: pnpm audit:bundle
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

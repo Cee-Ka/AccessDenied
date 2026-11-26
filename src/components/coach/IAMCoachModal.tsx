@@ -3,6 +3,7 @@ import { X, CheckCircle2, XCircle, AlertTriangle, ShieldX, ArrowRight } from 'lu
 import { InfoPopover } from '../common/InfoPopover';
 import { STAGE_CONCEPT } from '../../content/concepts';
 import { AskAgentButton } from './AskAgentPanel';
+import { useModalDialog } from '../common/useModalDialog';
 
 export function IAMCoachModal() {
   const {
@@ -12,8 +13,10 @@ export function IAMCoachModal() {
     currentLevel,
     selectNode,
   } = useGameStore();
+  const isOpen = Boolean(isCoachModalOpen && inspectedResult);
+  const dialogRef = useModalDialog(isOpen, closeCoachModal);
 
-  if (!isCoachModalOpen || !inspectedResult) return null;
+  if (!isOpen || !inspectedResult) return null;
 
   const currentPacket = currentLevel.packets.find(p => p.id === inspectedResult.packetId) || {
     name: 'Unknown Request',
@@ -28,8 +31,15 @@ export function IAMCoachModal() {
   const traces = inspectedResult.traces || [];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-scrim animate-in fade-in duration-150">
-      <div className="relative w-full max-w-2xl neo-modal overflow-hidden flex flex-col max-h-[85vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-scrim">
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="iam-coach-title"
+        className="relative w-full max-w-2xl neo-modal overflow-hidden flex flex-col max-h-[85vh]"
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b-2 border-neo-ink bg-neo-bg">
           <div className="flex items-center gap-3">
@@ -37,7 +47,7 @@ export function IAMCoachModal() {
               <ShieldX className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="neo-heading text-sm font-bold text-neo-ink flex items-center gap-2">
+              <h2 id="iam-coach-title" className="neo-heading text-sm font-bold text-neo-ink flex items-center gap-2">
                 IAM Coach — Diagnostic Report
               </h2>
               <p className="text-xs text-neo-muted">
@@ -48,6 +58,8 @@ export function IAMCoachModal() {
           <button
             onClick={closeCoachModal}
             className="neo-icon-btn"
+            title="Close diagnostic report"
+            aria-label="Close diagnostic report"
           >
             <X className="w-4 h-4" />
           </button>
@@ -90,7 +102,7 @@ export function IAMCoachModal() {
                     ) : isPass ? (
                       <CheckCircle2 className="w-4 h-4 text-neo-ink" />
                     ) : (
-                      <div className="w-4 h-4 rounded-full border-2 border-neo-ink flex items-center justify-center text-[9px] text-neo-muted">
+                      <div className="w-4 h-4 rounded-full border-2 border-neo-ink flex items-center justify-center text-[10px] text-neo-muted">
                         —
                       </div>
                     )}
@@ -110,13 +122,13 @@ export function IAMCoachModal() {
                       </span>
                     </div>
 
-                    <p className="text-[11px] leading-relaxed text-neo-muted">
+                    <p className="text-xs leading-relaxed text-neo-muted">
                       {trace.summary}
                     </p>
 
                     {trace.matchedStatement && (
                       <div className="mt-2 bg-neo-bg p-2 rounded border-2 border-neo-ink font-mono text-[10px] text-neo-ink overflow-x-auto">
-                        <div className="text-neo-muted text-[9px] uppercase mb-1">Triggering Statement:</div>
+                        <div className="text-neo-muted text-[10px] uppercase mb-1">Triggering Statement:</div>
                         <pre>{JSON.stringify(trace.matchedStatement, null, 2)}</pre>
                       </div>
                     )}

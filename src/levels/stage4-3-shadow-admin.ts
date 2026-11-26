@@ -1,8 +1,11 @@
 import { GameLevel } from '../types/engine';
 
-export const round4ShadowAdmin: GameLevel = {
-  id: 'round-4',
-  roundNumber: 4,
+export const STAGE_4_3: GameLevel = {
+  id: 'stage4-3-shadow-admin',
+  stage: 4,
+  stageLevel: 3,
+  stageTitle: 'Stage 4: Advanced Defense',
+  roundNumber: 11,
   title: 'Shadow Admin',
   subtitle: 'iam:PassRole & Permission Boundaries',
   category: 'Learn',
@@ -22,7 +25,7 @@ export const round4ShadowAdmin: GameLevel = {
     keyConcepts: ['iam:PassRole', 'Execution Roles', 'Permission Boundaries']
   },
   reportCard: {
-    headline: 'Stage 4: Serverless Delegation — iam:PassRole & Boundaries',
+    headline: 'Stage 4: Advanced Defense — iam:PassRole & Boundaries',
     scenario: 'A CI/CD deployment bot deploys serverless functions. A developer granted it broad iam:PassRole on * so it could pass any role. If the CI token leaks, an attacker can pass OrganizationAdminRole to a custom function and take over the AWS organization.',
     tasks: [
       { step: 1, title: 'Deploy Execution Role', instruction: 'Drag an IAM Execution Role from the left dock onto the canvas and connect it to CI/CD Deployment Bot.' },
@@ -150,3 +153,5 @@ export const round4ShadowAdmin: GameLevel = {
     }
   ]
 };
+
+export default STAGE_4_3;

@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useGameStore } from '../../store/useGameStore';
+import { ALL_LEVELS } from '../../levels';
+import { levelCode } from '../hud/LevelPicker';
 import { NodeType } from '../../types/engine';
 import { AwsIcon } from '@access-denied/aws-icons';
 import { InfoPopover } from '../common/InfoPopover';
@@ -15,19 +17,23 @@ interface ComponentItem {
   type: NodeType;
   label: string;
   cost: number;
-  unlockedAtRound: number;
 }
 
 const PALETTE: ComponentItem[] = [
-  { type: 's3', label: 'S3 Bucket', cost: 5, unlockedAtRound: 1 },
-  { type: 'iam_role', label: 'IAM Role', cost: 0, unlockedAtRound: 1 },
-  { type: 'ec2', label: 'EC2 Instance', cost: 15, unlockedAtRound: 2 },
-  { type: 'lambda', label: 'AWS Lambda', cost: 5, unlockedAtRound: 4 },
-  { type: 'dynamodb', label: 'DynamoDB Table', cost: 10, unlockedAtRound: 5 },
-  { type: 'kms', label: 'KMS Key', cost: 1, unlockedAtRound: 6 },
-  { type: 'vpc_endpoint', label: 'VPC S3 Endpoint', cost: 0, unlockedAtRound: 7 },
-  { type: 'nat_gw', label: 'NAT Gateway', cost: 32, unlockedAtRound: 7 },
+  { type: 's3', label: 'S3 Bucket', cost: 5 },
+  { type: 'iam_role', label: 'IAM Role', cost: 0 },
+  { type: 'ec2', label: 'EC2 Instance', cost: 15 },
+  { type: 'lambda', label: 'AWS Lambda', cost: 5 },
+  { type: 'dynamodb', label: 'DynamoDB Table', cost: 10 },
+  { type: 'kms', label: 'KMS Key', cost: 1 },
+  { type: 'vpc_endpoint', label: 'VPC S3 Endpoint', cost: 0 },
+  { type: 'nat_gw', label: 'NAT Gateway', cost: 32 },
 ];
+
+function unlockBadgeFor(type: NodeType): string {
+  const firstLevel = ALL_LEVELS.find(lvl => lvl.unlockedServices?.includes(type));
+  return firstLevel ? levelCode(firstLevel) : 'Sandbox';
+}
 
 export function ComponentDock() {
   const [collapsed, setCollapsed] = useState(false);
@@ -38,7 +44,7 @@ export function ComponentDock() {
     if (currentLevel.unlockedServices) {
       return currentLevel.unlockedServices.includes(item.type);
     }
-    return (currentLevel.roundNumber || 1) >= item.unlockedAtRound;
+    return false;
   };
 
   const isNewlyUnlocked = (item: ComponentItem) => {
@@ -56,7 +62,7 @@ export function ComponentDock() {
 
   return (
     <div
-      className={`absolute left-0 top-14 bottom-0 neo-panel border-r-3 transition-all duration-300 z-20 flex flex-col ${
+      className={`absolute left-0 top-0 bottom-0 neo-panel border-r-3 transition-all duration-300 z-20 flex flex-col ${
         collapsed ? 'w-12' : 'w-60'
       }`}
     >
@@ -73,6 +79,8 @@ export function ComponentDock() {
           onClick={() => setCollapsed(!collapsed)}
           className="neo-icon-btn mx-auto"
           title={collapsed ? 'Expand Dock' : 'Collapse Dock'}
+          aria-label={collapsed ? 'Expand service palette' : 'Collapse service palette'}
+          aria-expanded={!collapsed}
         >
           {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </button>
@@ -82,6 +90,7 @@ export function ComponentDock() {
         {PALETTE.map(item => {
           const unlocked = isServiceUnlocked(item);
           const isNew = isNewlyUnlocked(item);
+          const unlockStage = unlockBadgeFor(item.type);
 
           return (
             <div key={item.label} className="relative group/item">
@@ -106,7 +115,7 @@ export function ComponentDock() {
               title={
                 unlocked
                   ? `Click or Drag to add ${item.label} ($${item.cost}/mo)`
-                  : `Locked: Unlocks in Round ${item.unlockedAtRound}`
+                  : `Locked: Unlocks in Stage ${unlockStage}`
               }
             >
               <div className="flex items-center gap-2.5 min-w-0">
@@ -135,7 +144,7 @@ export function ComponentDock() {
                         {item.label}
                       </span>
                       {isNew && (
-                        <span className="neo-badge-new text-[9px] px-1 py-0">
+                        <span className="neo-badge-new text-[10px] px-1 py-0">
                           <Sparkles className="w-2.5 h-2.5" />
                           NEW
                         </span>
@@ -146,7 +155,7 @@ export function ComponentDock() {
                         ? item.cost === 0
                           ? 'Free'
                           : `$${item.cost}/mo`
-                        : `Unlocks R${item.unlockedAtRound}`}
+                        : `Unlocks ${unlockStage}`}
                     </div>
                   </div>
                 )}

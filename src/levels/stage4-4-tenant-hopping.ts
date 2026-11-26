@@ -1,8 +1,11 @@
 import { GameLevel } from '../types/engine';
 
-export const round5TenantHopping: GameLevel = {
-  id: 'round-5',
-  roundNumber: 5,
+export const STAGE_4_4: GameLevel = {
+  id: 'stage4-4-tenant-hopping',
+  stage: 4,
+  stageLevel: 4,
+  stageTitle: 'Stage 4: Advanced Defense',
+  roundNumber: 12,
   title: 'Tenant Hopping',
   subtitle: 'Fine-Grained DynamoDB Access Control',
   category: 'Learn',
@@ -22,7 +25,7 @@ export const round5TenantHopping: GameLevel = {
     keyConcepts: ['dynamodb:LeadingKeys', 'Fine-Grained Access Control', 'Multi-Tenant Isolation']
   },
   reportCard: {
-    headline: 'Stage 5: Multi-Tenant Database — Fine-Grained DynamoDB',
+    headline: 'Stage 4: Advanced Defense — Fine-Grained DynamoDB',
     scenario: 'A multi-tenant SaaS application shares a single CustomerRecords DynamoDB table. Tenant Alpha can read and write their own documents. However, an attacker crafts an API query to retrieve documents belonging to Tenant Bravo (partition key TENANT#bravo).',
     tasks: [
       { step: 1, title: 'Provision DynamoDB Storage', instruction: 'Drag a DynamoDB Table from the left dock onto the canvas and connect it with SaaS API Handler.' },
@@ -141,3 +144,5 @@ export const round5TenantHopping: GameLevel = {
     }
   ]
 };
+
+export default STAGE_4_4;

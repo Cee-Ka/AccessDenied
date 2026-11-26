@@ -7,7 +7,8 @@
  */
 
 import type { Edge, Node } from '@xyflow/react';
-import type { CloudNodeData } from '../types/engine';
+import { NODE_TYPES } from '../types/engine';
+import type { CloudNodeData, NodeType } from '../types/engine';
 
 export const SAVE_KEY = 'access_denied_save_v2';
 export const CORRUPT_BACKUP_KEY = 'access_denied_save_corrupt_backup';
@@ -116,6 +117,51 @@ function sanitizeStars(raw: unknown): Record<string, number> {
   return out;
 }
 
+function isValidSavedNode(n: unknown): n is Node<CloudNodeData> {
+  if (!isRecord(n) || typeof n.id !== 'string' || !isRecord(n.position) || !isRecord(n.data)) return false;
+  if (typeof n.position.x !== 'number' || !Number.isFinite(n.position.x)) return false;
+  if (typeof n.position.y !== 'number' || !Number.isFinite(n.position.y)) return false;
+  return typeof n.data.id === 'string' && NODE_TYPES.includes(n.data.type as NodeType);
+}
+
+function isValidSavedEdge(e: unknown): e is Edge {
+  return isRecord(e) && typeof e.id === 'string' && typeof e.source === 'string' && typeof e.target === 'string';
+}
+
+function sanitizeBoards(raw: unknown): Record<string, SavedBoard> {
+  if (!isRecord(raw)) return {};
+  const out: Record<string, SavedBoard> = {};
+  for (const [lvlId, board] of Object.entries(raw)) {
+    if (!isRecord(board) || typeof board.levelRevision !== 'string') continue;
+    if (!Array.isArray(board.nodes) || !Array.isArray(board.edges)) continue;
+    if (!board.nodes.every(isValidSavedNode) || !board.edges.every(isValidSavedEdge)) continue;
+    out[lvlId] = {
+      levelRevision: board.levelRevision,
+      nodes: board.nodes,
+      edges: board.edges,
+    };
+  }
+  return out;
+}
+
+function sanitizeNumberMap(raw: unknown): Record<string, number> {
+  if (!isRecord(raw)) return {};
+  const out: Record<string, number> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (typeof v === 'number' && Number.isFinite(v) && v >= 0) out[k] = Math.floor(v);
+  }
+  return out;
+}
+
+function sanitizeBoolMap(raw: unknown): Record<string, boolean> {
+  if (!isRecord(raw)) return {};
+  const out: Record<string, boolean> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (typeof v === 'boolean') out[k] = v;
+  }
+  return out;
+}
+
 /** Fill any missing fields of a v2 record with defaults. */
 function normalize(raw: Record<string, unknown>): SaveV2 {
   const d = createDefaultSave();
@@ -134,10 +180,10 @@ function normalize(raw: Record<string, unknown>): SaveV2 {
     },
     progress: {
       stars: sanitizeStars(progress.stars),
-      boards: isRecord(progress.boards) ? (progress.boards as Record<string, SavedBoard>) : {},
+      boards: sanitizeBoards(progress.boards),
       onboarding: {
-        currentStep: isRecord(onboarding.currentStep) ? (onboarding.currentStep as Record<string, number>) : {},
-        completed: isRecord(onboarding.completed) ? (onboarding.completed as Record<string, boolean>) : {},
+        currentStep: sanitizeNumberMap(onboarding.currentStep),
+        completed: sanitizeBoolMap(onboarding.completed),
         seenTwists: Array.isArray(onboarding.seenTwists) ? onboarding.seenTwists.filter(s => typeof s === 'string') : [],
       },
     },

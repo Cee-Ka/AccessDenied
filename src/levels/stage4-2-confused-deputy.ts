@@ -1,8 +1,11 @@
 import { GameLevel } from '../types/engine';
 
-export const round3ConfusedDeputy: GameLevel = {
-  id: 'round-3',
-  roundNumber: 3,
+export const STAGE_4_2: GameLevel = {
+  id: 'stage4-2-confused-deputy',
+  stage: 4,
+  stageLevel: 2,
+  stageTitle: 'Stage 4: Advanced Defense',
+  roundNumber: 10,
   title: 'The Confused Deputy',
   subtitle: 'Cross-Account Trust & sts:ExternalId',
   category: 'Learn',
@@ -22,7 +25,7 @@ export const round3ConfusedDeputy: GameLevel = {
     keyConcepts: ['AssumeRolePolicyDocument', 'sts:ExternalId', 'Confused Deputy']
   },
   reportCard: {
-    headline: 'Stage 3: Vendor Trust & The Confused Deputy',
+    headline: 'Stage 4: Advanced Defense — The Confused Deputy',
     scenario: 'You hire a third-party SaaS vendor to analyze sales metrics. The vendor asks for an IAM Role ARN in your account. Without an ExternalId condition in your trust policy, any other client on that SaaS can provide your Role ARN to hijack access to your data.',
     tasks: [
       { step: 1, title: 'Provision Vendor Role', instruction: 'Drag an IAM Role from the left dock onto the canvas and connect it between Analytics SaaS Vendor and sales-metrics.' },
@@ -154,3 +157,5 @@ export const round3ConfusedDeputy: GameLevel = {
     }
   ]
 };
+
+export default STAGE_4_2;

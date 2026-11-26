@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { Bot, Copy, Check, X } from 'lucide-react';
 import { useGameStore } from '../../store/useGameStore';
 import { buildTutorPrompt } from '../../tutor/buildTutorPrompt';
+import { useModalDialog } from '../common/useModalDialog';
 
 /** Button that opens the panel; disabled until a run describes the current board. */
 export function AskAgentButton({ className = '' }: { className?: string }) {
@@ -12,7 +13,7 @@ export function AskAgentButton({ className = '' }: { className?: string }) {
       onClick={openAskAgent}
       disabled={!resultsCurrent}
       title={resultsCurrent ? 'Copy a tutor prompt for your own AI assistant' : 'Run the simulation first'}
-      className={`whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded bg-neo-raised hover:bg-neo-raised text-xs font-semibold text-neo-ink border-2 border-neo-ink transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${className}`}
+      className={`whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded bg-neo-raised hover:bg-neo-surface text-xs font-semibold text-neo-ink border-2 border-neo-ink transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${className}`}
     >
       <Bot className="w-3.5 h-3.5 text-neo-ink" />
       Ask your agent
@@ -33,6 +34,7 @@ export function AskAgentPanel() {
   } = useGameStore();
   const [copied, setCopied] = useState(false);
   const textRef = useRef<HTMLTextAreaElement>(null);
+  const dialogRef = useModalDialog(isAskAgentOpen, closeAskAgent);
 
   const prompt = useMemo(
     () =>
@@ -65,14 +67,21 @@ export function AskAgentPanel() {
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-scrim " role="dialog" aria-modal="true" aria-labelledby="ask-agent-title">
-      <div className="w-full max-w-2xl neo-modal flex flex-col max-h-[85vh]">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-scrim">
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="ask-agent-title"
+        className="w-full max-w-2xl neo-modal flex flex-col max-h-[85vh]"
+      >
         <div className="flex items-center justify-between px-5 py-3 border-b-2 border-neo-ink">
           <div>
             <h2 id="ask-agent-title" className="neo-heading text-sm font-bold text-neo-ink flex items-center gap-2">
               <Bot className="w-4 h-4 text-neo-ink" /> Ask your agent
             </h2>
-            <p className="text-[11px] text-neo-muted">
+            <p className="text-xs text-neo-muted">
               Paste this into your own AI assistant. It explains what happened without giving away the fix. The game does not send it anywhere.
             </p>
           </div>
@@ -86,7 +95,7 @@ export function AskAgentPanel() {
             readOnly
             value={prompt}
             aria-label="Tutor prompt"
-            className="w-full h-[50vh] resize-none bg-neo-raised border-2 border-neo-ink rounded p-3 font-mono text-[11px] text-neo-ink focus:outline-none focus:border-neo-ink select-text"
+            className="w-full h-[50vh] resize-none bg-neo-raised border-2 border-neo-ink rounded p-3 font-mono text-xs text-neo-ink select-text"
           />
         </div>
         <div className="flex items-center justify-between px-5 py-3 border-t-2 border-neo-ink">

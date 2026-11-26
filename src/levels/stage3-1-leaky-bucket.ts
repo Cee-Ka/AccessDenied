@@ -1,8 +1,11 @@
 import { GameLevel } from '../types/engine';
 
-export const round1LeakyBucket: GameLevel = {
-  id: 'round-1',
-  roundNumber: 1,
+export const STAGE_3_1: GameLevel = {
+  id: 'stage3-1-leaky-bucket',
+  stage: 3,
+  stageLevel: 1,
+  stageTitle: 'Stage 3: Dual Authority',
+  roundNumber: 6,
   title: 'The Leaky Bucket',
   subtitle: 'S3 Bucket Policies vs. Block Public Access',
   category: 'Learn',
@@ -13,7 +16,7 @@ export const round1LeakyBucket: GameLevel = {
   targetBudget: 25,
   conceptTags: ['block_public_access', 'resource_policy', 'least_privilege'],
   twistPager: "Pager: Outbound traffic from the customer-invoices bucket is 40x normal. The requests come from IPs we don't own.",
-  unlockedServices: ['s3', 'iam_role'],
+  unlockedServices: ['s3', 'iam_role', 'ec2'],
   newlyUnlockedService: {
     type: 's3',
     name: 'Amazon S3 (Simple Storage Service)',
@@ -22,7 +25,7 @@ export const round1LeakyBucket: GameLevel = {
     keyConcepts: ['Bucket Policies', 'Block Public Access', 'Object ARNs']
   },
   reportCard: {
-    headline: 'Stage 1: First Cloud Storage — S3 Bucket & Policies',
+    headline: 'Stage 3: Dual Authority — S3 Bucket & Policies',
     scenario: 'Your billing service generates customer PDF invoices. You need to provision cloud storage to store invoices safely so the billing web server can read and write them, while preventing internet botnets from scraping customer invoices.',
     tasks: [
       { step: 1, title: 'Provision S3 Storage', instruction: 'Drag an S3 Bucket from the left dock onto the canvas (or inspect the existing one).' },
@@ -47,7 +50,7 @@ export const round1LeakyBucket: GameLevel = {
     star3Optimal: {
       budgetLimit: 25,
       leastPrivilege: true,
-      description: 'Monthly cost is $20 or less and S3 bucket policy contains no public wildcard principal.'
+      description: 'Monthly cost is $25 or less and S3 bucket policy contains no public wildcard principal.'
     }
   },
   hints: [
@@ -159,3 +162,5 @@ export const round1LeakyBucket: GameLevel = {
     }
   ]
 };
+
+export default STAGE_3_1;

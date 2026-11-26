@@ -1,8 +1,11 @@
 import { GameLevel } from '../types/engine';
 
-export const round6SilentLockout: GameLevel = {
-  id: 'round-6',
-  roundNumber: 6,
+export const STAGE_3_3: GameLevel = {
+  id: 'stage3-3-silent-lockout',
+  stage: 3,
+  stageLevel: 3,
+  stageTitle: 'Stage 3: Dual Authority',
+  roundNumber: 8,
   title: 'The Silent Lockout',
   subtitle: 'KMS Key Policies & Encryption Delegation',
   category: 'Learn',
@@ -11,26 +14,29 @@ export const round6SilentLockout: GameLevel = {
   threatIntel:
     'AWS KMS Customer Managed Keys do NOT allow IAM policies to delegate access unless the Key Policy itself explicitly grants permissions to the account root ("arn:aws:iam::ACCOUNT:root"). You must establish proper key delegation while preventing cross-service unauthorized decryption.',
   targetBudget: 15,
-  conceptTags: ['kms_key_policy', 'kms', 'secrets_manager'],
+  conceptTags: ['kms_key_policy', 'kms', 'root_delegation'],
   twistPager: 'Pager: Payments are failing with 403 since the last deploy.',
   unlockedServices: ['s3', 'iam_role', 'ec2', 'lambda', 'dynamodb', 'kms'],
   newlyUnlockedService: {
     type: 'kms',
     name: 'AWS KMS (Key Management Service)',
     category: 'Security & Encryption',
-    primer: 'AWS KMS Customer Managed Keys (CMKs) encrypt sensitive cloud data. By default, KMS keys have a strict Key Policy. The Key Policy MUST explicitly delegate access to the account root ("arn:aws:iam::ACCOUNT:root") for IAM identity policies to have effect.',
+    primer:
+      'AWS KMS Customer Managed Keys (CMKs) encrypt sensitive cloud data. By default, KMS keys have a strict Key Policy. The Key Policy MUST explicitly delegate access to the account root ("arn:aws:iam::ACCOUNT:root") for IAM identity policies to have effect.',
     keyConcepts: ['Key Policies', 'Root Delegation', 'kms:Decrypt']
   },
   reportCard: {
-    headline: 'Stage 6: Enterprise Encryption — KMS CMK Root Delegation',
-    scenario: 'A backend service encrypts sensitive payment tokens with a custom KMS Customer Managed Key. The developer granted "kms:Decrypt" in the Lambda role, but every request fails with a mysterious 403 AccessDenied error because the KMS Key Policy lacks root delegation.',
+    headline: 'Stage 3: Dual Authority — KMS CMK Root Delegation',
+    scenario:
+      'A backend service encrypts sensitive payment tokens with a custom KMS Customer Managed Key. The developer granted "kms:Decrypt" in the Lambda role, but every request fails with a mysterious 403 AccessDenied error because the KMS Key Policy lacks root delegation.',
     tasks: [
       { step: 1, title: 'Deploy KMS CMK Key', instruction: 'Drag a KMS Key from the left dock onto the canvas and connect it with Payment Processor Lambda.' },
       { step: 2, title: 'Inspect KMS Key Policy', instruction: 'Select the Payments CMK Key and inspect its Resource Policy.' },
       { step: 3, title: 'Add Root Delegation Statement', instruction: 'Add an Allow statement granting kms:* to "Principal": { "AWS": "arn:aws:iam::111122223333:root" }.' },
       { step: 4, title: 'Simulate', instruction: 'Verify authorized payment token decryption succeeds (200 OK) while unauthorized workers are blocked.' }
     ],
-    securityIntel: 'KMS is unique in AWS: unlike S3, an IAM identity policy alone cannot access a Customer Managed Key unless the Key Policy enables root account delegation.',
+    securityIntel:
+      'KMS is unique in AWS: unlike S3, an IAM identity policy alone cannot access a Customer Managed Key unless the Key Policy enables root account delegation.',
     budgetNotice: 'Target budget is $15/mo. KMS CMK costs $1/mo.'
   },
   criteria: {
@@ -58,7 +64,8 @@ export const round6SilentLockout: GameLevel = {
     {
       level: 'root_cause',
       title: 'Missing Root Delegation in Key Policy',
-      content: 'Unlike other AWS resources, KMS CMK policies are primary. If the Key Policy does not contain `"Principal": {"AWS": "arn:aws:iam::111122223333:root"}`, IAM identity policies have zero effect.'
+      content:
+        'Unlike other AWS resources, KMS CMK policies are primary. If the Key Policy does not contain `"Principal": {"AWS": "arn:aws:iam::111122223333:root"}`, IAM identity policies have zero effect.'
     },
     {
       level: 'solution_diff',
@@ -145,3 +152,5 @@ export const round6SilentLockout: GameLevel = {
     }
   ]
 };
+
+export default STAGE_3_3;

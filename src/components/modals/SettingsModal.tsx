@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { X, Download, Upload, RotateCcw, Trash2, Sun, Moon, Volume2, VolumeX, AlertTriangle } from 'lucide-react';
 import { useGameStore } from '../../store/useGameStore';
+import { useModalDialog } from '../common/useModalDialog';
 
 type Pending = 'start-over' | 'reset-all' | null;
 
@@ -32,7 +33,19 @@ export function SettingsModal() {
     resetCampaignProgress,
   } = useGameStore();
   const [pending, setPending] = useState<Pending>(null);
+  const [draftName, setDraftName] = useState(profile.displayName);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isSettingsOpen) setDraftName(profile.displayName);
+  }, [isSettingsOpen, profile.displayName]);
+
+  const handleClose = () => {
+    setDisplayName(draftName);
+    closeSettings();
+  };
+
+  const dialogRef = useModalDialog(isSettingsOpen, handleClose);
 
   if (!isSettingsOpen) return null;
 
@@ -44,14 +57,21 @@ export function SettingsModal() {
   };
 
   const row = 'flex items-center justify-between gap-3 py-2.5 border-b-2 border-neo-ink last:border-0';
-  const btn = 'flex items-center gap-1.5 px-3 py-1.5 rounded bg-neo-raised hover:bg-neo-raised text-xs font-semibold text-neo-ink border-2 border-neo-ink';
+  const btn = 'flex items-center gap-1.5 px-3 py-1.5 rounded bg-neo-raised hover:bg-neo-surface text-xs font-semibold text-neo-ink border-2 border-neo-ink transition-colors';
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-scrim " role="dialog" aria-modal="true" aria-labelledby="settings-title">
-      <div className="w-full max-w-md neo-modal">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-scrim">
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="settings-title"
+        className="w-full max-w-md neo-modal"
+      >
         <div className="flex items-center justify-between px-5 py-3 border-b-2 border-neo-ink">
           <h2 id="settings-title" className="neo-heading text-sm font-bold text-neo-ink">Settings</h2>
-          <button onClick={closeSettings} className="neo-icon-btn" aria-label="Close">
+          <button onClick={handleClose} className="neo-icon-btn" aria-label="Close">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -69,11 +89,18 @@ export function SettingsModal() {
           <label className={row}>
             <span className="font-semibold text-neo-ink">Display name</span>
             <input
-              defaultValue={profile.displayName}
-              onBlur={e => setDisplayName(e.target.value)}
+              value={draftName}
+              onChange={e => setDraftName(e.target.value)}
+              onBlur={() => setDisplayName(draftName)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  setDisplayName(draftName);
+                  e.currentTarget.blur();
+                }
+              }}
               maxLength={40}
               placeholder="Your name"
-              className="w-44 bg-neo-raised border-2 border-neo-ink rounded px-2.5 py-1.5 text-xs text-neo-ink placeholder-neo-muted focus:outline-none focus:border-neo-ink"
+              className="w-44 bg-neo-raised border-2 border-neo-ink rounded px-2.5 py-1.5 text-xs text-neo-ink placeholder-neo-muted"
             />
           </label>
 
@@ -96,7 +123,7 @@ export function SettingsModal() {
           <div className={row}>
             <div>
               <div className="font-semibold text-neo-ink">Board for "{currentLevel.title}"</div>
-              <div className="text-[11px] text-neo-muted">Save or load this level's board as a JSON file.</div>
+              <div className="text-xs text-neo-muted">Save or load this level's board as a JSON file.</div>
             </div>
             <div className="flex gap-1.5 shrink-0">
               <button onClick={() => downloadBoard(exportBoard(), currentLevel.id)} className={btn} title="Export board">
@@ -118,7 +145,7 @@ export function SettingsModal() {
           <div className={row}>
             <div>
               <div className="font-semibold text-neo-ink">Start over</div>
-              <div className="text-[11px] text-neo-muted">Reset this level's board. Your stars are kept.</div>
+              <div className="text-xs text-neo-muted">Reset this level's board. Your stars are kept.</div>
             </div>
             <button onClick={() => setPending('start-over')} className={btn}>
               <RotateCcw className="w-3.5 h-3.5" /> Start over
@@ -128,7 +155,7 @@ export function SettingsModal() {
           <div className={row}>
             <div>
               <div className="font-semibold text-neo-ink ">Reset all progress</div>
-              <div className="text-[11px] text-neo-muted">Clears every star, board and tutorial step.</div>
+              <div className="text-xs text-neo-muted">Clears every star, board and tutorial step.</div>
             </div>
             <button onClick={() => setPending('reset-all')} className={`${btn} hover:border-neo-ink hover:text-neo-ink`}>
               <Trash2 className="w-3.5 h-3.5" /> Reset all

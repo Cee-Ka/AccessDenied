@@ -5,7 +5,6 @@ import {
   Star,
   Volume2,
   VolumeX,
-  RotateCcw,
   Play,
   FastForward,
   HelpCircle,
@@ -92,6 +91,7 @@ export function TopNav({ onToggleHints }: TopNavProps) {
             <button
               key={mode}
               onClick={() => setGameMode(mode)}
+              aria-pressed={gameMode === mode}
               className={`px-2 py-0.5 rounded-sm text-[11px] font-display font-bold transition-colors ${
                 gameMode === mode
                   ? 'bg-neo-orange text-neo-on-accent border-2 border-neo-ink neo-on-accent'
@@ -124,8 +124,8 @@ export function TopNav({ onToggleHints }: TopNavProps) {
         )}
       </div>
 
-      {/* Zone 2: Telemetry HUD (Center) - Styled so budget never spills out */}
-      <div className="hidden lg:flex items-center bg-neo-bg border-2 border-neo-ink px-3 py-1 rounded-full font-mono text-xs gap-2.5 shrink-0 whitespace-nowrap mx-2">
+      {/* Zone 2: Telemetry HUD (Center) - Visible from md upward so budget stays visible */}
+      <div className="hidden md:flex items-center bg-neo-bg border-2 border-neo-ink px-2 lg:px-3 py-1 rounded-full font-mono text-xs gap-1.5 lg:gap-2.5 shrink-0 whitespace-nowrap mx-1 lg:mx-2">
         <div className="flex items-center gap-1 shrink-0 whitespace-nowrap" title="Workloads verified">
           <CheckCircle2 className="w-3.5 h-3.5 text-neo-muted shrink-0" />
           <span className="text-neo-muted text-[11px] hidden 2xl:inline">Work:</span>
@@ -193,6 +193,7 @@ export function TopNav({ onToggleHints }: TopNavProps) {
           onClick={onToggleHints}
           className="neo-btn neo-btn-secondary shadow-neo-sm w-8 h-8 p-0 shrink-0"
           title="Hints & Debrief"
+          aria-label="Hints and debrief"
         >
           <HelpCircle className="w-3.5 h-3.5" />
         </button>
@@ -203,6 +204,7 @@ export function TopNav({ onToggleHints }: TopNavProps) {
             onClick={toggleTheme}
             className="neo-icon-btn"
             title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {theme === 'dark' ? <Sun className="w-3.5 h-3.5 text-neo-ink" /> : <Moon className="w-3.5 h-3.5 text-neo-ink" />}
           </button>
@@ -228,18 +230,10 @@ export function TopNav({ onToggleHints }: TopNavProps) {
           </button>
 
           <button
-            onClick={openSettings}
-            className="neo-icon-btn"
-            title="Start over, export / import board"
-            aria-label="Start over or export board"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-          </button>
-
-          <button
             onClick={() => setSimSpeed(simSpeed === 1 ? 2 : 1)}
             className="neo-icon-btn w-auto px-1.5 gap-0.5 text-[11px] font-mono"
             title="Simulation Speed"
+            aria-label={`Simulation speed: ${simSpeed}x`}
           >
             <FastForward className="w-3 h-3 text-neo-ink" />
             {simSpeed}x
@@ -249,6 +243,7 @@ export function TopNav({ onToggleHints }: TopNavProps) {
             onClick={toggleSound}
             className="neo-icon-btn"
             title={isSoundMuted ? 'Unmute Sound' : 'Mute Sound'}
+            aria-label={isSoundMuted ? 'Unmute sound' : 'Mute sound'}
           >
             {isSoundMuted ? <VolumeX className="w-3.5 h-3.5 text-neo-ink" /> : <Volume2 className="w-3.5 h-3.5" />}
           </button>
@@ -275,7 +270,7 @@ export function TopNav({ onToggleHints }: TopNavProps) {
         >
           {isRunning ? (
             <>
-              <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none shrink-0" />
               <span>Skip to end</span>
               <SkipForward className="w-3.5 h-3.5 shrink-0" />
             </>

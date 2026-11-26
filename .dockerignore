@@ -1,0 +1,16 @@
+.git
+.github
+.gitignore
+.agents
+.claude
+node_modules
+dist
+reports
+openspec
+tests
+docs
+tools
+README.md
+*.log
+__pycache__
+*.pyc

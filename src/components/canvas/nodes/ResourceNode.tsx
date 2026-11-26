@@ -31,13 +31,13 @@ export const ResourceNode = memo(({ id, data, selected }: NodeProps & { data: Cl
       </div>
 
       <div className="mt-2.5 flex flex-wrap gap-1.5 items-center">
-        <span className="neo-chip text-[9px] uppercase">
+        <span className="neo-chip text-[10px] uppercase">
           {data.type}
         </span>
 
         {data.type === 's3' && (
           <span
-            className={`text-[9px] ${
+            className={`text-[10px] ${
               data.config?.blockPublicAccess
                 ? 'neo-badge-pass'
                 : 'neo-badge-deny'
@@ -48,7 +48,7 @@ export const ResourceNode = memo(({ id, data, selected }: NodeProps & { data: Cl
         )}
 
         {data.resourcePolicy && (
-          <span className="neo-badge-new text-[9px]">
+          <span className="neo-badge-new text-[10px]">
             Resource Policy
           </span>
         )}

@@ -11,10 +11,14 @@ export function ConfigToggles({ nodeData, onUpdateConfig }: ConfigTogglesProps) 
   const [copied, setCopied] = useState(false);
   const { config, type } = nodeData;
 
-  const handleCopyArn = () => {
-    navigator.clipboard.writeText(nodeData.arn);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+  const handleCopyArn = async () => {
+    try {
+      await navigator.clipboard?.writeText(nodeData.arn);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // Clipboard may be blocked in restricted browser contexts
+    }
   };
 
   return (
@@ -24,21 +28,23 @@ export function ConfigToggles({ nodeData, onUpdateConfig }: ConfigTogglesProps) 
         <div className="flex items-center justify-between">
           <span className="text-neo-muted font-medium">Resource ARN</span>
           <button
+            type="button"
             onClick={handleCopyArn}
+            aria-label="Copy resource ARN"
             className="flex items-center gap-1 text-[10px] text-neo-ink hover:text-neo-ink font-mono"
           >
             {copied ? <Check className="w-3 h-3 text-neo-ink" /> : <Copy className="w-3 h-3" />}
             {copied ? 'Copied' : 'Copy'}
           </button>
         </div>
-        <div className="font-mono text-[11px] text-neo-ink break-all bg-neo-raised p-2 rounded border-2 border-neo-ink">
+        <div className="font-mono text-xs text-neo-ink break-all bg-neo-raised p-2 rounded border-2 border-neo-ink">
           {nodeData.arn}
         </div>
-        <div className="flex items-center justify-between pt-1 text-[11px]">
+        <div className="flex items-center justify-between pt-1 text-xs">
           <span className="text-neo-muted">Account ID</span>
           <span className="font-mono text-neo-ink">{nodeData.accountId}</span>
         </div>
-        <div className="flex items-center justify-between text-[11px]">
+        <div className="flex items-center justify-between text-xs">
           <span className="text-neo-muted">Base Monthly Cost</span>
           <span className="font-mono text-neo-ink font-bold">${nodeData.monthlyCost}/mo</span>
         </div>
@@ -57,6 +63,10 @@ export function ConfigToggles({ nodeData, onUpdateConfig }: ConfigTogglesProps) 
               <span className="font-semibold text-neo-ink">Block Public Access</span>
             </div>
             <button
+              type="button"
+              role="switch"
+              aria-checked={Boolean(config?.blockPublicAccess)}
+              aria-label="Block Public Access"
               onClick={() => onUpdateConfig({ blockPublicAccess: !config?.blockPublicAccess })}
               className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-sm border-2 border-neo-ink transition-colors duration-150 ${
                 config?.blockPublicAccess ? 'bg-neo-lime neo-on-accent' : 'bg-neo-raised'
@@ -69,7 +79,7 @@ export function ConfigToggles({ nodeData, onUpdateConfig }: ConfigTogglesProps) 
               />
             </button>
           </div>
-          <p className="text-[11px] text-neo-muted leading-relaxed">
+          <p className="text-xs text-neo-muted leading-relaxed">
             When enabled, Amazon S3 blocks public bucket policies and ACLs, preventing anonymous internet scraping.
           </p>
         </div>
@@ -82,6 +92,8 @@ export function ConfigToggles({ nodeData, onUpdateConfig }: ConfigTogglesProps) 
             <span className="font-semibold text-neo-ink">Metadata Service (IMDS)</span>
             <div className="flex rounded bg-neo-raised p-0.5 border-2 border-neo-ink">
               <button
+                type="button"
+                aria-pressed={config?.imdsVersion !== 'v2'}
                 onClick={() => onUpdateConfig({ imdsVersion: 'v1' })}
                 className={`px-2.5 py-1 rounded-sm text-[10px] font-mono font-bold border-2 ${
                   config?.imdsVersion !== 'v2'
@@ -92,6 +104,8 @@ export function ConfigToggles({ nodeData, onUpdateConfig }: ConfigTogglesProps) 
                 IMDSv1
               </button>
               <button
+                type="button"
+                aria-pressed={config?.imdsVersion === 'v2'}
                 onClick={() => onUpdateConfig({ imdsVersion: 'v2', imdsHopLimit: 1 })}
                 className={`px-2.5 py-1 rounded-sm text-[10px] font-mono font-bold border-2 ${
                   config?.imdsVersion === 'v2'
@@ -106,8 +120,11 @@ export function ConfigToggles({ nodeData, onUpdateConfig }: ConfigTogglesProps) 
 
           {config?.imdsVersion === 'v2' && (
             <div className="flex items-center justify-between pt-1">
-              <span className="text-neo-muted">Response Hop Limit</span>
+              <label htmlFor="imds-hop-limit" className="text-neo-muted">
+                Response Hop Limit
+              </label>
               <select
+                id="imds-hop-limit"
                 value={config?.imdsHopLimit ?? 1}
                 onChange={e => onUpdateConfig({ imdsHopLimit: parseInt(e.target.value, 10) })}
                 className="bg-neo-raised border-2 border-neo-ink text-neo-ink rounded px-2 py-0.5 text-xs font-mono focus:border-neo-ink"
@@ -117,7 +134,7 @@ export function ConfigToggles({ nodeData, onUpdateConfig }: ConfigTogglesProps) 
               </select>
             </div>
           )}
-          <p className="text-[11px] text-neo-muted leading-relaxed">
+          <p className="text-xs text-neo-muted leading-relaxed">
             IMDSv2 requires session-oriented requests with PUT headers, neutralizing SSRF credential theft.
           </p>
         </div>
@@ -128,16 +145,19 @@ export function ConfigToggles({ nodeData, onUpdateConfig }: ConfigTogglesProps) 
         <div className="bg-neo-surface border-2 border-neo-ink rounded-neo p-3 space-y-2 ">
           <div className="flex items-center gap-2">
             <KeyRound className="w-4 h-4 text-neo-ink" />
-            <span className="font-semibold text-neo-ink">Required sts:ExternalId</span>
+            <label htmlFor="required-external-id" className="font-semibold text-neo-ink">
+              Required sts:ExternalId
+            </label>
           </div>
           <input
+            id="required-external-id"
             type="text"
             value={config?.requireExternalId || ''}
             onChange={e => onUpdateConfig({ requireExternalId: e.target.value })}
             placeholder="e.g. ac-9841-sec (empty = vulnerable)"
-            className="w-full bg-neo-raised border-2 border-neo-ink rounded px-2.5 py-1.5 text-xs font-mono text-neo-ink placeholder-neo-muted focus:outline-none focus:border-neo-ink"
+            className="w-full bg-neo-raised border-2 border-neo-ink rounded px-2.5 py-1.5 text-xs font-mono text-neo-ink placeholder-neo-muted"
           />
-          <p className="text-[11px] text-neo-muted leading-relaxed">
+          <p className="text-xs text-neo-muted leading-relaxed">
             Protects against Confused Deputy attacks when third-party vendors assume this role.
           </p>
         </div>
@@ -152,6 +172,10 @@ export function ConfigToggles({ nodeData, onUpdateConfig }: ConfigTogglesProps) 
               <span className="font-semibold text-neo-ink">Private Subnet Attachment</span>
             </div>
             <button
+              type="button"
+              role="switch"
+              aria-checked={Boolean(config?.inPrivateSubnet)}
+              aria-label="Private Subnet Attachment"
               onClick={() => onUpdateConfig({ inPrivateSubnet: !config?.inPrivateSubnet })}
               className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-sm border-2 border-neo-ink transition-colors duration-150 ${
                 config?.inPrivateSubnet ? 'bg-neo-lime neo-on-accent' : 'bg-neo-raised'
@@ -164,7 +188,7 @@ export function ConfigToggles({ nodeData, onUpdateConfig }: ConfigTogglesProps) 
               />
             </button>
           </div>
-          <p className="text-[11px] text-neo-muted leading-relaxed">
+          <p className="text-xs text-neo-muted leading-relaxed">
             Placing compute in a private subnet blocks direct internet ingress, but requires a NAT Gateway or VPC Endpoint for AWS API egress.
           </p>
         </div>

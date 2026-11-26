@@ -1,8 +1,11 @@
 import { GameLevel } from '../types/engine';
 
-export const round7NatGatewayTrap: GameLevel = {
-  id: 'round-7',
-  roundNumber: 7,
+export const STAGE_5_2: GameLevel = {
+  id: 'stage5-2-nat-gateway-trap',
+  stage: 5,
+  stageLevel: 2,
+  stageTitle: 'Stage 5: Enterprise Governance & Guardrails',
+  roundNumber: 14,
   title: 'The NAT Gateway Trap',
   subtitle: 'VPC Endpoints & Cost Optimization',
   category: 'Learn',
@@ -18,21 +21,47 @@ export const round7NatGatewayTrap: GameLevel = {
     type: 'vpc_endpoint',
     name: 'VPC Gateway Endpoint (Amazon S3)',
     category: 'Networking',
-    primer: 'VPC Gateway Endpoints allow compute nodes inside private subnets to reach S3 and DynamoDB privately across the AWS network backbone with $0 data processing fees, replacing expensive NAT Gateways.',
+    primer:
+      'VPC Gateway Endpoints allow compute nodes inside private subnets to reach S3 and DynamoDB privately across the AWS network backbone with $0 data processing fees, replacing expensive NAT Gateways.',
     keyConcepts: ['Gateway Endpoints', 'Private Subnet Routing', 'Cost Optimization']
   },
   reportCard: {
-    headline: 'Stage 7: VPC Networking & Cost — Gateway Endpoints vs NAT',
-    scenario: 'A high-throughput Lambda function runs in a Private Subnet to analyze server logs stored in S3. The architecture connects through a NAT Gateway costing $32/mo base plus massive data transfer fees, blowing through the startup\'s monthly cloud budget.',
+    headline: 'Stage 5: Enterprise Governance — Gateway Endpoints vs NAT',
+    scenario:
+      'A high-throughput Lambda function runs in a Private Subnet to analyze server logs stored in S3. The architecture connects through a NAT Gateway costing $32/mo base plus massive data transfer fees, blowing through the startup\'s monthly cloud budget.',
     tasks: [
-      { step: 1, title: 'Analyze Architecture Cost', instruction: 'Notice the NAT Gateway has a monthly cost of $32/mo, exceeding the $15 budget cap.' },
-      { step: 2, title: 'Delete NAT Gateway', instruction: 'Select the NAT Gateway node and delete it.' },
-      { step: 3, title: 'Attach S3 Gateway Endpoint', instruction: 'Drag a VPC S3 Endpoint ($0/mo) from the left dock onto the board.' },
-      { step: 4, title: 'Wire Private Route', instruction: 'Wire a connection line from Log Ingest Worker to the S3 Gateway Endpoint, and from the Endpoint to application-logs.' },
-      { step: 5, title: 'Simulate', instruction: 'Verify log writes succeed (200 OK) while total infrastructure cost drops under budget ($10/mo).' }
+      {
+        step: 1,
+        title: 'Analyze Architecture Cost',
+        instruction: 'Notice the NAT Gateway has a monthly cost of $32/mo, exceeding the $15 budget cap.'
+      },
+      {
+        step: 2,
+        title: 'Delete NAT Gateway',
+        instruction: 'Select the NAT Gateway node and delete it.'
+      },
+      {
+        step: 3,
+        title: 'Attach S3 Gateway Endpoint',
+        instruction: 'Drag a VPC S3 Endpoint ($0/mo) from the left dock onto the board.'
+      },
+      {
+        step: 4,
+        title: 'Wire Private Route',
+        instruction:
+          'Wire a connection line from Log Ingest Worker to the S3 Gateway Endpoint, and from the Endpoint to application-logs.'
+      },
+      {
+        step: 5,
+        title: 'Simulate',
+        instruction:
+          'Verify log writes succeed (200 OK) while total infrastructure cost drops under budget ($10/mo).'
+      }
     ],
-    securityIntel: 'Traffic routed through VPC Endpoints never crosses the public internet, reducing exposure while cutting cloud egress charges to zero.',
-    budgetNotice: 'Target budget is $15/mo. Replacing the $32/mo NAT Gateway with a free S3 Gateway Endpoint achieves optimal 3-star rating.'
+    securityIntel:
+      'Traffic routed through VPC Endpoints never crosses the public internet, reducing exposure while cutting cloud egress charges to zero.',
+    budgetNotice:
+      'Target budget is $15/mo. Replacing the $32/mo NAT Gateway with a free S3 Gateway Endpoint achieves optimal 3-star rating.'
   },
   criteria: {
     star1Functional: {
@@ -54,17 +83,20 @@ export const round7NatGatewayTrap: GameLevel = {
     {
       level: 'nudge',
       title: 'Analyze Monthly Cost',
-      content: 'Notice the NAT Gateway has a monthly cost of $32/mo, exceeding the $15 budget cap. Can a VPC Gateway Endpoint route S3 traffic for free?'
+      content:
+        'Notice the NAT Gateway has a monthly cost of $32/mo, exceeding the $15 budget cap. Can a VPC Gateway Endpoint route S3 traffic for free?'
     },
     {
       level: 'root_cause',
       title: 'Costly NAT Gateway for Internal AWS Traffic',
-      content: 'AWS provides free VPC Gateway Endpoints for S3 and DynamoDB. Replace the NAT Gateway with an S3 Gateway Endpoint.'
+      content:
+        'AWS provides free VPC Gateway Endpoints for S3 and DynamoDB. Replace the NAT Gateway with an S3 Gateway Endpoint.'
     },
     {
       level: 'solution_diff',
       title: 'Target Architecture',
-      content: 'Remove the NAT Gateway node. Drag or connect an S3 VPC Endpoint with service "s3" and endpointType "gateway" ($0/mo).'
+      content:
+        'Remove the NAT Gateway node. Drag or connect an S3 VPC Endpoint with service "s3" and endpointType "gateway" ($0/mo).'
     }
   ],
   initialNodes: [
@@ -72,6 +104,7 @@ export const round7NatGatewayTrap: GameLevel = {
       id: 'log-worker-lambda',
       type: 'lambda',
       position: { x: 120, y: 220 },
+      essential: true,
       data: {
         id: 'log-worker-lambda',
         type: 'lambda',
@@ -79,6 +112,7 @@ export const round7NatGatewayTrap: GameLevel = {
         arn: 'arn:aws:iam::111122223333:role/LogWorkerRole',
         accountId: '111122223333',
         monthlyCost: 5,
+        essential: true,
         config: {
           inPrivateSubnet: true
         },
@@ -109,6 +143,7 @@ export const round7NatGatewayTrap: GameLevel = {
         arn: 'arn:aws:ec2:us-east-1:111122223333:natgateway/nat-08976a45b',
         accountId: '111122223333',
         monthlyCost: 32,
+        essential: false,
         config: {},
         identityPolicies: []
       }
@@ -117,6 +152,7 @@ export const round7NatGatewayTrap: GameLevel = {
       id: 's3-logs-bucket',
       type: 's3',
       position: { x: 680, y: 220 },
+      essential: true,
       data: {
         id: 's3-logs-bucket',
         type: 's3',
@@ -124,6 +160,7 @@ export const round7NatGatewayTrap: GameLevel = {
         arn: 'arn:aws:s3:::application-logs',
         accountId: '111122223333',
         monthlyCost: 5,
+        essential: true,
         config: { blockPublicAccess: true },
         identityPolicies: []
       }
@@ -145,7 +182,7 @@ export const round7NatGatewayTrap: GameLevel = {
   ],
   packets: [
     {
-      id: 'pkt-7-legit-ingest',
+      id: 'pkt-5-2-legit-ingest',
       name: 'Write Aggregated Log Batch',
       kind: 'legitimate',
       sourceNodeId: 'log-worker-lambda',
@@ -158,3 +195,5 @@ export const round7NatGatewayTrap: GameLevel = {
     }
   ]
 };
+
+export default STAGE_5_2;

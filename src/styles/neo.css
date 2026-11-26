@@ -57,7 +57,7 @@
     @apply shadow-none;
   }
   .neo-icon-btn {
-    @apply inline-flex items-center justify-center w-7 h-7 rounded border-2 border-transparent text-neo-ink;
+    @apply inline-flex items-center justify-center w-8 h-8 rounded border-2 border-transparent text-neo-ink;
   }
   .neo-icon-btn:hover:not(:disabled) {
     @apply border-neo-ink bg-neo-raised;
@@ -84,7 +84,7 @@
     @apply bg-neo-surface text-neo-ink border-2 border-neo-ink rounded-sm px-2.5 py-1.5 placeholder-neo-muted;
   }
   .neo-input:focus {
-    @apply outline-none shadow-neo-sm;
+    @apply shadow-neo-sm;
   }
   .neo-badge-pass {
     @apply neo-chip bg-neo-lime text-neo-on-accent;

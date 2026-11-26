@@ -6,7 +6,7 @@
  *           ForAllValues:StringEquals, ForAnyValue:StringEquals
  */
 
-import { matchPattern } from './matcher';
+import { matchPattern, interpolateVariables } from './matcher';
 
 export interface ConditionResult {
   passed: boolean;
@@ -28,8 +28,19 @@ export function evaluateConditionBlock(
   for (const [rawOperator, keyMap] of Object.entries(conditionBlock)) {
     const operator = rawOperator.trim();
 
-    for (const [key, expectedVal] of Object.entries(keyMap)) {
+    for (const [key, rawExpectedVal] of Object.entries(keyMap)) {
       const actualVal = context[key];
+
+      let expectedVal = rawExpectedVal;
+      if (typeof rawExpectedVal === 'string' && rawExpectedVal.includes('${')) {
+        expectedVal = interpolateVariables(rawExpectedVal, context as Record<string, string | boolean | number>);
+      } else if (Array.isArray(rawExpectedVal)) {
+        expectedVal = rawExpectedVal.map(item =>
+          typeof item === 'string' && item.includes('${')
+            ? interpolateVariables(item, context as Record<string, string | boolean | number>)
+            : item
+        );
+      }
 
       const check = evaluateSingleCondition(operator, expectedVal, actualVal);
       if (!check.passed) {
@@ -92,8 +103,13 @@ function evaluateSingleCondition(
     return { passed: false, reason: `Context key is missing or undefined` };
   }
 
-  // AWS rules: if multiple values are given in the policy condition array, at least one must match (OR logic across array values)
-  const passed = expectedList.some(exp => evaluateBase(operator, exp, actual));
+  // AWS rules: positive multi-value conditions use OR logic; negated operators (StringNotEquals, NotIpAddress)
+  // require EVERY listed value not to match (AND logic).
+  const normOp = operator.toLowerCase();
+  const isNegated = normOp === 'stringnotequals' || normOp === 'notipaddress';
+  const passed = isNegated
+    ? expectedList.every(exp => evaluateBase(operator, exp, actual))
+    : expectedList.some(exp => evaluateBase(operator, exp, actual));
   return {
     passed,
     reason: passed ? undefined : `Condition ${operator} failed: actual '${actual}' does not match expected '${JSON.stringify(expected)}'`,
@@ -150,23 +166,38 @@ function evaluateBase(
   }
 }
 
-function checkIp(cidrOrIp: string, actualIp: string): boolean {
-  if (cidrOrIp === actualIp) return true;
-  // Basic CIDR prefix check (e.g. 10.0.0.0/16 or 192.168.1.0/24)
-  if (cidrOrIp.includes('/')) {
-    const [prefix, bitsStr] = cidrOrIp.split('/');
-    const bits = parseInt(bitsStr, 10);
-    if (isNaN(bits)) return false;
-
-    const toInt = (ip: string) =>
-      ip.split('.').reduce((acc, oct) => (acc << 8) + parseInt(oct, 10), 0) >>> 0;
-
-    try {
-      const mask = bits === 0 ? 0 : (~0 << (32 - bits)) >>> 0;
-      return (toInt(actualIp) & mask) === (toInt(prefix) & mask);
-    } catch {
-      return false;
-    }
+function parseIpv4(ip: string): number | null {
+  const parts = ip.split('.');
+  if (parts.length !== 4) return null;
+  let value = 0;
+  for (const part of parts) {
+    if (!/^\d+$/.test(part)) return null;
+    const octet = Number(part);
+    if (!Number.isInteger(octet) || octet < 0 || octet > 255) return null;
+    value = ((value << 8) | octet) >>> 0;
   }
-  return false;
+  return value;
+}
+
+function checkIp(cidrOrIp: string, actualIp: string): boolean {
+  const actualNum = parseIpv4(actualIp);
+  if (actualNum === null) return false;
+
+  if (cidrOrIp.includes('/')) {
+    const parts = cidrOrIp.split('/');
+    if (parts.length !== 2) return false;
+    const [prefix, bitsStr] = parts;
+    if (!/^\d+$/.test(bitsStr)) return false;
+    const bits = Number(bitsStr);
+    if (!Number.isInteger(bits) || bits < 0 || bits > 32) return false;
+
+    const prefixNum = parseIpv4(prefix);
+    if (prefixNum === null) return false;
+
+    const mask = bits === 0 ? 0 : (~0 << (32 - bits)) >>> 0;
+    return (actualNum & mask) === (prefixNum & mask);
+  }
+
+  const expectedNum = parseIpv4(cidrOrIp);
+  return expectedNum !== null && actualNum === expectedNum;
 }
